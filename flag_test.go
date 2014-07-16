@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/spf13/pflag"
+	. "github.com/joshi4/pflag"
 )
 
 var (
@@ -197,7 +197,7 @@ func TestShorthand(t *testing.T) {
 		notaflag,
 	}
 	f.SetOutput(ioutil.Discard)
-	if err := f.Parse(args); err == nil {
+	if err := f.Parse(args); err != nil {
 		t.Error("--i-look-like-a-flag should throw an error")
 	}
 	if !f.Parsed() {
@@ -243,6 +243,10 @@ func (f *flagVar) String() string {
 func (f *flagVar) Set(value string) error {
 	*f = append(*f, value)
 	return nil
+}
+
+func (f *flagVar) Type() string {
+	return "user-defined flag type is a slice of strings"
 }
 
 func TestUserDefined(t *testing.T) {
