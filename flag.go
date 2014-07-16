@@ -442,90 +442,90 @@ func (f *FlagSet) setFlag(flag *Flag, value string, origArg string) error {
 	return nil
 }
 
-func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) {
-	a = args
-	if len(s) == 2 { // "--" terminates the flags
-		f.args = append(f.args, args...)
-		return
-	}
-	name := s[2:]
-	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
-		err = f.failf("bad flag syntax: %s", s)
-		return
-	}
-	split := strings.SplitN(name, "=", 2)
-	name = split[0]
-	m := f.formal
-	flag, alreadythere := m[name] // BUG
-	if !alreadythere {
-		if name == "help" { // special case for nice help message.
-			f.usage()
-			return args, ErrHelp
-		}
-		err = f.failf("unknown flag: --%s", name)
-		return
-	}
-	if len(split) == 1 {
-		if _, ok := flag.Value.(*boolValue); !ok {
-			err = f.failf("flag needs an argument: %s", s)
-			return
-		}
-		f.setFlag(flag, "true", s)
-	} else {
-		if e := f.setFlag(flag, split[1], s); e != nil {
-			err = e
-			return
-		}
-	}
-	return args, nil
-}
+// func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) {
+// a = args
+// if len(s) == 2 { // "--" terminates the flags
+// f.args = append(f.args, args...)
+// return
+// }
+// name := s[2:]
+// if len(name) == 0 || name[0] == '-' || name[0] == '=' {
+// err = f.failf("bad flag syntax: %s", s)
+// return
+// }
+// split := strings.SplitN(name, "=", 2)
+// name = split[0]
+// m := f.formal
+// flag, alreadythere := m[name] // BUG
+// if !alreadythere {
+// if name == "help" { // special case for nice help message.
+// f.usage()
+// return args, ErrHelp
+// }
+// err = f.failf("unknown flag: --%s", name)
+// return
+// }
+// if len(split) == 1 {
+// if _, ok := flag.Value.(*boolValue); !ok {
+// err = f.failf("flag needs an argument: %s", s)
+// return
+// }
+// f.setFlag(flag, "true", s)
+// } else {
+// if e := f.setFlag(flag, split[1], s); e != nil {
+// err = e
+// return
+// }
+// }
+// return args, nil
+// }
 
-func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error) {
-	a = args
-	shorthands := s[1:]
+// func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error) {
+// 	a = args
+// 	shorthands := s[1:]
 
-	for i := 0; i < len(shorthands); i++ {
-		c := shorthands[i]
-		flag, alreadythere := f.shorthands[c]
-		if !alreadythere {
-			if c == 'h' { // special case for nice help message.
-				f.usage()
-				err = ErrHelp
-				return
-			}
-			//TODO continue on error
-			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
-			if len(args) == 0 {
-				return
-			}
-		}
-		if alreadythere {
-			if _, ok := flag.Value.(*boolValue); ok {
-				f.setFlag(flag, "true", s)
-				continue
-			}
-			if i < len(shorthands)-1 {
-				if e := f.setFlag(flag, shorthands[i+1:], s); e != nil {
-					err = e
-					return
-				}
-				break
-			}
-			if len(args) == 0 {
-				err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
-				return
-			}
-			if e := f.setFlag(flag, args[0], s); e != nil {
-				err = e
-				return
-			}
-		}
-		a = args[1:]
-		break // should be unnecessary
-	}
+// 	for i := 0; i < len(shorthands); i++ {
+// 		c := shorthands[i]
+// 		flag, alreadythere := f.shorthands[c]
+// 		if !alreadythere {
+// 			if c == 'h' { // special case for nice help message.
+// 				f.usage()
+// 				err = ErrHelp
+// 				return
+// 			}
+// 			//TODO continue on error
+// 			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
+// 			if len(args) == 0 {
+// 				return
+// 			}
+// 		}
+// 		if alreadythere {
+// 			if _, ok := flag.Value.(*boolValue); ok {
+// 				f.setFlag(flag, "true", s)
+// 				continue
+// 			}
+// 			if i < len(shorthands)-1 {
+// 				if e := f.setFlag(flag, shorthands[i+1:], s); e != nil {
+// 					err = e
+// 					return
+// 				}
+// 				break
+// 			}
+// 			if len(args) == 0 {
+// 				err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
+// 				return
+// 			}
+// 			if e := f.setFlag(flag, args[0], s); e != nil {
+// 				err = e
+// 				return
+// 			}
+// 		}
+// 		a = args[1:]
+// 		break // should be unnecessary
+// 	}
 
-	return
-}
+// 	return
+// }
 
 func (f *FlagSet) parseArgs(args []string) (err error) {
 	for len(args) > 0 {
@@ -542,12 +542,69 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 		}
 
 		if s[1] == '-' {
-			args, err = f.parseLongArg(s, args)
+			if len(s) == 2 { // "--" terminates the flags
+				f.args = append(f.args, args...)
+				return nil
+			}
+			name := s[2:]
+			if len(name) == 0 || name[0] == '-' || name[0] == '=' {
+				return f.failf("bad flag syntax: %s", s)
+			}
+			split := strings.SplitN(name, "=", 2)
+			name = split[0]
+			m := f.formal
+			flag, alreadythere := m[name] // BUG
+			if !alreadythere {
+				if name == "help" { // special case for nice help message.
+					f.usage()
+					return ErrHelp
+				}
+				return f.failf("unknown flag: --%s", name)
+			}
+			if len(split) == 1 {
+				if _, ok := flag.Value.(*boolValue); !ok {
+					return f.failf("flag needs an argument: %s", s)
+				}
+				f.setFlag(flag, "true", s)
+			} else {
+				if err := f.setFlag(flag, split[1], s); err != nil {
+					return err
+				}
+			}
 		} else {
-			args, err = f.parseShortArg(s, args)
+			shorthands := s[1:]
+			for i := 0; i < len(shorthands); i++ {
+				c := shorthands[i]
+				flag, alreadythere := f.shorthands[c]
+				if !alreadythere {
+					if c == 'h' { // special case for nice help message.
+						f.usage()
+						return ErrHelp
+					}
+					return f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
+				}
+				if _, ok := flag.Value.(*boolValue); ok {
+					f.setFlag(flag, "true", s)
+					continue
+				}
+				if i < len(shorthands)-1 {
+					if err := f.setFlag(flag, shorthands[i+1:], s); err != nil {
+						return err
+					}
+					break
+				}
+				if len(args) == 0 {
+					return f.failf("flag needs an argument: %q in -%s", c, shorthands)
+				}
+				if err := f.setFlag(flag, args[0], s); err != nil {
+					return err
+				}
+				args = args[1:]
+				break // should be unnecessary
+			}
 		}
 	}
-	return
+	return nil
 }
 
 // Parse parses flag definitions from the argument list, which should not
