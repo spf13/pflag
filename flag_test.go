@@ -14,7 +14,7 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/joshi4/pflag"
+	. "github.com/spf13/pflag"
 )
 
 var (
