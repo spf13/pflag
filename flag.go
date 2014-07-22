@@ -546,48 +546,10 @@ func (f *FlagSet) parseLongFlag(flag *Flag, split []string, args []string, s str
 			args = args[1:] // we've used the value up.
 
 		} else {
-			// if it is a boolean value then set it to true by default:
-			// but still look to see if a value specified for it is true
-			// or false or any variant of them as listed below.
 
-			// if len(args) > 0 {
-			// 	switch args[0] {
-			// 	case "false":
-			// 		fallthrough
-			// 	case "False":
-			// 		fallthrough
-			// 	case "FALSE":
-			// 		fallthrough
-			// 	case "0":
-			// 		fallthrough
-			// 	case "f":
-			// 		fallthrough
-			// 	case "F":
-			// 		f.setFlag(flag, "false", s)
-			// 		args = args[1:]
-			// 		return f.parseArgs(args)
-			// 		break
-			// 	case "true":
-			// 		fallthrough
-			// 	case "True":
-			// 		fallthrough
-			// 	case "TRUE":
-			// 		fallthrough
-			// 	case "1":
-			// 		fallthrough
-			// 	case "t":
-			// 		fallthrough
-			// 	case "T":
-			// 		f.setFlag(flag, "true", s)
-			// 		args = args[1:]
-			// 		return f.parseArgs(args)
-
-			// 	}
-			// } else {
-
+			// no spaces allowed for boolean
+			//so if the flag exists then set it to true.
 			f.setFlag(flag, "true", s)
-
-			// }
 		}
 
 	} else {
@@ -595,6 +557,8 @@ func (f *FlagSet) parseLongFlag(flag *Flag, split []string, args []string, s str
 			return err
 		}
 	}
+
+	return f.parseArgs(args)
 
 }
 
@@ -635,70 +599,6 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 
 			f.parseLongFlag(flag, split, args, s)
 
-			// if len(split) == 1 {
-			// 	if _, ok := flag.Value.(*boolValue); !ok {
-
-			// 		// if len of args == 0 report error.
-
-			// 		if len(args) == 0 {
-			// 			return f.failf("flag needs an argument: %s", s)
-			// 		}
-
-			// 		// this is the case where a space follows a long-form flag.
-			// 		if err := f.setFlag(flag, args[0], s); err != nil {
-			// 			return err
-			// 		}
-
-			// 		args = args[1:] // we've used the value up.
-
-			// 	} else {
-			// 		// if it is a boolean value then set it to true by default:
-			// 		// but still look to see if a value specified for it is true
-			// 		// or false or any variant of them as listed below.
-
-			// 		if len(args) > 0 {
-			// 			switch args[0] {
-			// 			case "false":
-			// 				fallthrough
-			// 			case "False":
-			// 				fallthrough
-			// 			case "FALSE":
-			// 				fallthrough
-			// 			case "0":
-			// 				fallthrough
-			// 			case "f":
-			// 				fallthrough
-			// 			case "F":
-			// 				f.setFlag(flag, "false", s)
-			// 				args = args[1:]
-			// 				break
-			// 			case "true":
-			// 				fallthrough
-			// 			case "True":
-			// 				fallthrough
-			// 			case "TRUE":
-			// 				fallthrough
-			// 			case "1":
-			// 				fallthrough
-			// 			case "t":
-			// 				fallthrough
-			// 			case "T":
-			// 				f.setFlag(flag, "true", s)
-			// 				args = args[1:]
-
-			// 			}
-			// 		} else {
-
-			// 			f.setFlag(flag, "true", s)
-
-			// 		}
-			// 	}
-
-			// } else {
-			// 	if err := f.setFlag(flag, split[1], s); err != nil {
-			// 		return err
-			// 	}
-			// }
 		} else {
 
 			shorthand := s[1:] //single-dash preceded flag name + value
@@ -706,7 +606,7 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 				return f.failf("bad flag syntax: %s", s)
 			}
 			split := strings.SplitN(shorthand, "=", 2)
-			name = split[0]
+			name := split[0]
 			var flag *flag
 			var alreadythere bool
 
@@ -718,55 +618,52 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 
 			//if it's here that means long flag was not found ; check for short flag.
 
-			if flag, alreadythere = f.shorthands[name[0]]; len(name) == 1 && alreadythere {
-
-			}
-
-			flag, alreadythere := f.shorthands[name[0]]
+			flag, alreadythere = f.shorthands[name[0]]
 			// if both are false then provide an error message.
 			// it's also an error if the short flag is present but name is of more than one char
 			// if length is more than one then we should have found it in the f.formal maps
-			if !alreadythere || len(name) > 1 {
+			if len(name) > 1 || !alreadythere {
 
 				if name == "help" || name == "h" {
 					f.usage()
 					return ErrHelp
 				}
 
-				return f.failf("unknown shorthand flag: %s in -%s", name, shorthand)
-
+				return f.failf("unknown  flag: %s in -%s", name, shorthand)
 			}
 
-			shorthands := s[1:]
-			for i := 0; i < len(shorthands); i++ {
-				c := shorthands[i]
-				flag, alreadythere := f.shorthands[c]
-				if !alreadythere {
-					if c == 'h' { // special case for nice help message.
-						f.usage()
-						return ErrHelp
-					}
-					return f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
-				}
-				if _, ok := flag.Value.(*boolValue); ok {
-					f.setFlag(flag, "true", s)
-					continue
-				}
-				if i < len(shorthands)-1 {
-					if err := f.setFlag(flag, shorthands[i+1:], s); err != nil {
-						return err
-					}
-					break
-				}
-				if len(args) == 0 {
-					return f.failf("flag needs an argument: %q in -%s", c, shorthands)
-				}
-				if err := f.setFlag(flag, args[0], s); err != nil {
-					return err
-				}
-				args = args[1:]
-				break // should be unnecessary
-			}
+			return f.parseLongFlag(flag, split, args, s)
+
+			// shorthands := s[1:]
+			// for i := 0; i < len(shorthands); i++ {
+			// 	c := shorthands[i]
+			// 	flag, alreadythere := f.shorthands[c]
+			// 	if !alreadythere {
+			// 		if c == 'h' { // special case for nice help message.
+			// 			f.usage()
+			// 			return ErrHelp
+			// 		}
+			// 		return f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
+			// 	}
+			// 	if _, ok := flag.Value.(*boolValue); ok {
+			// 		f.setFlag(flag, "true", s)
+			// 		continue
+			// 	}
+			// 	if i < len(shorthands)-1 {
+			// 		if err := f.setFlag(flag, shorthands[i+1:], s); err != nil {
+			// 			return err
+			// 		}
+			// 		break
+			// 	}
+			// 	if len(args) == 0 {
+			// 		return f.failf("flag needs an argument: %q in -%s", c, shorthands)
+			// 	}
+			// 	if err := f.setFlag(flag, args[0], s); err != nil {
+			// 		return err
+			// 	}
+			// 	args = args[1:]
+			// 	break // should be unnecessary
+			// }
 		}
 	}
 	return nil
@@ -791,6 +688,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 		}
 	}
 	return nil
+
 }
 
 // Parsed reports whether f.Parse has been called.
