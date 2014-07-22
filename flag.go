@@ -460,7 +460,7 @@ func (f *FlagSet) parseFlag(flag *Flag, split []string, args []string, s string)
 			return err
 		}
 	}
-
+	fmt.Printf("Flag %v set to %v\n", flag.Name, flag.Value)
 	return f.parseArgs(args)
 
 }
@@ -468,6 +468,7 @@ func (f *FlagSet) parseFlag(flag *Flag, split []string, args []string, s string)
 func (f *FlagSet) parseArgs(args []string) (err error) {
 	for len(args) > 0 {
 		s := args[0]
+		fmt.Println("args[0] is ", s)
 		args = args[1:]
 		if len(s) == 0 || s[0] != '-' || len(s) == 1 {
 			if !f.interspersed {
@@ -475,7 +476,9 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 				f.args = append(f.args, args...)
 				return nil
 			}
+
 			f.args = append(f.args, s)
+			fmt.Println("Args is currently ", f.args)
 			continue
 		}
 
@@ -534,7 +537,7 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 
 				return f.failf("unknown  flag: %s in -%s", name, shorthand)
 			}
-
+			fmt.Println("parsing short flag ", flag.Name)
 			return f.parseFlag(flag, split, args, s) // because the short and long flags are the same.
 
 		}
