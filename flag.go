@@ -67,18 +67,6 @@
 		--flag    // boolean flags only
 		--flag=x
 
-	Unlike the flag package, a single dash before an option means something
-	different than a double dash. Single dashes signify a series of shorthand
-	letters for flags. All but the last shorthand letter must be boolean flags.
-		// boolean flags
-		-f
-		-abc
-		// non-boolean flags
-		-n 1234
-		-Ifile
-		// mixed
-		-abcs "hello"
-		-abcn1234
 
 	Flag parsing stops after the terminator "--". Unlike the flag package,
 	flags can be interspersed with arguments anywhere on the command line
@@ -442,94 +430,45 @@ func (f *FlagSet) setFlag(flag *Flag, value string, origArg string) error {
 	return nil
 }
 
-func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) {
-	a = args
-	if len(s) == 2 { // "--" terminates the flags
-		f.args = append(f.args, args...)
-		return
-	}
-	name := s[2:]
-	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
-		err = f.failf("bad flag syntax: %s", s)
-		return
-	}
-	split := strings.SplitN(name, "=", 2)
-	name = split[0]
-	m := f.formal
-	flag, alreadythere := m[name] // BUG
-	if !alreadythere {
-		if name == "help" { // special case for nice help message.
-			f.usage()
-			return args, ErrHelp
-		}
-		err = f.failf("unknown flag: --%s", name)
-		return
-	}
+func (f *FlagSet) parseFlag(flag *Flag, split []string, args []string, s string) (err error) {
+
 	if len(split) == 1 {
 		if _, ok := flag.Value.(*boolValue); !ok {
-			err = f.failf("flag needs an argument: %s", s)
-			return
+
+			// if len of args == 0 report error.
+
+			if len(args) == 0 {
+				return f.failf("flag needs an argument: %s", s)
+			}
+
+			// this is the case where a space follows a long-form flag.
+			if err := f.setFlag(flag, args[0], s); err != nil {
+				return err
+			}
+
+			args = args[1:] // we've used the value up.
+
+		} else {
+
+			// no spaces allowed for boolean
+			//so if the flag exists then set it to true.
+			f.setFlag(flag, "true", s)
 		}
-		f.setFlag(flag, "true", s)
+
 	} else {
-		if e := f.setFlag(flag, split[1], s); e != nil {
-			err = e
-			return
+		if err := f.setFlag(flag, split[1], s); err != nil {
+			return err
 		}
 	}
-	return args, nil
-}
+	// fmt.Printf("Flag %v set to %v\n", flag.Name, flag.Value)
+	return f.parseArgs(args)
 
-func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error) {
-	a = args
-	shorthands := s[1:]
-
-	for i := 0; i < len(shorthands); i++ {
-		c := shorthands[i]
-		flag, alreadythere := f.shorthands[c]
-		if !alreadythere {
-			if c == 'h' { // special case for nice help message.
-				f.usage()
-				err = ErrHelp
-				return
-			}
-			//TODO continue on error
-			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
-			if len(args) == 0 {
-				return
-			}
-		}
-		if alreadythere {
-			if _, ok := flag.Value.(*boolValue); ok {
-				f.setFlag(flag, "true", s)
-				continue
-			}
-			if i < len(shorthands)-1 {
-				if e := f.setFlag(flag, shorthands[i+1:], s); e != nil {
-					err = e
-					return
-				}
-				break
-			}
-			if len(args) == 0 {
-				err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
-				return
-			}
-			if e := f.setFlag(flag, args[0], s); e != nil {
-				err = e
-				return
-			}
-		}
-		a = args[1:]
-		break // should be unnecessary
-	}
-
-	return
 }
 
 func (f *FlagSet) parseArgs(args []string) (err error) {
 	for len(args) > 0 {
 		s := args[0]
+		// fmt.Println("args[0] is ", s)
 		args = args[1:]
 		if len(s) == 0 || s[0] != '-' || len(s) == 1 {
 			if !f.interspersed {
@@ -537,17 +476,73 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 				f.args = append(f.args, args...)
 				return nil
 			}
+
 			f.args = append(f.args, s)
+			// fmt.Println("Args is currently ", f.args)
 			continue
 		}
 
 		if s[1] == '-' {
-			args, err = f.parseLongArg(s, args)
+			if len(s) == 2 { // "--" terminates the flags
+				f.args = append(f.args, args...)
+				return nil
+			}
+			name := s[2:]
+			if len(name) == 0 || name[0] == '-' || name[0] == '=' {
+				return f.failf("bad flag syntax: %s", s)
+			}
+			split := strings.SplitN(name, "=", 2)
+			name = split[0]
+			m := f.formal
+			flag, alreadythere := m[name] // BUG
+			if !alreadythere {
+				if name == "help" { // special case for nice help message.
+					f.usage()
+					return ErrHelp
+				}
+				return f.failf("unknown flag: --%s", name)
+			}
+
+			f.parseFlag(flag, split, args, s)
+
 		} else {
-			args, err = f.parseShortArg(s, args)
+
+			shorthand := s[1:] //single-dash preceded flag name + value
+			if len(shorthand) == 0 || shorthand[0] == '=' {
+				return f.failf("bad flag syntax: %s", s)
+			}
+			split := strings.SplitN(shorthand, "=", 2)
+			name := split[0]
+			var flag *Flag
+			var alreadythere bool
+
+			flag, alreadythere = f.formal[name]
+
+			if alreadythere {
+				return f.parseFlag(flag, split, args, s)
+			}
+
+			//if program reaches this point means long flag was not found ; check for short flag.
+
+			flag, alreadythere = f.shorthands[name[0]]
+			// if both are false then provide an error message.
+			// it's also an error if the short flag is present but name is of more than one char
+			// if length is more than one then we should have found it in the f.formal maps
+			if len(name) > 1 || !alreadythere {
+
+				if name == "help" || name == "h" {
+					f.usage()
+					return ErrHelp
+				}
+
+				return f.failf("unknown  flag: %s in -%s", name, shorthand)
+			}
+			// fmt.Println("parsing short flag ", flag.Name)
+			return f.parseFlag(flag, split, args, s) // because the short and long flags are the same.
+
 		}
 	}
-	return
+	return nil
 }
 
 // Parse parses flag definitions from the argument list, which should not
@@ -569,6 +564,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 		}
 	}
 	return nil
+
 }
 
 // Parsed reports whether f.Parse has been called.
