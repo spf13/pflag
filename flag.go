@@ -446,7 +446,7 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 	a = args
 	if len(s) == 2 { // "--" terminates the flags
 		f.args = append(f.args, args...)
-		return
+		return args[:0], nil
 	}
 	name := s[2:]
 	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
