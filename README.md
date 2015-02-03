@@ -18,11 +18,11 @@ pflag is available using the standard `go get` command.
 
 Install by running:
 
-    go get github.com/ogier/pflag
+    go get github.com/spf13/pflag
 
 Run tests by running:
 
-    go test github.com/ogier/pflag
+    go test github.com/spf13/pflag
 
 ## Usage
 
@@ -31,7 +31,7 @@ pflag under the name "flag" then all code should continue to function
 with no changes.
 
 ``` go
-import flag "github.com/ogier/pflag"
+import flag "github.com/spf13/pflag"
 ```
 
 There is one exception to this: if you directly instantiate the Flag struct
@@ -148,8 +148,8 @@ Duration flags accept any input valid for time.ParseDuration.
 You can see the full reference documentation of the pflag package
 [at godoc.org][3], or through go's standard documentation system by
 running `godoc -http=:6060` and browsing to
-[http://localhost:6060/pkg/github.com/ogier/pflag][2] after
+[http://localhost:6060/pkg/github.com/spf13/pflag][2] after
 installation.
 
-[2]: http://localhost:6060/pkg/github.com/ogier/pflag
-[3]: http://godoc.org/github.com/ogier/pflag
+[2]: http://localhost:6060/pkg/github.com/spf13/pflag
+[3]: http://godoc.org/github.com/spf13/pflag
