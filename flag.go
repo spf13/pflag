@@ -139,8 +139,9 @@ type FlagSet struct {
 	args           []string // arguments after flags
 	exitOnError    bool     // does the program exit if there's an error?
 	errorHandling  ErrorHandling
-	output         io.Writer // nil means stderr; use out() accessor
-	interspersed   bool      // allow interspersed option/non-option args
+	output         io.Writer           // nil means stderr; use out() accessor
+	interspersed   bool                // allow interspersed option/non-option args
+	Annotations    map[string][]string // usable as you see fit, but name normalizer is a good start
 	wordSeparators []string
 }
 
