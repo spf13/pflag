@@ -152,6 +152,7 @@ type Flag struct {
 	Value       Value               // value as set
 	DefValue    string              // default value (as text); for usage message
 	Changed     bool                // If the user set the value (or if left to default)
+	Optional    bool                // If the flag argument is optional
 	Deprecated  string              // If this flag is deprecated, this string is the new or now thing to use
 	Annotations map[string][]string // used by cobra.Command  bash autocomple code
 }
@@ -250,6 +251,11 @@ func (f *FlagSet) Lookup(name string) *Flag {
 	return f.lookup(f.normalizeFlagName(name))
 }
 
+// Changed checks by name if a given flag has been changed.
+func (f *FlagSet) Changed(name string) bool {
+	return f.Lookup(name).Changed
+}
+
 // lookup returns the Flag structure of the named flag, returning nil if none exists.
 func (f *FlagSet) lookup(name NormalizedName) *Flag {
 	return f.formal[name]
@@ -263,6 +269,21 @@ func (f *FlagSet) MarkDeprecated(name string, usageMessage string) error {
 	}
 	flag.Deprecated = usageMessage
 	return nil
+}
+
+// Mark a flag argument optional in your program
+func (f *FlagSet) MarkOptional(name string) error {
+	flag := f.Lookup(name)
+	if flag == nil {
+		return fmt.Errorf("flag %q does not exist", name)
+	}
+	flag.Optional = true
+	return nil
+}
+
+// Changed checks by name if a given flag has been set.
+func Changed(name string) bool {
+	return CommandLine.Changed(name)
 }
 
 // Lookup returns the Flag structure of the named command-line flag,
@@ -409,6 +430,11 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 
 // Like Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
+	f.OVarP(value, name, shorthand, usage, false)
+}
+
+// Like VarP, but allows to mark the flag as allowing optional argument.
+func (f *FlagSet) OVarP(value Value, name, shorthand, usage string, optional bool) {
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
 		Name:      name,
@@ -416,6 +442,7 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 		Usage:     usage,
 		Value:     value,
 		DefValue:  value.String(),
+		Optional:  optional,
 	}
 	f.AddFlag(flag)
 }
@@ -464,6 +491,11 @@ func Var(value Value, name string, usage string) {
 // Like Var, but accepts a shorthand letter that can be used after a single dash.
 func VarP(value Value, name, shorthand, usage string) {
 	CommandLine.VarP(value, name, shorthand, usage)
+}
+
+// Like VarP, but allows to mark the flag as allowing optional argument.
+func OVarP(value Value, name, shorthand, usage string, optional bool) {
+	CommandLine.OVarP(value, name, shorthand, usage, optional)
 }
 
 // failf prints to standard error a formatted error and usage message and
@@ -527,11 +559,22 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 		return
 	}
 	if len(split) == 1 {
-		if bv, ok := flag.Value.(boolFlag); !ok || !bv.IsBoolFlag() {
+		if !flag.Optional {
 			err = f.failf("flag needs an argument: %s", s)
 			return
 		}
-		f.setFlag(flag, "true", s)
+		if bv, ok := flag.Value.(boolFlag); ok && bv.IsBoolFlag() {
+			f.setFlag(flag, "true", s)
+		} else {
+			v := flag.DefValue
+			if len(args) == 1 {
+				v = args[0]
+			}
+			if e := f.setFlag(flag, v, s); e != nil {
+				err = e
+				return
+			}
+		}
 	} else {
 		if e := f.setFlag(flag, split[1], s); e != nil {
 			err = e
@@ -575,8 +618,11 @@ func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error)
 				break
 			}
 			if len(args) == 0 {
-				err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
-				return
+				if !flag.Optional {
+					err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
+					return
+				}
+				args = append(args, flag.DefValue)
 			}
 			if e := f.setFlag(flag, args[0], s); e != nil {
 				err = e
