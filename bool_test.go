@@ -60,6 +60,7 @@ func setUpFlagSet(tristate *triStateValue) *FlagSet {
 	f := NewFlagSet("test", ContinueOnError)
 	*tristate = triStateFalse
 	f.VarP(tristate, "tristate", "t", "tristate value (true, maybe or false)")
+	f.MarkOptional("tristate")
 	return f
 }
 

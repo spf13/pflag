@@ -17,14 +17,15 @@ import (
 )
 
 var (
-	test_bool     = Bool("test_bool", false, "bool value")
-	test_int      = Int("test_int", 0, "int value")
-	test_int64    = Int64("test_int64", 0, "int64 value")
-	test_uint     = Uint("test_uint", 0, "uint value")
-	test_uint64   = Uint64("test_uint64", 0, "uint64 value")
-	test_string   = String("test_string", "0", "string value")
-	test_float64  = Float64("test_float64", 0, "float64 value")
-	test_duration = Duration("test_duration", 0, "time.Duration value")
+	test_bool         = Bool("test_bool", false, "bool value")
+	test_int          = Int("test_int", 0, "int value")
+	test_int64        = Int64("test_int64", 0, "int64 value")
+	test_uint         = Uint("test_uint", 0, "uint value")
+	test_uint64       = Uint64("test_uint64", 0, "uint64 value")
+	test_string       = String("test_string", "0", "string value")
+	test_float64      = Float64("test_float64", 0, "float64 value")
+	test_duration     = Duration("test_duration", 0, "time.Duration value")
+	test_optional_int = Int("test_optional_int", 0, "optional int value")
 )
 
 func boolString(s string) string {
@@ -55,7 +56,7 @@ func TestEverything(t *testing.T) {
 		}
 	}
 	VisitAll(visitor)
-	if len(m) != 8 {
+	if len(m) != 9 {
 		t.Error("VisitAll misses some flags")
 		for k, v := range m {
 			t.Log(k, *v)
@@ -78,9 +79,10 @@ func TestEverything(t *testing.T) {
 	Set("test_string", "1")
 	Set("test_float64", "1")
 	Set("test_duration", "1s")
+	Set("test_optional_int", "1")
 	desired = "1"
 	Visit(visitor)
-	if len(m) != 8 {
+	if len(m) != 9 {
 		t.Error("Visit fails after set")
 		for k, v := range m {
 			t.Log(k, *v)
@@ -119,6 +121,10 @@ func testParse(f *FlagSet, t *testing.T) {
 	stringFlag := f.String("string", "0", "string value")
 	float64Flag := f.Float64("float64", 0, "float64 value")
 	durationFlag := f.Duration("duration", 5*time.Second, "time.Duration value")
+	optionalIntNoValueFlag := f.Int("optional-int-no-value", 9, "int value")
+	optionalIntWithValueFlag := f.Int("optional-int-with-value", 9, "int value")
+	f.MarkOptional("optional-int-no-value")
+	f.MarkOptional("optional-int-with-value")
 	extra := "one-extra-argument"
 	args := []string{
 		"--bool",
@@ -131,6 +137,8 @@ func testParse(f *FlagSet, t *testing.T) {
 		"--string=hello",
 		"--float64=2718e28",
 		"--duration=2m",
+		"--optional-int-no-value",
+		"--optional-int-with-value=42",
 		extra,
 	}
 	if err := f.Parse(args); err != nil {
@@ -168,6 +176,12 @@ func testParse(f *FlagSet, t *testing.T) {
 	}
 	if *durationFlag != 2*time.Minute {
 		t.Error("duration flag should be 2m, is ", *durationFlag)
+	}
+	if *optionalIntNoValueFlag != 9 {
+		t.Error("optional int flag should be the default value, is ", *optionalIntNoValueFlag)
+	}
+	if *optionalIntWithValueFlag != 42 {
+		t.Error("optional int flag should be 42, is ", *optionalIntWithValueFlag)
 	}
 	if len(f.Args()) != 1 {
 		t.Error("expected one argument, got", len(f.Args()))
