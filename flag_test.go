@@ -349,6 +349,31 @@ func TestCustomNormalizedNames(t *testing.T) {
 	}
 }
 
+// Every flag we add, the name (displayed also in usage) should normalized
+func TestNormalizationFuncShouldChangeFlagName(t *testing.T) {
+	// Test normalization after addition
+	f := NewFlagSet("normalized", ContinueOnError)
+
+	f.Bool("valid_flag", false, "bool value")
+	if f.Lookup("valid_flag").Name != "valid_flag" {
+		t.Error("The new flag should have the name 'valid_flag' instead of ", f.Lookup("valid_flag").Name)
+	}
+
+	f.SetNormalizeFunc(wordSepNormalizeFunc)
+	if f.Lookup("valid_flag").Name != "valid.flag" {
+		t.Error("The new flag should have the name 'valid.flag' instead of ", f.Lookup("valid_flag").Name)
+	}
+
+	// Test normalization before addition
+	f = NewFlagSet("normalized", ContinueOnError)
+	f.SetNormalizeFunc(wordSepNormalizeFunc)
+
+	f.Bool("valid_flag", false, "bool value")
+	if f.Lookup("valid_flag").Name != "valid.flag" {
+		t.Error("The new flag should have the name 'valid.flag' instead of ", f.Lookup("valid_flag").Name)
+	}
+}
+
 // Declare a user-defined flag type.
 type flagVar []string
 
