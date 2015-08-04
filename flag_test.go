@@ -753,3 +753,21 @@ func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 		t.Fatal("Expected normalizeFlagNameInvocations to be 1; got ", normalizeFlagNameInvocations)
 	}
 }
+
+func TestInterspersedWithNoOptDefVal(t *testing.T) {
+	var flags FlagSet
+
+	var b bool
+	flags.BoolVar(&b, "b", false, "b flag")
+
+	var s string
+	flags.StringVar(&s, "s", "", "s flag")
+	flags.Lookup("s").NoOptDefVal = "s"
+
+	if err := flags.Parse([]string{"--s", "S", "--b", "positional"}); err != nil {
+		t.Error(err)
+	}
+	if s != "S" {
+		t.Fatalf("Could not override named argument. Still: %v", s)
+	}
+}

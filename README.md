@@ -145,7 +145,7 @@ Would result in something like
 
 ```
 --flag    // boolean flags, or flags with no option default values
---flag x  // only on flags without a default value
+--flag x
 --flag=x
 ```
 
