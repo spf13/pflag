@@ -600,13 +600,13 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 	if len(split) == 2 {
 		// '--flag=arg'
 		value = split[1]
-	} else if len(flag.NoOptDefVal) > 0 {
-		// '--flag' (arg was optional)
-		value = flag.NoOptDefVal
-	} else if len(a) > 0 {
+	} else if flag.Value.Type() != "bool" && len(a) > 1 && !strings.HasPrefix(a[0], "-") {
 		// '--flag arg'
 		value = a[0]
 		a = a[1:]
+	} else if len(flag.NoOptDefVal) > 0 {
+		// '--flag' (arg was optional)
+		value = flag.NoOptDefVal
 	} else {
 		// '--flag' (arg was required)
 		err = f.failf("flag needs an argument: %s", s)
