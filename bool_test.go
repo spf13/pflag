@@ -22,10 +22,6 @@ const (
 
 const strTriStateMaybe = "maybe"
 
-func (v *triStateValue) IsBoolFlag() bool {
-	return true
-}
-
 func (v *triStateValue) Get() interface{} {
 	return triStateValue(*v)
 }
