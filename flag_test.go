@@ -381,11 +381,67 @@ func TestShorthand(t *testing.T) {
 		t.Error("stringz flag should be `something`, is ", *stringzFlag)
 	}
 	if len(f.Args()) != 2 {
-		t.Error("expected one argument, got", len(f.Args()))
+		t.Error("expected two arguments, got", len(f.Args()))
 	} else if f.Args()[0] != extra {
 		t.Errorf("expected argument %q got %q", extra, f.Args()[0])
 	} else if f.Args()[1] != notaflag {
 		t.Errorf("expected argument %q got %q", notaflag, f.Args()[1])
+	}
+}
+
+func TestMaxArguments(t *testing.T) {
+	f := NewFlagSet("maxArgs", ContinueOnError)
+	if f.Parsed() {
+		t.Error("f.Parse() = true before Parse")
+	}
+	boolaFlag := f.BoolP("boola", "a", false, "bool value")
+	boolbFlag := f.BoolP("boolb", "b", false, "bool2 value")
+	boolcFlag := f.BoolP("boolc", "c", false, "bool3 value")
+	booldFlag := f.BoolP("boold", "d", false, "bool4 value")
+	stringaFlag := f.StringP("stringa", "s", "0", "string value")
+	stringzFlag := f.StringP("stringz", "z", "0", "string value")
+	extra := "interspersed-argument"
+	notaflag := "--i-look-like-a-flag"
+	args := []string{
+		"-ab",
+		extra,
+		"-cs",
+		"hello",
+		"-z=something",
+		"-d=true",
+		"--",
+		notaflag,
+	}
+	f.SetOutput(ioutil.Discard)
+	f.MaxArguments(1)
+	if err := f.Parse(args); err != nil {
+		t.Error("expected no error, got ", err)
+	}
+	if !f.Parsed() {
+		t.Error("f.Parse() = false after Parse")
+	}
+	if *boolaFlag != true {
+		t.Error("boola flag should be true, is ", *boolaFlag)
+	}
+	if *boolbFlag != true {
+		t.Error("boolb flag should be true, is ", *boolbFlag)
+	}
+	if *boolcFlag != false {
+		t.Error("boolc flag should be false, is ", *boolcFlag)
+	}
+	if *booldFlag != false {
+		t.Error("boold flag should be false, is ", *booldFlag)
+	}
+	if *stringaFlag != "0" {
+		t.Error("stringa flag should be `0`, is ", *stringaFlag)
+	}
+	if *stringzFlag != "0" {
+		t.Error("stringz flag should be `0`, is ", *stringzFlag)
+	}
+	if len(f.Args()) != 7 {
+		t.Error("expected six arguments, got", len(f.Args()))
+	} else if !reflect.DeepEqual(f.Args(), []string{extra, "-cs", "hello", "-z=something", "-d=true", "--", notaflag}) {
+		t.Errorf("unexpected arguments: %q", f.Args())
 	}
 }
 

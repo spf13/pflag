@@ -140,6 +140,7 @@ type FlagSet struct {
 	formal            map[NormalizedName]*Flag
 	shorthands        map[byte]*Flag
 	args              []string // arguments after flags
+	maxArguments      int      // after this many arguments, do not process flags
 	exitOnError       bool     // does the program exit if there's an error?
 	errorHandling     ErrorHandling
 	output            io.Writer // nil means stderr; use out() accessor
@@ -490,6 +491,18 @@ func NArg() int { return len(CommandLine.args) }
 // Args returns the non-flag arguments.
 func (f *FlagSet) Args() []string { return f.args }
 
+// MaxArguments sets the maximum number of arguments processed - after receiving
+// i arguments no further flag processing is performed. This is the equivalent
+// of forcing a '--' after i arguments. Passing zero means process all flags
+// until '--' or the end of arguments are reached.
+//
+// Supports commands like 'ssh' and 'rsh' which accept a single argument and all
+// subsequent arguments or flags are considered part of the command to execute on
+// the remote system.
+func (f *FlagSet) MaxArguments(i int) {
+	f.maxArguments = i
+}
+
 // Args returns the non-flag command-line arguments.
 func Args() []string { return CommandLine.args }
 
@@ -726,6 +739,11 @@ func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error)
 
 func (f *FlagSet) parseArgs(args []string) (err error) {
 	for len(args) > 0 {
+		// terminate flag processing when we exceed maxArguments
+		if f.maxArguments > 0 && len(f.args) >= f.maxArguments {
+			f.args = append(f.args, args...)
+			return nil
+		}
 		s := args[0]
 		args = args[1:]
 		if len(s) == 0 || s[0] != '-' || len(s) == 1 {
