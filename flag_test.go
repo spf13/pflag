@@ -872,3 +872,42 @@ func TestHiddenFlagUsage(t *testing.T) {
 		t.Errorf("usage message printed when using a hidden flag!")
 	}
 }
+
+const defaultOutput = `      --A                    for bootstrapping, allow 'any' type
+      --Alongflagname        disable bounds checking
+  -C, --CCC                  a boolean defaulting to true (default true)
+      --D path               set relative path for local imports
+      --F number             a non-zero number (default 2.7)
+      --G float              a float that defaults to zero
+      --N int                a non-zero int (default 27)
+      --ND1 string[="bar"]   a string with NoOptDefVal (default "foo")
+      --ND2 num[=4321]       a num with NoOptDefVal (default 1234)
+      --Z int                an int that defaults to zero
+      --maxT timeout         set timeout for dial
+`
+
+func TestPrintDefaults(t *testing.T) {
+	fs := NewFlagSet("print defaults test", ContinueOnError)
+	var buf bytes.Buffer
+	fs.SetOutput(&buf)
+	fs.Bool("A", false, "for bootstrapping, allow 'any' type")
+	fs.Bool("Alongflagname", false, "disable bounds checking")
+	fs.BoolP("CCC", "C", true, "a boolean defaulting to true")
+	fs.String("D", "", "set relative `path` for local imports")
+	fs.Float64("F", 2.7, "a non-zero `number`")
+	fs.Float64("G", 0, "a float that defaults to zero")
+	fs.Int("N", 27, "a non-zero int")
+	fs.Int("Z", 0, "an int that defaults to zero")
+	fs.Duration("maxT", 0, "set `timeout` for dial")
+	fs.String("ND1", "foo", "a string with NoOptDefVal")
+	fs.Lookup("ND1").NoOptDefVal = "bar"
+	fs.Int("ND2", 1234, "a `num` with NoOptDefVal")
+	fs.Lookup("ND2").NoOptDefVal = "4321"
+	fs.PrintDefaults()
+	got := buf.String()
+	if got != defaultOutput {
+		fmt.Println("\n" + got)
+		fmt.Println("\n" + defaultOutput)
+		t.Errorf("got %q want %q\n", got, defaultOutput)
+	}
+}
