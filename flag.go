@@ -742,7 +742,7 @@ func containsShorthand(arg, shorthand string) bool {
 func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) {
 	a = args
 	name := s[2:]
-	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
+	if name[0] == '-' || name[0] == '=' {
 		err = f.failf("bad flag syntax: %s", s)
 		return
 	}
