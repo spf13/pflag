@@ -12,6 +12,10 @@ func (fs *FlagSet) IsSet(name string) bool {
 	return fs.actual[normalName] != nil
 }
 
+func IsSet(name string) bool {
+	return CommandLine.IsSet(name)
+}
+
 // Merge is a helper function that merges n FlagSets into a single dest FlagSet
 // In case of name collision between the flagsets it will apply
 // the destination FlagSet's errorHandling behavior.
