@@ -60,3 +60,75 @@ func Merge(dest *FlagSet, flagsets ...*FlagSet) error {
 	}
 	return nil
 }
+
+type nArgRequirementType int
+
+// Indicator used to pass to BadArgs function
+const (
+	Exact nArgRequirementType = iota
+	Max
+	Min
+)
+
+type nArgRequirement struct {
+	Type nArgRequirementType
+	N    int
+}
+
+// Require adds a requirement about the number of arguments for the FlagSet.
+// The first parameter can be Exact, Max, or Min to respectively specify the exact,
+// the maximum, or the minimal number of arguments required.
+// The actual check is done in FlagSet.CheckArgs().
+func (fs *FlagSet) Require(nArgRequirementType nArgRequirementType, nArg int) {
+	fs.nArgRequirements = append(fs.nArgRequirements, nArgRequirement{nArgRequirementType, nArg})
+}
+
+// CheckArgs uses the requirements set by FlagSet.Require() to validate
+// the number of arguments. If the requirements are not met,
+// an error message string is returned.
+func (fs *FlagSet) CheckArgs() (message string) {
+	for _, req := range fs.nArgRequirements {
+		var arguments string
+		if req.N == 1 {
+			arguments = "1 argument"
+		} else {
+			arguments = fmt.Sprintf("%d arguments", req.N)
+		}
+
+		str := func(kind string) string {
+			return fmt.Sprintf("%q requires %s%s", fs.name, kind, arguments)
+		}
+
+		switch req.Type {
+		case Exact:
+			if fs.NArg() != req.N {
+				return str("")
+			}
+		case Max:
+			if fs.NArg() > req.N {
+				return str("a maximum of ")
+			}
+		case Min:
+			if fs.NArg() < req.N {
+				return str("a minimum of ")
+			}
+		}
+	}
+	return ""
+}
+
+// ParseFlags calls fs.Parse(args) and prints a relevant error message if there are
+// incorrect number of arguments. It returns error only if error handling is
+// set to ContinueOnError and parsing fails. If error handling is set to
+// ExitOnError, it's safe to ignore the return value.
+func (fs *FlagSet) ParseFlags(args []string) error {
+
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+
+	if str := fs.CheckArgs(); str != "" {
+		return fmt.Errorf(`%s`, str)
+	}
+	return nil
+}

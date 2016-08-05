@@ -146,6 +146,7 @@ type FlagSet struct {
 	output            io.Writer // nil means stderr; use out() accessor
 	interspersed      bool      // allow interspersed option/non-option args
 	normalizeNameFunc func(f *FlagSet, name string) NormalizedName
+	nArgRequirements  []nArgRequirement
 }
 
 // A Flag represents the state of a flag.
