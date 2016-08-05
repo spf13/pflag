@@ -219,7 +219,7 @@ func (f *FlagSet) normalizeFlagName(name string) NormalizedName {
 
 func (f *FlagSet) out() io.Writer {
 	if f.output == nil {
-		return os.Stderr
+		return os.Stdout
 	}
 	return f.output
 }

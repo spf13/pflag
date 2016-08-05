@@ -128,7 +128,20 @@ func (fs *FlagSet) ParseFlags(args []string) error {
 	}
 
 	if str := fs.CheckArgs(); str != "" {
-		return fmt.Errorf(`%s`, str)
+		fs.ReportError(str)
+		os.Exit(1)
+
 	}
 	return nil
+}
+
+// ReportError is a utility method that prints a user-friendly message
+// containing the error that occurred during parsing and a suggestion to get help
+func (fs *FlagSet) ReportError(str string) {
+	if os.Args[0] == fs.name {
+		str += ".\nSee '" + os.Args[0] + " --help'"
+	} else {
+		str += ".\nSee '" + os.Args[0] + " " + fs.name + " --help'"
+	}
+	fmt.Fprintf(fs.out(), "%s: %s.\n", os.Args[0], str)
 }
