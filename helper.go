@@ -30,10 +30,14 @@ func Merge(dest *FlagSet, flagsets ...*FlagSet) error {
 			continue
 		}
 		for k, f := range fset.formal {
-			c := f.Shorthand[0]
+			sok, ok := false, false
 
-			_, sok := dest.shorthands[c]
-			_, ok := dest.formal[k]
+			if len(f.Shorthand) != 0 {
+				c := f.Shorthand[0]
+				_, sok = dest.shorthands[c]
+			}
+
+			_, ok = dest.formal[k]
 
 			if sok || ok {
 				var err error
@@ -55,7 +59,9 @@ func Merge(dest *FlagSet, flagsets ...*FlagSet) error {
 			}
 
 			dest.formal[k] = fset.formal[k]
-			dest.shorthands[c] = fset.formal[k]
+			if sok {
+				dest.shorthands[f.Shorthand[0]] = fset.formal[k]
+			}
 		}
 	}
 	return nil
