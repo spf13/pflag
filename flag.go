@@ -443,9 +443,8 @@ func isZeroValue(value string) bool {
 func UnquoteUsage(flag *Flag) (name string, usage string) {
 	// Look for a back-quoted name, but avoid the strings package.
 	usage = flag.Usage
-	backquote := "`"
-	if strings.Count(usage, backquote) == 2 {
-		split := strings.SplitN(usage, backquote, 3)
+	if strings.Count(usage, "`") == 2 {
+		split := strings.SplitN(usage, "`", 3)
 		name = split[1]
 		usage = split[0] + name + split[2]
 		return name, usage
