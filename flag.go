@@ -441,7 +441,7 @@ func isZeroValue(value string) bool {
 // If there are no back quotes, the name is an educated guess of the
 // type of the flag's value, or the empty string if the flag is boolean.
 func UnquoteUsage(flag *Flag) (name string, usage string) {
-	// Look for a back-quoted name, but avoid the strings package.
+	// Look for a back-quoted name
 	usage = flag.Usage
 	if strings.Count(usage, "`") == 2 {
 		split := strings.SplitN(usage, "`", 3)
