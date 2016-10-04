@@ -141,7 +141,6 @@ type FlagSet struct {
 	shorthands        map[byte]*Flag
 	args              []string // arguments after flags
 	argsLenAtDash     int      // len(args) when a '--' was located when parsing, or -1 if no --
-	exitOnError       bool     // does the program exit if there's an error?
 	errorHandling     ErrorHandling
 	output            io.Writer // nil means stderr; use out() accessor
 	interspersed      bool      // allow interspersed option/non-option args
