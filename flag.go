@@ -155,8 +155,9 @@ type Flag struct {
 	Usage               string              // help message
 	Value               Value               // value as set
 	DefValue            string              // default value (as text); for usage message
+	Secret              bool                // used by cobra.Command to allow flags to be secret
 	Changed             bool                // If the user set the value (or if left to default)
-	NoOptDefVal         string              //default value (as text); if the flag is on the command line without any options
+	NoOptDefVal         string              // default value (as text); if the flag is on the command line without any options
 	Deprecated          string              // If this flag is deprecated, this string is the new or now thing to use
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
@@ -350,6 +351,33 @@ func (f *FlagSet) MarkHidden(name string) error {
 	}
 	flag.Hidden = true
 	return nil
+}
+
+// MarkSecret sets a flag to 'secret' in your program. It will continue to
+// function but will display a invalid value.
+func (f *FlagSet) MarkSecret(name string) error {
+	flag := f.Lookup(name)
+	if flag == nil {
+		return fmt.Errorf("flag %q does not exist", name)
+	}
+	flag.Secret = true
+	return nil
+}
+
+// SecretEncode return a invalid value to hide the real secret value
+func (f *FlagSet) SecretEncode(name string) (string, error) {
+	value := "******"
+	return value, nil
+}
+
+// SecretEncode return real value
+func (f *FlagSet) SecretDecode(name string) (string, error) {
+	flag := f.Lookup(name)
+	if flag == nil {
+		return "", fmt.Errorf("flag %q does not exist", name)
+	}
+	value := flag.Value.String()
+	return value, nil
 }
 
 // Lookup returns the Flag structure of the named command-line flag,
