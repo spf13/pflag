@@ -278,6 +278,18 @@ func (f *FlagSet) Lookup(name string) *Flag {
 	return f.lookup(f.normalizeFlagName(name))
 }
 
+// ShorthandLookup returns the Flag structure of the short handed flag, returning nil if none exists.
+func (f *FlagSet) ShorthandLookup(name string) *Flag {
+	if name == "" {
+		return nil
+	}
+	if len(name) > 1 {
+		panic("can't look up for a shorthand with name more than one character")
+	}
+	c := name[0]
+	return f.shorthands[c]
+}
+
 // lookup returns the Flag structure of the named flag, returning nil if none exists.
 func (f *FlagSet) lookup(name NormalizedName) *Flag {
 	return f.formal[name]
@@ -356,6 +368,12 @@ func (f *FlagSet) MarkHidden(name string) error {
 // returning nil if none exists.
 func Lookup(name string) *Flag {
 	return CommandLine.Lookup(name)
+}
+
+// ShorthandLookup returns the Flag structure of the short handed flag,
+// returning nil if none exists.
+func ShorthandLookup(name string) *Flag {
+	return CommandLine.ShorthandLookup(name)
 }
 
 // Set sets the value of the named flag.

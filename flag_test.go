@@ -878,6 +878,7 @@ const defaultOutput = `      --A                         for bootstrapping, allo
       --Alongflagname             disable bounds checking
   -C, --CCC                       a boolean defaulting to true (default true)
       --D path                    set relative path for local imports
+  -E, --EEE num[=1234]            a num with NoOptDefVal (default 4321)
       --F number                  a non-zero number (default 2.7)
       --G float                   a float that defaults to zero
       --IP ip                     IP address with no default
@@ -929,6 +930,8 @@ func TestPrintDefaults(t *testing.T) {
 	fs.Lookup("ND1").NoOptDefVal = "bar"
 	fs.Int("ND2", 1234, "a `num` with NoOptDefVal")
 	fs.Lookup("ND2").NoOptDefVal = "4321"
+	fs.IntP("EEE", "E", 4321, "a `num` with NoOptDefVal")
+	fs.ShorthandLookup("E").NoOptDefVal = "1234"
 	fs.StringSlice("StringSlice", []string{}, "string slice with zero default")
 	fs.StringArray("StringArray", []string{}, "string array with zero default")
 
