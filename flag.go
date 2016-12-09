@@ -752,7 +752,7 @@ func containsShorthand(arg, shorthand string) bool {
 	return strings.Contains(arg, shorthand)
 }
 
-func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) {
+func (f *FlagSet) parseLongArg(s string, args []string, fn ParseFunc) (a []string, err error) {
 	a = args
 	name := s[2:]
 	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
@@ -771,11 +771,13 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 		return
 	}
 	var value string
+	defVal := false
 	if len(split) == 2 {
 		// '--flag=arg'
 		value = split[1]
 	} else if len(flag.NoOptDefVal) > 0 {
 		// '--flag' (arg was optional)
+		defVal = true
 		value = flag.NoOptDefVal
 	} else if len(a) > 0 {
 		// '--flag arg'
@@ -786,11 +788,16 @@ func (f *FlagSet) parseLongArg(s string, args []string) (a []string, err error) 
 		err = f.failf("flag needs an argument: %s", s)
 		return
 	}
-	err = f.setFlag(flag, value, s)
-	return
+
+	origVal := value
+	if defVal {
+		origVal = ""
+	}
+
+	return a, fn(flag, value, s, "--"+name, origVal)
 }
 
-func (f *FlagSet) parseSingleShortArg(shorthands string, args []string) (outShorts string, outArgs []string, err error) {
+func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn ParseFunc) (outShorts string, outArgs []string, err error) {
 	if strings.HasPrefix(shorthands, "test.") {
 		return
 	}
@@ -810,10 +817,12 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string) (outShor
 		return
 	}
 	var value string
+	defVal := false
 	if len(shorthands) > 2 && shorthands[1] == '=' {
 		value = shorthands[2:]
 		outShorts = ""
 	} else if len(flag.NoOptDefVal) > 0 {
+		defVal = true
 		value = flag.NoOptDefVal
 	} else if len(shorthands) > 1 {
 		value = shorthands[1:]
@@ -825,16 +834,20 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string) (outShor
 		err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
 		return
 	}
-	err = f.setFlag(flag, value, shorthands)
-	return
+
+	origVal := value
+	if defVal {
+		origVal = ""
+	}
+	return outShorts, outArgs, fn(flag, value, shorthands, "-"+shorthands[:1], origVal)
 }
 
-func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error) {
+func (f *FlagSet) parseShortArg(s string, args []string, fn ParseFunc) (a []string, err error) {
 	a = args
 	shorthands := s[1:]
 
 	for len(shorthands) > 0 {
-		shorthands, a, err = f.parseSingleShortArg(shorthands, args)
+		shorthands, a, err = f.parseSingleShortArg(shorthands, args, fn)
 		if err != nil {
 			return
 		}
@@ -843,7 +856,7 @@ func (f *FlagSet) parseShortArg(s string, args []string) (a []string, err error)
 	return
 }
 
-func (f *FlagSet) parseArgs(args []string) (err error) {
+func (f *FlagSet) parseArgs(args []string, fn ParseFunc) (err error) {
 	for len(args) > 0 {
 		s := args[0]
 		args = args[1:]
@@ -863,9 +876,9 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 				f.args = append(f.args, args...)
 				break
 			}
-			args, err = f.parseLongArg(s, args)
+			args, err = f.parseLongArg(s, args, fn)
 		} else {
-			args, err = f.parseShortArg(s, args)
+			args, err = f.parseShortArg(s, args, fn)
 		}
 		if err != nil {
 			return
@@ -881,7 +894,35 @@ func (f *FlagSet) parseArgs(args []string) (err error) {
 func (f *FlagSet) Parse(arguments []string) error {
 	f.parsed = true
 	f.args = make([]string, 0, len(arguments))
-	err := f.parseArgs(arguments)
+
+	assign := func(flag *Flag, value, origArg, origFlag, origValue string) error {
+		return f.setFlag(flag, value, origArg)
+	}
+	err := f.parseArgs(arguments, assign)
+	if err != nil {
+		switch f.errorHandling {
+		case ContinueOnError:
+			return err
+		case ExitOnError:
+			os.Exit(2)
+		case PanicOnError:
+			panic(err)
+		}
+	}
+	return nil
+}
+
+type ParseFunc func(flag *Flag, value string, origArg string, origFlag string, origValue string) error
+
+// ParseAll parses flag definitions from the argument list, which should not
+// include the command name. The arguments for fn are flag (e.g. "--flag" or
+// "-flag") and value. Must be called after all flags in the FlagSet
+// are defined and before flags are accessed by the program.
+// The return value will be ErrHelp if -help was set but not defined.
+func (f *FlagSet) ParseAll(arguments []string, fn ParseFunc) error {
+	f.parsed = true
+	f.args = make([]string, 0, len(arguments))
+	err := f.parseArgs(arguments, fn)
 	if err != nil {
 		switch f.errorHandling {
 		case ContinueOnError:
@@ -905,6 +946,14 @@ func (f *FlagSet) Parsed() bool {
 func Parse() {
 	// Ignore errors; CommandLine is set for ExitOnError.
 	CommandLine.Parse(os.Args[1:])
+}
+
+// ParseAll parses the command-line flags from os.Args[1:] and called fn for each.
+// The arguments for fn are flag (e.g. "--flag" or "-flag") and value. Must be
+// called after all flags are defined and before flags are accessed by the program.
+func ParseAll(fn ParseFunc) {
+	// Ignore errors; CommandLine is set for ExitOnError.
+	CommandLine.ParseAll(os.Args[1:], fn)
 }
 
 // SetInterspersed sets whether to support interspersed option/non-option arguments.
