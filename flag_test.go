@@ -333,6 +333,63 @@ func testParse(f *FlagSet, t *testing.T) {
 	}
 }
 
+func testParseAll(f *FlagSet, t *testing.T) {
+	if f.Parsed() {
+		fmt.Errorf("f.Parse() = true before Parse")
+	}
+	f.BoolP("boola", "a", false, "bool value")
+	f.BoolP("boolb", "b", false, "bool2 value")
+	f.BoolP("boolc", "c", false, "bool3 value")
+	f.BoolP("boold", "d", false, "bool4 value")
+	f.StringP("stringa", "s", "0", "string value")
+	f.StringP("stringz", "z", "0", "string value")
+	f.StringP("stringx", "x", "0", "string value")
+	f.StringP("stringy", "y", "0", "string value")
+	f.Lookup("stringx").NoOptDefVal = "1"
+	args := []string{
+		"-ab",
+		"-cs=xx",
+		"--stringz=something",
+		"-d=true",
+		"-x",
+		"-y",
+		"ee",
+	}
+	want := []string{
+		"-a",
+		"-b",
+		"-c",
+		"-s",
+		"xx",
+		"--stringz",
+		"something",
+		"-d",
+		"true",
+		"-x",
+		"-y",
+		"ee",
+	}
+	got := []string{}
+	store := func(flag *Flag, v, origArg, origFlag, origVal string) error {
+		got = append(got, origFlag)
+		if len(origVal) > 0 {
+			got = append(got, origVal)
+		}
+		return nil
+	}
+	if err := f.ParseAll(args, store); err != nil {
+		t.Errorf("expected no error, got ", err)
+	}
+	if !f.Parsed() {
+		t.Errorf("f.Parse() = false after Parse")
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("f.ParseAll() fail to restore the args")
+		t.Errorf("Got: %v", got)
+		t.Errorf("Want: %v", want)
+	}
+}
+
 func TestShorthand(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
 	if f.Parsed() {
@@ -396,6 +453,11 @@ func TestShorthand(t *testing.T) {
 func TestParse(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
 	testParse(GetCommandLine(), t)
+}
+
+func TestParseAll(t *testing.T) {
+	ResetForTesting(func() { t.Error("bad parse") })
+	testParseAll(GetCommandLine(), t)
 }
 
 func TestFlagSetParse(t *testing.T) {
