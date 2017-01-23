@@ -23,11 +23,11 @@ func (s *ipSliceValue) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make([]net.IP, len(ss))
 	for i, sval := range ss {
-		if ip := net.ParseIP(strings.TrimSpace(sval)); ip == nil {
+		ip := net.ParseIP(strings.TrimSpace(sval))
+		if ip == nil {
 			return fmt.Errorf("invalid string being converted to IP address: %s", sval)
-		} else {
-			out[i] = ip
 		}
+		out[i] = ip
 	}
 	if !s.changed {
 		*s.value = out
@@ -59,11 +59,11 @@ func ipSliceConv(val string) (interface{}, error) {
 	ss := strings.Split(val, ",")
 	out := make([]net.IP, len(ss))
 	for i, sval := range ss {
-		if ip := net.ParseIP(strings.TrimSpace(sval)); ip == nil {
+		ip := net.ParseIP(strings.TrimSpace(sval))
+		if ip == nil {
 			return nil, fmt.Errorf("invalid string being converted to IP address: %s", sval)
-		} else {
-			out[i] = ip
 		}
+		out[i] = ip
 	}
 	return out, nil
 }
