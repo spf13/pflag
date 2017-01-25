@@ -29,19 +29,19 @@ func (s *boolSliceValue) Set(val string) error {
 	r := csv.NewReader(strings.NewReader(rmQuote.Replace(val)))
 
 	// read flag arguments with CSV parser
-	boolSlice, err := r.Read()
+	boolStrSlice, err := r.Read()
 	if err != nil && err != io.EOF {
 		return err
 	}
 
 	// parse boolean values into slice
-	out := make([]bool, len(boolSlice))
-	for i, boolStr := range boolSlice {
-		var err error
-		out[i], err = strconv.ParseBool(strings.TrimSpace(boolStr))
+	out := make([]bool, 0, len(boolStrSlice))
+	for _, boolStr := range boolStrSlice {
+		b, err := strconv.ParseBool(strings.TrimSpace(boolStr))
 		if err != nil {
 			return err
 		}
+		out = append(out, b)
 	}
 
 	if !s.changed {

@@ -1,7 +1,9 @@
 package pflag
 
 import (
+	"encoding/csv"
 	"fmt"
+	"io"
 	"net"
 	"strings"
 )
@@ -19,29 +21,47 @@ func newIPSliceValue(val []net.IP, p *[]net.IP) *ipSliceValue {
 	return ipsv
 }
 
+// Set converts, and assigns, the comma-separated IP argument string representation as the []net.IP value of this flag.
+// If Set is called on a flag that already has a []net.IP assigned, the newly converted values will be appended.
 func (s *ipSliceValue) Set(val string) error {
-	ss := strings.Split(val, ",")
-	out := make([]net.IP, len(ss))
-	for i, sval := range ss {
-		ip := net.ParseIP(strings.TrimSpace(sval))
-		if ip == nil {
-			return fmt.Errorf("invalid string being converted to IP address: %s", sval)
-		}
-		out[i] = ip
+
+	// remove all quote characters
+	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
+	r := csv.NewReader(strings.NewReader(rmQuote.Replace(val)))
+
+	// read flag arguments with CSV parser
+	ipStrSlice, err := r.Read()
+	if err != nil && err != io.EOF {
+		return err
 	}
+
+	// parse ip values into slice
+	out := make([]net.IP, 0, len(ipStrSlice))
+	for _, ipStr := range ipStrSlice {
+		ip := net.ParseIP(strings.TrimSpace(ipStr))
+		if ip == nil {
+			return fmt.Errorf("invalid string being converted to IP address: %s", ipStr)
+		}
+		out = append(out, ip)
+	}
+
 	if !s.changed {
 		*s.value = out
 	} else {
 		*s.value = append(*s.value, out...)
 	}
+
 	s.changed = true
+
 	return nil
 }
 
+// Type returns a string that uniquely represents this flag's type.
 func (s *ipSliceValue) Type() string {
 	return "ipSlice"
 }
 
+// String defines a "native" format for this net.IP slice flag value.
 func (s *ipSliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, ip := range *s.value {
