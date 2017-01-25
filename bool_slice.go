@@ -1,7 +1,6 @@
 package pflag
 
 import (
-	"encoding/csv"
 	"io"
 	"strconv"
 	"strings"
@@ -26,10 +25,9 @@ func (s *boolSliceValue) Set(val string) error {
 
 	// remove all quote characters
 	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
-	r := csv.NewReader(strings.NewReader(rmQuote.Replace(val)))
 
 	// read flag arguments with CSV parser
-	boolStrSlice, err := r.Read()
+	boolStrSlice, err := readAsCSV(rmQuote.Replace(val))
 	if err != nil && err != io.EOF {
 		return err
 	}
@@ -62,11 +60,15 @@ func (s *boolSliceValue) Type() string {
 
 // String defines a "native" format for this boolean slice flag value.
 func (s *boolSliceValue) String() string {
-	out := make([]string, len(*s.value))
+
+	boolStrSlice := make([]string, len(*s.value))
 	for i, b := range *s.value {
-		out[i] = strconv.FormatBool(b)
+		boolStrSlice[i] = strconv.FormatBool(b)
 	}
-	return "[" + strings.Join(out, ",") + "]"
+
+	out, _ := writeAsCSV(boolStrSlice)
+
+	return "[" + out + "]"
 }
 
 func boolSliceConv(val string) (interface{}, error) {

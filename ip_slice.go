@@ -1,7 +1,6 @@
 package pflag
 
 import (
-	"encoding/csv"
 	"fmt"
 	"io"
 	"net"
@@ -27,10 +26,9 @@ func (s *ipSliceValue) Set(val string) error {
 
 	// remove all quote characters
 	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
-	r := csv.NewReader(strings.NewReader(rmQuote.Replace(val)))
 
 	// read flag arguments with CSV parser
-	ipStrSlice, err := r.Read()
+	ipStrSlice, err := readAsCSV(rmQuote.Replace(val))
 	if err != nil && err != io.EOF {
 		return err
 	}
@@ -63,11 +61,15 @@ func (s *ipSliceValue) Type() string {
 
 // String defines a "native" format for this net.IP slice flag value.
 func (s *ipSliceValue) String() string {
-	out := make([]string, len(*s.value))
+
+	ipStrSlice := make([]string, len(*s.value))
 	for i, ip := range *s.value {
-		out[i] = ip.String()
+		ipStrSlice[i] = ip.String()
 	}
-	return "[" + strings.Join(out, ",") + "]"
+
+	out, _ := writeAsCSV(ipStrSlice)
+
+	return "[" + out + "]"
 }
 
 func ipSliceConv(val string) (interface{}, error) {
