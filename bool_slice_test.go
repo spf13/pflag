@@ -159,3 +159,57 @@ func TestBSCalledTwice(t *testing.T) {
 		}
 	}
 }
+
+func TestBSQuotingConflict(t *testing.T) {
+
+	tests := []struct {
+		Want    []bool
+		FlagArg []string
+	}{
+		{
+			Want:    []bool{true, false, true},
+			FlagArg: []string{"1", "0", "true"},
+		},
+		{
+			Want:    []bool{true, false},
+			FlagArg: []string{"True", "F"},
+		},
+		{
+			Want:    []bool{true, false},
+			FlagArg: []string{"T", "0"},
+		},
+		{
+			Want:    []bool{true, false},
+			FlagArg: []string{"1", "0"},
+		},
+		{
+			Want:    []bool{true, false, false},
+			FlagArg: []string{"true,false", "false"},
+		},
+		{
+			Want:    []bool{true, false, false, true, false, true, false},
+			FlagArg: []string{`"true,false,false,1,0,     T"`, " false "},
+		},
+		{
+			Want:    []bool{false, false, true, false, true, false, true},
+			FlagArg: []string{`"0, False,  T,false  , true,F"`, "true"},
+		},
+	}
+
+	for i, test := range tests {
+
+		var bs []bool
+		f := setUpBSFlagSet(&bs)
+
+		if err := f.Parse([]string{fmt.Sprintf("--bs=%s", strings.Join(test.FlagArg, ","))}); err != nil {
+			t.Fatalf("flag parsing failed with error: %s\nparsing:\t%#v\nwant:\t\t%#v",
+				err, test.FlagArg, test.Want[i])
+		}
+
+		for j, b := range bs {
+			if b != test.Want[j] {
+				t.Fatalf("bad value parsed for test %d on bool %d:\nwant:\t%t\ngot:\t%t", i, j, test.Want[j], b)
+			}
+		}
+	}
+}

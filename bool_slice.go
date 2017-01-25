@@ -1,6 +1,8 @@
 package pflag
 
 import (
+	"encoding/csv"
+	"io"
 	"strconv"
 	"strings"
 )
@@ -18,29 +20,47 @@ func newBoolSliceValue(val []bool, p *[]bool) *boolSliceValue {
 	return bsv
 }
 
+// Set converts, and assigns, the comma-separated boolean argument string representation as the []bool value of this flag.
+// If Set is called on a flag that already has a []bool assigned, the newly converted values will be appended.
 func (s *boolSliceValue) Set(val string) error {
-	ss := strings.Split(val, ",")
-	out := make([]bool, len(ss))
-	for i, b := range ss {
+
+	// remove all quote characters
+	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
+	r := csv.NewReader(strings.NewReader(rmQuote.Replace(val)))
+
+	// read flag arguments with CSV parser
+	boolSlice, err := r.Read()
+	if err != nil && err != io.EOF {
+		return err
+	}
+
+	// parse boolean values into slice
+	out := make([]bool, len(boolSlice))
+	for i, boolStr := range boolSlice {
 		var err error
-		out[i], err = strconv.ParseBool(b)
+		out[i], err = strconv.ParseBool(strings.TrimSpace(boolStr))
 		if err != nil {
 			return err
 		}
 	}
+
 	if !s.changed {
 		*s.value = out
 	} else {
 		*s.value = append(*s.value, out...)
 	}
+
 	s.changed = true
+
 	return nil
 }
 
+// Type returns a string that uniquely represents this flag's type.
 func (s *boolSliceValue) Type() string {
 	return "boolSlice"
 }
 
+// String defines a "native" format for this boolean slice flag value.
 func (s *boolSliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, b := range *s.value {
