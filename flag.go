@@ -167,6 +167,8 @@ type Flag struct {
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
 	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+
+	isSetMultipleTimes bool // indicates if flag is set multiple times
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -828,8 +830,13 @@ func (f *FlagSet) usage() {
 
 func (f *FlagSet) setFlag(flag *Flag, value string, origArg string) error {
 	if err := flag.Value.Set(value); err != nil {
-		return f.failf("invalid argument %q for %s: %v", value, origArg, err)
+		return f.failf("invalid argument %q for %v: %v", value, origArg, err)
 	}
+	if !flag.isSetMultipleTimes && flag.Changed && !strings.Contains(flag.Value.Type(), "Slice") {
+		flag.isSetMultipleTimes = true
+		fmt.Fprintf(os.Stderr, "Flag %q is set multiple times. Using last value\n", flag.Name)
+	}
+
 	// mark as visited for Visit()
 	if f.actual == nil {
 		f.actual = make(map[NormalizedName]*Flag)
@@ -837,10 +844,10 @@ func (f *FlagSet) setFlag(flag *Flag, value string, origArg string) error {
 	f.actual[f.normalizeFlagName(flag.Name)] = flag
 	f.orderedActual = append(f.orderedActual, flag)
 	flag.Changed = true
-	if len(flag.Deprecated) > 0 {
+	if len(flag.Deprecated) > 0 && !flag.isSetMultipleTimes {
 		fmt.Fprintf(os.Stderr, "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
 	}
-	if len(flag.ShorthandDeprecated) > 0 && containsShorthand(origArg, flag.Shorthand) {
+	if len(flag.ShorthandDeprecated) > 0 && containsShorthand(origArg, flag.Shorthand) && !flag.isSetMultipleTimes {
 		fmt.Fprintf(os.Stderr, "Flag shorthand -%s has been deprecated, %s\n", flag.Shorthand, flag.ShorthandDeprecated)
 	}
 	return nil
