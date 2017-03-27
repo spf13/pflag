@@ -628,7 +628,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		line += usage
 		if !flag.defaultIsZeroValue() {
 			if flag.Value.Type() == "string" {
-				line += fmt.Sprintf(" (default \"%s\")", flag.DefValue)
+				line += fmt.Sprintf(" (default %q)", flag.DefValue)
 			} else {
 				line += fmt.Sprintf(" (default %s)", flag.DefValue)
 			}
