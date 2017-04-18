@@ -841,35 +841,6 @@ func (f *FlagSet) usage() {
 	}
 }
 
-func (f *FlagSet) setFlag(flag *Flag, value string, origArg string) error {
-	if err := flag.Value.Set(value); err != nil {
-		return f.failf("invalid argument %q for %s: %v", value, origArg, err)
-	}
-	// mark as visited for Visit()
-	if f.actual == nil {
-		f.actual = make(map[NormalizedName]*Flag)
-	}
-	f.actual[f.normalizeFlagName(flag.Name)] = flag
-	f.orderedActual = append(f.orderedActual, flag)
-	flag.Changed = true
-	if len(flag.Deprecated) > 0 {
-		fmt.Fprintf(os.Stderr, "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
-	}
-	if len(flag.ShorthandDeprecated) > 0 && containsShorthand(origArg, flag.Shorthand) {
-		fmt.Fprintf(os.Stderr, "Flag shorthand -%s has been deprecated, %s\n", flag.Shorthand, flag.ShorthandDeprecated)
-	}
-	return nil
-}
-
-func containsShorthand(arg, shorthand string) bool {
-	// filter out flags --<flag_name>
-	if strings.HasPrefix(arg, "-") {
-		return false
-	}
-	arg = strings.SplitN(arg, "=", 2)[0]
-	return strings.Contains(arg, shorthand)
-}
-
 func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []string, err error) {
 	a = args
 	name := s[2:]
@@ -904,7 +875,8 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 		err = f.failf("flag needs an argument: %s", s)
 		return
 	}
-	err = fn(flag, value, s)
+
+	err = fn(flag, value)
 	return
 }
 
@@ -943,7 +915,12 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
 		return
 	}
-	err = fn(flag, value, shorthands)
+
+	if len(flag.ShorthandDeprecated) > 0 {
+		fmt.Fprintf(f.out(), "Flag shorthand -%s has been deprecated, %s\n", flag.Shorthand, flag.ShorthandDeprecated)
+	}
+
+	err = fn(flag, value)
 	return
 }
 
@@ -1000,11 +977,11 @@ func (f *FlagSet) Parse(arguments []string) error {
 	f.parsed = true
 	f.args = make([]string, 0, len(arguments))
 
-	assign := func(flag *Flag, value, origArg string) error {
-		return f.setFlag(flag, value, origArg)
+	set := func(flag *Flag, value string) error {
+		return f.Set(flag.Name, value)
 	}
 
-	err := f.parseArgs(arguments, assign)
+	err := f.parseArgs(arguments, set)
 	if err != nil {
 		switch f.errorHandling {
 		case ContinueOnError:
@@ -1018,7 +995,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 	return nil
 }
 
-type parseFunc func(flag *Flag, value, origArg string) error
+type parseFunc func(flag *Flag, value string) error
 
 // ParseAll parses flag definitions from the argument list, which should not
 // include the command name. The arguments for fn are flag and value. Must be
@@ -1029,11 +1006,7 @@ func (f *FlagSet) ParseAll(arguments []string, fn func(flag *Flag, value string)
 	f.parsed = true
 	f.args = make([]string, 0, len(arguments))
 
-	assign := func(flag *Flag, value, origArg string) error {
-		return fn(flag, value)
-	}
-
-	err := f.parseArgs(arguments, assign)
+	err := f.parseArgs(arguments, fn)
 	if err != nil {
 		switch f.errorHandling {
 		case ContinueOnError:
