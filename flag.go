@@ -848,6 +848,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 		err = f.failf("bad flag syntax: %s", s)
 		return
 	}
+
 	split := strings.SplitN(name, "=", 2)
 	name = split[0]
 	flag, exists := f.formal[f.normalizeFlagName(name)]
@@ -859,6 +860,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 		err = f.failf("unknown flag: --%s", name)
 		return
 	}
+
 	var value string
 	if len(split) == 2 {
 		// '--flag=arg'
@@ -884,6 +886,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 	if strings.HasPrefix(shorthands, "test.") {
 		return
 	}
+
 	outArgs = args
 	outShorts = shorthands[1:]
 	c := shorthands[0]
@@ -895,23 +898,28 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 			err = ErrHelp
 			return
 		}
-		//TODO continue on error
 		err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
 		return
 	}
+
 	var value string
 	if len(shorthands) > 2 && shorthands[1] == '=' {
+		// '-f=arg'
 		value = shorthands[2:]
 		outShorts = ""
 	} else if len(flag.NoOptDefVal) > 0 {
+		// '-f' (arg was optional)
 		value = flag.NoOptDefVal
 	} else if len(shorthands) > 1 {
+		// '-farg'
 		value = shorthands[1:]
 		outShorts = ""
 	} else if len(args) > 0 {
+		// '-f arg'
 		value = args[0]
 		outArgs = args[1:]
 	} else {
+		// '-f' (arg was required)
 		err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
 		return
 	}
@@ -928,6 +936,7 @@ func (f *FlagSet) parseShortArg(s string, args []string, fn parseFunc) (a []stri
 	a = args
 	shorthands := s[1:]
 
+	// "shorthands" can be a series of shorthand letters of flags (e.g. "-vvv").
 	for len(shorthands) > 0 {
 		shorthands, a, err = f.parseSingleShortArg(shorthands, args, fn)
 		if err != nil {
