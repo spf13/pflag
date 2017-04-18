@@ -759,8 +759,8 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	// Call normalizeFlagName function only once
 	normalizedFlagName := f.normalizeFlagName(flag.Name)
 
-	_, alreadythere := f.formal[normalizedFlagName]
-	if alreadythere {
+	_, alreadyThere := f.formal[normalizedFlagName]
+	if alreadyThere {
 		msg := fmt.Sprintf("%s flag redefined: %s", f.name, flag.Name)
 		fmt.Fprintln(f.out(), msg)
 		panic(msg) // Happens only if flags are declared with identical names
@@ -784,8 +784,8 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 		f.shorthands = make(map[byte]*Flag)
 	}
 	c := flag.Shorthand[0]
-	old, alreadythere := f.shorthands[c]
-	if alreadythere {
+	old, alreadyThere := f.shorthands[c]
+	if alreadyThere {
 		fmt.Fprintf(f.out(), "%s shorthand reused: %q for %s already used for %s\n", f.name, c, flag.Name, old.Name)
 		panic("shorthand redefinition")
 	}
@@ -879,8 +879,8 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	}
 	split := strings.SplitN(name, "=", 2)
 	name = split[0]
-	flag, alreadythere := f.formal[f.normalizeFlagName(name)]
-	if !alreadythere {
+	flag, exists := f.formal[f.normalizeFlagName(name)]
+	if !exists {
 		if name == "help" { // special case for nice help message.
 			f.usage()
 			return a, ErrHelp
@@ -916,8 +916,8 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 	outShorts = shorthands[1:]
 	c := shorthands[0]
 
-	flag, alreadythere := f.shorthands[c]
-	if !alreadythere {
+	flag, exists := f.shorthands[c]
+	if !exists {
 		if c == 'h' { // special case for nice help message.
 			f.usage()
 			err = ErrHelp
