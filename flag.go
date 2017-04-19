@@ -408,7 +408,13 @@ func (f *FlagSet) Set(name, value string) error {
 	}
 	err := flag.Value.Set(value)
 	if err != nil {
-		return err
+		var flagName string
+		if len(flag.Shorthand) > 0 && len(flag.ShorthandDeprecated) == 0 {
+			flagName = fmt.Sprintf("-%s, --%s", flag.Shorthand, flag.Name)
+		} else {
+			flagName = fmt.Sprintf("--%s", flag.Name)
+		}
+		return fmt.Errorf("invalid argument %q for %q flag: %v", value, flagName, err)
 	}
 	if f.actual == nil {
 		f.actual = make(map[NormalizedName]*Flag)
