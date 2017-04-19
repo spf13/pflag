@@ -423,7 +423,7 @@ func (f *FlagSet) Set(name, value string) error {
 	f.orderedActual = append(f.orderedActual, flag)
 	flag.Changed = true
 	if len(flag.Deprecated) > 0 {
-		fmt.Fprintf(os.Stderr, "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
+		fmt.Fprintf(f.out(), "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
 	}
 	return nil
 }
