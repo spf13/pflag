@@ -406,6 +406,7 @@ func (f *FlagSet) Set(name, value string) error {
 	if !ok {
 		return fmt.Errorf("no such flag -%v", name)
 	}
+
 	err := flag.Value.Set(value)
 	if err != nil {
 		var flagName string
@@ -416,12 +417,15 @@ func (f *FlagSet) Set(name, value string) error {
 		}
 		return fmt.Errorf("invalid argument %q for %q flag: %v", value, flagName, err)
 	}
+
 	if f.actual == nil {
 		f.actual = make(map[NormalizedName]*Flag)
 	}
 	f.actual[normalName] = flag
 	f.orderedActual = append(f.orderedActual, flag)
+
 	flag.Changed = true
+
 	if len(flag.Deprecated) > 0 {
 		fmt.Fprintf(f.out(), "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
 	}
@@ -990,6 +994,11 @@ func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 // The return value will be ErrHelp if -help was set but not defined.
 func (f *FlagSet) Parse(arguments []string) error {
 	f.parsed = true
+
+	if len(arguments) < 0 {
+		return nil
+	}
+
 	f.args = make([]string, 0, len(arguments))
 
 	set := func(flag *Flag, value string) error {
