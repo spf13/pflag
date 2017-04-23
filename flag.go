@@ -360,7 +360,7 @@ func (f *FlagSet) MarkDeprecated(name string, usageMessage string) error {
 	if flag == nil {
 		return fmt.Errorf("flag %q does not exist", name)
 	}
-	if len(usageMessage) == 0 {
+	if usageMessage == "" {
 		return fmt.Errorf("deprecated message for flag %q must be set", name)
 	}
 	flag.Deprecated = usageMessage
@@ -375,7 +375,7 @@ func (f *FlagSet) MarkShorthandDeprecated(name string, usageMessage string) erro
 	if flag == nil {
 		return fmt.Errorf("flag %q does not exist", name)
 	}
-	if len(usageMessage) == 0 {
+	if usageMessage == "" {
 		return fmt.Errorf("deprecated message for flag %q must be set", name)
 	}
 	flag.ShorthandDeprecated = usageMessage
@@ -410,7 +410,7 @@ func (f *FlagSet) Set(name, value string) error {
 	err := flag.Value.Set(value)
 	if err != nil {
 		var flagName string
-		if len(flag.Shorthand) > 0 && len(flag.ShorthandDeprecated) == 0 {
+		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
 			flagName = fmt.Sprintf("-%s, --%s", flag.Shorthand, flag.Name)
 		} else {
 			flagName = fmt.Sprintf("--%s", flag.Name)
@@ -426,7 +426,7 @@ func (f *FlagSet) Set(name, value string) error {
 
 	flag.Changed = true
 
-	if len(flag.Deprecated) > 0 {
+	if flag.Deprecated != "" {
 		fmt.Fprintf(f.out(), "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
 	}
 	return nil
@@ -609,28 +609,28 @@ func wrap(i, w int, s string) string {
 // for all flags in the FlagSet. Wrapped to `cols` columns (0 for no
 // wrapping)
 func (f *FlagSet) FlagUsagesWrapped(cols int) string {
-	x := new(bytes.Buffer)
+	buf := new(bytes.Buffer)
 
 	lines := make([]string, 0, len(f.formal))
 
 	maxlen := 0
 	f.VisitAll(func(flag *Flag) {
-		if len(flag.Deprecated) > 0 || flag.Hidden {
+		if flag.Deprecated != "" || flag.Hidden {
 			return
 		}
 
 		line := ""
-		if len(flag.Shorthand) > 0 && len(flag.ShorthandDeprecated) == 0 {
+		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
 			line = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
 		} else {
 			line = fmt.Sprintf("      --%s", flag.Name)
 		}
 
 		varname, usage := UnquoteUsage(flag)
-		if len(varname) > 0 {
+		if varname != "" {
 			line += " " + varname
 		}
-		if len(flag.NoOptDefVal) > 0 {
+		if flag.NoOptDefVal != "" {
 			switch flag.Value.Type() {
 			case "string":
 				line += fmt.Sprintf("[=\"%s\"]", flag.NoOptDefVal)
@@ -666,10 +666,10 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		sidx := strings.Index(line, "\x00")
 		spacing := strings.Repeat(" ", maxlen-sidx)
 		// maxlen + 2 comes from + 1 for the \x00 and + 1 for the (deliberate) off-by-one in maxlen-sidx
-		fmt.Fprintln(x, line[:sidx], spacing, wrap(maxlen+2, cols, line[sidx+1:]))
+		fmt.Fprintln(buf, line[:sidx], spacing, wrap(maxlen+2, cols, line[sidx+1:]))
 	}
 
-	return x.String()
+	return buf.String()
 }
 
 // FlagUsages returns a string containing the usage information for all flags in
@@ -783,7 +783,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	f.formal[normalizedFlagName] = flag
 	f.orderedFormal = append(f.orderedFormal, flag)
 
-	if len(flag.Shorthand) == 0 {
+	if flag.Shorthand == "" {
 		return
 	}
 	if len(flag.Shorthand) > 1 {
@@ -875,7 +875,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	if len(split) == 2 {
 		// '--flag=arg'
 		value = split[1]
-	} else if len(flag.NoOptDefVal) > 0 {
+	} else if flag.NoOptDefVal != "" {
 		// '--flag' (arg was optional)
 		value = flag.NoOptDefVal
 	} else if len(a) > 0 {
@@ -917,7 +917,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		// '-f=arg'
 		value = shorthands[2:]
 		outShorts = ""
-	} else if len(flag.NoOptDefVal) > 0 {
+	} else if flag.NoOptDefVal != "" {
 		// '-f' (arg was optional)
 		value = flag.NoOptDefVal
 	} else if len(shorthands) > 1 {
@@ -934,7 +934,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		return
 	}
 
-	if len(flag.ShorthandDeprecated) > 0 {
+	if flag.ShorthandDeprecated != "" {
 		fmt.Fprintf(f.out(), "Flag shorthand -%s has been deprecated, %s\n", flag.Shorthand, flag.ShorthandDeprecated)
 	}
 
