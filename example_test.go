@@ -77,20 +77,26 @@ func Example() {
 }
 
 func ExampleShorthandLookup() {
-	pflag.BoolP("verbose", "v", false, "verbose output")
-
 	name := "verbose"
-	flag := pflag.ShorthandLookup(name[:1])
+	short := name[:1]
+
+	pflag.BoolP(name, short, false, "verbose output")
+
+	// len(short) must be == 1
+	flag := pflag.ShorthandLookup(short)
 
 	fmt.Println(flag.Name)
 }
 
 func ExampleFlagSet_ShorthandLookup() {
-	fs := pflag.NewFlagSet("Example", pflag.ContinueOnError)
-	fs.BoolP("verbose", "v", false, "verbose output")
-
 	name := "verbose"
-	flag := fs.ShorthandLookup(name[:1])
+	short := name[:1]
+
+	fs := pflag.NewFlagSet("Example", pflag.ContinueOnError)
+	fs.BoolP(name, short, false, "verbose output")
+
+	// len(short) must be == 1
+	flag := fs.ShorthandLookup(short)
 
 	fmt.Println(flag.Name)
 }

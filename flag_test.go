@@ -446,6 +446,42 @@ func TestShorthand(t *testing.T) {
 	}
 }
 
+func TestShorthandLookup(t *testing.T) {
+	f := NewFlagSet("shorthand", ContinueOnError)
+	if f.Parsed() {
+		t.Error("f.Parse() = true before Parse")
+	}
+	f.BoolP("boola", "a", false, "bool value")
+	f.BoolP("boolb", "b", false, "bool2 value")
+	args := []string{
+		"-ab",
+	}
+	f.SetOutput(ioutil.Discard)
+	if err := f.Parse(args); err != nil {
+		t.Error("expected no error, got ", err)
+	}
+	if !f.Parsed() {
+		t.Error("f.Parse() = false after Parse")
+	}
+	flag := f.ShorthandLookup("a")
+	if flag == nil {
+		t.Errorf("f.ShorthandLookup(\"a\") returned nil")
+	}
+	if flag.Name != "boola" {
+		t.Errorf("f.ShorthandLookup(\"a\") found %q instead of \"boola\"", flag.Name)
+	}
+	flag = f.ShorthandLookup("")
+	if flag != nil {
+		t.Errorf("f.ShorthandLookup(\"\") did not return nil")
+	}
+	defer func() {
+		recover()
+	}()
+	flag = f.ShorthandLookup("ab")
+	// should NEVER get here. lookup should panic. defer'd func should recover it.
+	t.Errorf("f.ShorthandLookup(\"ab\") did not panic")
+}
+
 func TestParse(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
 	testParse(GetCommandLine(), t)
