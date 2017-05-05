@@ -875,7 +875,7 @@ func (f *FlagSet) usage() {
 func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []string, err error) {
 	a = args
 	name := s[2:]
-	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
+	if name[0] == '-' || name[0] == '=' {
 		err = f.failf("bad flag syntax: %s", s)
 		return
 	}
