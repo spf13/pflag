@@ -396,7 +396,9 @@ func TestShorthand(t *testing.T) {
 	boolcFlag := f.BoolP("boolc", "c", false, "bool3 value")
 	booldFlag := f.BoolP("boold", "d", false, "bool4 value")
 	stringaFlag := f.StringP("stringa", "s", "0", "string value")
+	stringpFlag := f.StringP("stringp", "p", "", "string value (optional)")
 	stringzFlag := f.StringP("stringz", "z", "0", "string value")
+	f.Lookup("stringp").Optional = true
 	extra := "interspersed-argument"
 	notaflag := "--i-look-like-a-flag"
 	args := []string{
@@ -405,6 +407,7 @@ func TestShorthand(t *testing.T) {
 		"-cs",
 		"hello",
 		"-z=something",
+		"-p",
 		"-d=true",
 		"--",
 		notaflag,
@@ -430,6 +433,13 @@ func TestShorthand(t *testing.T) {
 	}
 	if *stringaFlag != "hello" {
 		t.Error("stringa flag should be `hello`, is ", *stringaFlag)
+	}
+	if *stringpFlag != "" {
+		t.Error("stringp flag should be empty, is ", *stringpFlag)
+	}
+	sp := f.Lookup("stringp")
+	if sp.Changed != true {
+		t.Error("stringp was specified but not marked as changed")
 	}
 	if *stringzFlag != "something" {
 		t.Error("stringz flag should be `something`, is ", *stringzFlag)

@@ -168,6 +168,7 @@ type Flag struct {
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
 	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+	Optional            bool
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -949,9 +950,17 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		outShorts = ""
 	} else if len(args) > 0 {
 		// '-f arg'
-		value = args[0]
-		outArgs = args[1:]
-	} else {
+		if strings.HasPrefix(args[0], "-") {
+			if !flag.Optional {
+				err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
+				return
+			}
+			outArgs = args
+		} else {
+			value = args[0]
+			outArgs = args[1:]
+		}
+	} else if !flag.Optional {
 		// '-f' (arg was required)
 		err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
 		return
