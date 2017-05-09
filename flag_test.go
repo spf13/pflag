@@ -1083,3 +1083,34 @@ func TestVisitFlagOrder(t *testing.T) {
 		i++
 	})
 }
+
+func TestIgnoreOnError(t *testing.T) {
+	f := NewFlagSet("ignorer", IgnoreOnError)
+	f.Bool("first", true, "first")
+	f.String("second", "2", "second")
+	f.String("third", "3", "third")
+
+	err := f.Parse([]string{"--first=false", "--second=222", "--fourth=isarg", "ARG", "--fifth=isarg"})
+	if err != nil {
+		t.Errorf("Unexpected error, IgnoreOnError should not error out on parsing")
+	}
+
+	if wanted := []string{"--fourth=isarg", "ARG", "--fifth=isarg"}; !reflect.DeepEqual(f.Args(), wanted) {
+		t.Errorf("Unexpected args, wanted %v got %v", wanted, f.Args())
+	}
+
+	flag := f.Lookup("first")
+	if wanted := "false"; flag.Value.String() != wanted {
+		t.Errorf("Unexpected flag value for %q, wanted %v got %v", flag.Name, wanted, flag.Value.String())
+	}
+
+	flag = f.Lookup("second")
+	if wanted := "222"; flag.Value.String() != wanted {
+		t.Errorf("Unexpected flag value for %q, wanted %v got %v", flag.Name, wanted, flag.Value.String())
+	}
+
+	flag = f.Lookup("third")
+	if wanted := "3"; flag.Value.String() != wanted {
+		t.Errorf("Unexpected flag value for %q, wanted %v got %v", flag.Name, wanted, flag.Value.String())
+	}
+}

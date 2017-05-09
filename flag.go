@@ -117,6 +117,8 @@ type ErrorHandling int
 const (
 	// ContinueOnError will return an err from Parse() if an error is found
 	ContinueOnError ErrorHandling = iota
+	// IgnoreOnError will continue parsing on err, flags not parsed are considered args
+	IgnoreOnError
 	// ExitOnError will call os.Exit(2) if an error is found when parsing
 	ExitOnError
 	// PanicOnError will panic() if an error is found when parsing flags
@@ -1005,7 +1007,11 @@ func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 			args, err = f.parseShortArg(s, args, fn)
 		}
 		if err != nil {
-			return
+			if f.errorHandling != IgnoreOnError {
+				return
+			}
+			f.args = append(f.args, s)
+			err = nil
 		}
 	}
 	return
