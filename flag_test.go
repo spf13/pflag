@@ -983,7 +983,7 @@ const defaultOutput = `      --A                         for bootstrapping, allo
       --ND1 string[="bar"]        a string with NoOptDefVal (default "foo")
       --ND2 num[=4321]            a num with NoOptDefVal (default 1234)
       --StringArray stringArray   string array with zero default
-      --StringSlice stringSlice   string slice with zero default
+      --StringSlice strings       string slice with zero default
       --Z int                     an int that defaults to zero
       --custom custom             custom Value implementation
       --customP custom            a VarP with default (default 10)
