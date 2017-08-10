@@ -898,13 +898,13 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	if len(split) == 2 {
 		// '--flag=arg'
 		value = split[1]
-	} else if flag.NoOptDefVal != "" {
-		// '--flag' (arg was optional)
-		value = flag.NoOptDefVal
 	} else if len(a) > 0 {
 		// '--flag arg'
 		value = a[0]
 		a = a[1:]
+	} else if flag.NoOptDefVal != "" {
+		// '--flag' (arg was optional)
+		value = flag.NoOptDefVal
 	} else {
 		// '--flag' (arg was required)
 		err = f.failf("flag needs an argument: %s", s)
@@ -940,9 +940,6 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		// '-f=arg'
 		value = shorthands[2:]
 		outShorts = ""
-	} else if flag.NoOptDefVal != "" {
-		// '-f' (arg was optional)
-		value = flag.NoOptDefVal
 	} else if len(shorthands) > 1 {
 		// '-farg'
 		value = shorthands[1:]
@@ -951,6 +948,9 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		// '-f arg'
 		value = args[0]
 		outArgs = args[1:]
+	} else if flag.NoOptDefVal != "" {
+		// '-f' (arg was optional)
+		value = flag.NoOptDefVal
 	} else {
 		// '-f' (arg was required)
 		err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
