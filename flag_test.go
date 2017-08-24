@@ -978,7 +978,7 @@ const defaultOutput = `      --A                         for bootstrapping, allo
       --IP ip                     IP address with no default
       --IPMask ipMask             Netmask address with no default
       --IPNet ipNet               IP network with no default
-      --Ints intSlice             int slice with zero default
+      --Ints ints                 int slice with zero default
       --N int                     a non-zero int (default 27)
       --ND1 string[="bar"]        a string with NoOptDefVal (default "foo")
       --ND2 num[=4321]            a num with NoOptDefVal (default 1234)
