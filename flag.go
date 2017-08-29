@@ -202,12 +202,17 @@ func sortFlags(flags map[NormalizedName]*Flag) []*Flag {
 func (f *FlagSet) SetNormalizeFunc(n func(f *FlagSet, name string) NormalizedName) {
 	f.normalizeNameFunc = n
 	f.sortedFormal = f.sortedFormal[:0]
-	for k, v := range f.orderedFormal {
-		delete(f.formal, NormalizedName(v.Name))
+	for k, v := range f.formal {
 		nname := f.normalizeFlagName(v.Name)
-		v.Name = string(nname)
-		f.formal[nname] = v
-		f.orderedFormal[k] = v
+		if k != nname {
+			v.Name = string(nname)
+			delete(f.formal, k)
+			f.formal[nname] = v
+			if _, set := f.actual[k]; set {
+				delete(f.actual, k)
+				f.actual[nname] = v
+			}
+		}
 	}
 }
 
