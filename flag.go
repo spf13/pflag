@@ -445,13 +445,15 @@ func (f *FlagSet) Set(name, value string) error {
 		return fmt.Errorf("invalid argument %q for %q flag: %v", value, flagName, err)
 	}
 
-	if f.actual == nil {
-		f.actual = make(map[NormalizedName]*Flag)
-	}
-	f.actual[normalName] = flag
-	f.orderedActual = append(f.orderedActual, flag)
+	if !flag.Changed {
+		if f.actual == nil {
+			f.actual = make(map[NormalizedName]*Flag)
+		}
+		f.actual[normalName] = flag
+		f.orderedActual = append(f.orderedActual, flag)
 
-	flag.Changed = true
+		flag.Changed = true
+	}
 
 	if flag.Deprecated != "" {
 		fmt.Fprintf(f.out(), "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
