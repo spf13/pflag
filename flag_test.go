@@ -658,6 +658,37 @@ func TestNormalizationFuncShouldChangeFlagName(t *testing.T) {
 	}
 }
 
+// This is a situation encountered when using the cobra package
+func TestNormalizationSharedFlags(t *testing.T) {
+	f := NewFlagSet("set f", ContinueOnError)
+	g := NewFlagSet("set g", ContinueOnError)
+
+	f.Bool("valid_flag", false, "bool value")
+	g.AddFlagSet(f)
+
+	f.SetNormalizeFunc(wordSepNormalizeFunc)
+	g.SetNormalizeFunc(wordSepNormalizeFunc)
+
+	if len(f.formal) != 1 {
+		t.Error("Normalizing flags should not result in duplications in the flag set:", f.formal)
+	}
+	if !reflect.DeepEqual(f.formal, g.formal) || !reflect.DeepEqual(f.orderedFormal, g.orderedFormal) {
+		t.Error("Two flag sets sharing the same flags should stay consistent after being normalized. Original set:", f.formal, "Duplicate set:", g.formal)
+	}
+}
+
+func TestNormalizationSetFlags(t *testing.T) {
+	f := NewFlagSet("normalized", ContinueOnError)
+
+	f.Bool("valid_flag", false, "bool value")
+	f.Set("valid_flag", "true")
+
+	f.SetNormalizeFunc(wordSepNormalizeFunc)
+	if !reflect.DeepEqual(f.formal, f.actual) {
+		t.Error("The map of set flags should get normalized. Formal:", f.formal, "Actual:", f.actual)
+	}
+}
+
 // Declare a user-defined flag type.
 type flagVar []string
 
