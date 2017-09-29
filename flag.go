@@ -204,14 +204,15 @@ func (f *FlagSet) SetNormalizeFunc(n func(f *FlagSet, name string) NormalizedNam
 	f.sortedFormal = f.sortedFormal[:0]
 	for k, v := range f.formal {
 		nname := f.normalizeFlagName(v.Name)
-		if k != nname {
-			v.Name = string(nname)
-			delete(f.formal, k)
-			f.formal[nname] = v
-			if _, set := f.actual[k]; set {
-				delete(f.actual, k)
-				f.actual[nname] = v
-			}
+		if k == nname {
+			continue
+		}
+		v.Name = string(nname)
+		delete(f.formal, k)
+		f.formal[nname] = v
+		if _, set := f.actual[k]; set {
+			delete(f.actual, k)
+			f.actual[nname] = v
 		}
 	}
 }
