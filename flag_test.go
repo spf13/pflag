@@ -604,7 +604,6 @@ func aliasAndWordSepFlagNames(f *FlagSet, name string) NormalizedName {
 	switch name {
 	case oldName:
 		name = newName
-		break
 	}
 
 	return NormalizedName(name)
