@@ -168,6 +168,7 @@ func testParse(f *FlagSet, t *testing.T) {
 	bool3Flag := f.Bool("bool3", false, "bool3 value")
 	intFlag := f.Int("int", 0, "int value")
 	int8Flag := f.Int8("int8", 0, "int value")
+	int16Flag := f.Int16("int16", 0, "int value")
 	int32Flag := f.Int32("int32", 0, "int value")
 	int64Flag := f.Int64("int64", 0, "int64 value")
 	uintFlag := f.Uint("uint", 0, "uint value")
@@ -192,6 +193,7 @@ func testParse(f *FlagSet, t *testing.T) {
 		"--bool3=false",
 		"--int=22",
 		"--int8=-8",
+		"--int16=-16",
 		"--int32=-32",
 		"--int64=0x23",
 		"--uint", "24",
@@ -238,6 +240,9 @@ func testParse(f *FlagSet, t *testing.T) {
 	}
 	if v, err := f.GetInt8("int8"); err != nil || v != *int8Flag {
 		t.Error("GetInt8 does not work.")
+	}
+	if v, err := f.GetInt16("int16"); err != nil || v != *int16Flag {
+		t.Error("GetInt16 does not work.")
 	}
 	if *int32Flag != -32 {
 		t.Error("int32 flag should be 0x23, is ", *int32Flag)
