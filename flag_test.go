@@ -238,6 +238,9 @@ func testParse(f *FlagSet, t *testing.T) {
 	if *int8Flag != -8 {
 		t.Error("int8 flag should be 0x23, is ", *int8Flag)
 	}
+	if *int16Flag != -16 {
+		t.Error("int16 flag should be -16, is ", *int16Flag)
+	}
 	if v, err := f.GetInt8("int8"); err != nil || v != *int8Flag {
 		t.Error("GetInt8 does not work.")
 	}
