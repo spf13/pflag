@@ -106,8 +106,8 @@ func TestUsage(t *testing.T) {
 	if GetCommandLine().Parse([]string{"--x"}) == nil {
 		t.Error("parse did not fail for unknown flag")
 	}
-	if !called {
-		t.Error("did not call Usage for unknown flag")
+	if called {
+		t.Error("did call Usage while using ContinueOnError")
 	}
 }
 
