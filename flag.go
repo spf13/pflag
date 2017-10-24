@@ -895,6 +895,12 @@ func (f *FlagSet) usage() {
 func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []string, err error) {
 	a = args
 	name := s[2:]
+
+	// Check for shorthand arg used as long.
+	if s[0] == '-' && s[1] != '-' {
+		name = s[1:]
+	}
+
 	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
 		err = f.failf("bad flag syntax: %s", s)
 		return
@@ -990,6 +996,11 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 }
 
 func (f *FlagSet) parseShortArg(s string, args []string, fn parseFunc) (a []string, err error) {
+	// Treat shorthands as long if there are no shorthands defined.
+	if f.shorthands == nil || len(f.shorthands) == 0 {
+		return f.parseLongArg(s, args, fn)
+	}
+
 	a = args
 	shorthands := s[1:]
 
