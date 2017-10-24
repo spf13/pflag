@@ -490,6 +490,68 @@ func TestShorthandLookup(t *testing.T) {
 	t.Errorf("f.ShorthandLookup(\"ab\") did not panic")
 }
 
+func TestNoShorthand(t *testing.T) {
+	f := NewFlagSet("shorthand", ContinueOnError)
+	if f.Parsed() {
+		t.Error("f.Parse() = true before Parse")
+	}
+	boolaFlag := f.Bool("boola", false, "bool value")
+	boolbFlag := f.Bool("boolb", false, "bool2 value")
+	boolcFlag := f.Bool("boolc", false, "bool3 value")
+	booldFlag := f.Bool("boold", false, "bool4 value")
+	stringaFlag := f.String("stringa", "0", "string value")
+	stringzFlag := f.String("stringz", "0", "string value")
+	extra := "interspersed-argument"
+	notaflag := "--i-look-like-a-flag"
+	args := []string{
+		"-boola",
+		"-boolb",
+		extra,
+		"-boolc",
+		"-stringa",
+		"hello",
+		"-stringz=something",
+		"-boold=true",
+		"--",
+		notaflag,
+	}
+	f.SetOutput(ioutil.Discard)
+	if err := f.Parse(args); err != nil {
+		t.Error("expected no error, got ", err)
+	}
+	if !f.Parsed() {
+		t.Error("f.Parse() = false after Parse")
+	}
+	if *boolaFlag != true {
+		t.Error("boola flag should be true, is ", *boolaFlag)
+	}
+	if *boolbFlag != true {
+		t.Error("boolb flag should be true, is ", *boolbFlag)
+	}
+	if *boolcFlag != true {
+		t.Error("boolc flag should be true, is ", *boolcFlag)
+	}
+	if *booldFlag != true {
+		t.Error("boold flag should be true, is ", *booldFlag)
+	}
+	if *stringaFlag != "hello" {
+		t.Error("stringa flag should be `hello`, is ", *stringaFlag)
+	}
+	if *stringzFlag != "something" {
+		t.Error("stringz flag should be `something`, is ", *stringzFlag)
+	}
+	if len(f.Args()) != 2 {
+		t.Error("expected one argument, got", len(f.Args()))
+	} else if f.Args()[0] != extra {
+		t.Errorf("expected argument %q got %q", extra, f.Args()[0])
+	} else if f.Args()[1] != notaflag {
+		t.Errorf("expected argument %q got %q", notaflag, f.Args()[1])
+	}
+	if f.ArgsLenAtDash() != 1 {
+		t.Errorf("expected argsLenAtDash %d got %d", f.ArgsLenAtDash(), 1)
+	}
+}
+
 func TestParse(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
 	testParse(GetCommandLine(), t)
