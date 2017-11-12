@@ -504,6 +504,32 @@ func TestFlagSetParse(t *testing.T) {
 	testParse(NewFlagSet("test", ContinueOnError), t)
 }
 
+func TestFlagSetMultipleTimes(t *testing.T) {
+	var v flagVar
+	flagSet := NewFlagSet("test", ContinueOnError)
+	flagSet.VarPF(&v, "declareOnce", "", "declareOnce")
+	out := new(bytes.Buffer)
+	flagSet.SetOutput(out)
+
+	if flagSet.Parsed() {
+		t.Error("f.Parse() = true before Parse")
+	}
+
+	extra := "one-extra-argument"
+	args := []string{
+		"--declareOnce=false",
+		"--declareOnce=true",
+		extra,
+	}
+	if err := flagSet.Parse(args); err != nil {
+		t.Errorf("should be nil, but got %v", err)
+	} else {
+		if !strings.Contains(out.String(), "--declareOnce has been set multiple times") {
+			t.Errorf("unexpected warning message %q", out.String())
+		}
+	}
+}
+
 func TestChangedHelper(t *testing.T) {
 	f := NewFlagSet("changedtest", ContinueOnError)
 	f.Bool("changed", false, "changed bool")
