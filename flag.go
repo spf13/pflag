@@ -591,11 +591,10 @@ func wrapN(i, slop int, s string) (string, string) {
 		return s, ""
 	}
 	nlPos := strings.LastIndex(s[:i], "\n")
-	if nlPos <= 0 {
-		return s[:w], s[w+1:]
-	} else {
+	if nlPos > 0 && nlPos < w {
 		return s[:nlPos], s[nlPos+1:]
 	}
+	return s[:w], s[w+1:]
 }
 
 // Wraps the string `s` to a maximum width `w` with leading indent
