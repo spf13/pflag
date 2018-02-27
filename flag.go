@@ -138,6 +138,9 @@ type FlagSet struct {
 	// help/usage messages.
 	SortFlags bool
 
+	// IgnoreUnknown suppresses the error when an unknown flag is found.
+	IgnoreUnknown bool
+
 	name              string
 	parsed            bool
 	actual            map[NormalizedName]*Flag
@@ -912,7 +915,10 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 			f.usage()
 			return a, ErrHelp
 		}
-		err = f.failf("unknown flag: --%s", name)
+
+		if !f.IgnoreUnknown {
+			err = f.failf("unknown flag: --%s", name)
+		}
 		return
 	}
 

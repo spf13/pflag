@@ -111,6 +111,14 @@ func TestUsage(t *testing.T) {
 	}
 }
 
+func TestIgnoreUnknown(t *testing.T) {
+	cl := GetCommandLine()
+	cl.IgnoreUnknown = true
+	if cl.Parse([]string{"--x"}) != nil {
+		t.Error("parse did fail for unknown flag with IgnoreUnknown")
+	}
+}
+
 func TestAddFlagSet(t *testing.T) {
 	oldSet := NewFlagSet("old", ContinueOnError)
 	newSet := NewFlagSet("new", ContinueOnError)
