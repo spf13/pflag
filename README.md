@@ -153,8 +153,11 @@ Would result in something like
 
 Unlike the flag package, a single dash before an option means something
 different than a double dash. Single dashes signify a series of shorthand
-letters for flags. All but the last shorthand letter must be boolean flags
-or a flag with a default value
+letters for flags. If **no shorthand flags are defined**, then single dash
+options will be treated just like double dash options to maintain
+compatibility with the flag package. If shorthand options are used, then
+all but the last shorthand letter must be boolean flags or a flag with a
+default value
 
 ```
 // boolean or flags where the 'no option default value' is set
