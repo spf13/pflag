@@ -138,6 +138,9 @@ type FlagSet struct {
 	// help/usage messages.
 	SortFlags bool
 
+	// IgnoreUnknownFlags is used to indicate to ignore unknown flags
+	IgnoreUnknownFlags bool
+
 	name              string
 	parsed            bool
 	actual            map[NormalizedName]*Flag
@@ -896,6 +899,25 @@ func (f *FlagSet) usage() {
 	}
 }
 
+//--unknown (args will be empty)
+//--unknown --next-flag ... (args will be --next-flag ...)
+//--unknown arg ... (args will be arg ...)
+func stripUnknownFlagValue(args []string) []string {
+	if len(args) == 0 {
+		//--unknown
+		return args
+	}
+
+	first := args[0]
+	if first[0] == '-' {
+		//--unknown --next-flag ...
+		return args
+	}
+
+	//--unknown arg ... (args will be arg ...)
+	return args[1:]
+}
+
 func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []string, err error) {
 	a = args
 	name := s[2:]
@@ -907,13 +929,18 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	split := strings.SplitN(name, "=", 2)
 	name = split[0]
 	flag, exists := f.formal[f.normalizeFlagName(name)]
+
 	if !exists {
-		if name == "help" { // special case for nice help message.
+		switch {
+		case name == "help":
 			f.usage()
 			return a, ErrHelp
+		case f.IgnoreUnknownFlags:
+			return stripUnknownFlagValue(a), nil
+		default:
+			err = f.failf("unknown flag: --%s", name)
+			return
 		}
-		err = f.failf("unknown flag: --%s", name)
-		return
 	}
 
 	var value string
@@ -941,6 +968,8 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 }
 
 func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parseFunc) (outShorts string, outArgs []string, err error) {
+	fmt.Printf("inside short - flagset %s - %v", shorthands, args)
+
 	if strings.HasPrefix(shorthands, "test.") {
 		return
 	}
@@ -951,13 +980,18 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 
 	flag, exists := f.shorthands[c]
 	if !exists {
-		if c == 'h' { // special case for nice help message.
+		switch {
+		case c == 'h':
 			f.usage()
 			err = ErrHelp
 			return
+		case f.IgnoreUnknownFlags:
+			args = stripUnknownFlagValue(args)
+			return
+		default:
+			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
+			return
 		}
-		err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
-		return
 	}
 
 	var value string
