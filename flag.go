@@ -968,8 +968,6 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 }
 
 func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parseFunc) (outShorts string, outArgs []string, err error) {
-	fmt.Printf("inside short - flagset %s - %v", shorthands, args)
-
 	if strings.HasPrefix(shorthands, "test.") {
 		return
 	}
@@ -986,7 +984,11 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 			err = ErrHelp
 			return
 		case f.IgnoreUnknownFlags:
-			args = stripUnknownFlagValue(args)
+			outArgs = stripUnknownFlagValue(outArgs)
+			if len(shorthands) > 2 && shorthands[1] == '=' {
+				// '-f=arg'
+				outShorts = ""
+			}
 			return
 		default:
 			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)

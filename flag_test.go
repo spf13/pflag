@@ -389,7 +389,7 @@ func testParseAll(f *FlagSet, t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("f.ParseAll() fail to restore the args")
-		t.Errorf("Got: %v", got)
+		t.Errorf("Got:  %v", got)
 		t.Errorf("Want: %v", want)
 	}
 }
@@ -419,9 +419,12 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		"-x",
 		"--unknown2=unknown2Value",
 		"-u=unknown3Value",
+		"-p",
+		"unknown4Value",
+		"-q", //another unknown with bool value
 		"-y",
 		"ee",
-		"--unknown4",
+		"--unknown6",
 	}
 	want := []string{
 		"boola", "true",
@@ -449,7 +452,7 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("f.ParseAll() fail to restore the args")
-		t.Errorf("Got: %v", got)
+		t.Errorf("Got:  %v", got)
 		t.Errorf("Want: %v", want)
 	}
 }
@@ -562,7 +565,7 @@ func TestParseAll(t *testing.T) {
 
 func TestIgnoreUnknownFlags(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
-	testParseAll(GetCommandLine(), t)
+	testParseWithUnknownFlags(GetCommandLine(), t)
 }
 
 func TestFlagSetParse(t *testing.T) {
