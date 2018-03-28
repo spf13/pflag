@@ -936,6 +936,12 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 			f.usage()
 			return a, ErrHelp
 		case f.IgnoreUnknownFlags:
+			// --unknown=unknownval arg ...
+			// we do not want to lose arg in this case
+			if len(split) >= 2 {
+				return a, nil
+			}
+
 			return stripUnknownFlagValue(a), nil
 		default:
 			err = f.failf("unknown flag: --%s", name)
@@ -984,11 +990,14 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 			err = ErrHelp
 			return
 		case f.IgnoreUnknownFlags:
-			outArgs = stripUnknownFlagValue(outArgs)
+			// '-f=arg arg ...'
+			// we do not want to lose arg in this case
 			if len(shorthands) > 2 && shorthands[1] == '=' {
-				// '-f=arg'
 				outShorts = ""
+				return
 			}
+
+			outArgs = stripUnknownFlagValue(outArgs)
 			return
 		default:
 			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
