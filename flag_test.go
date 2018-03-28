@@ -404,10 +404,12 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 	f.BoolP("boolb", "b", false, "bool2 value")
 	f.BoolP("boolc", "c", false, "bool3 value")
 	f.BoolP("boold", "d", false, "bool4 value")
+	f.BoolP("boole", "e", false, "bool4 value")
 	f.StringP("stringa", "s", "0", "string value")
 	f.StringP("stringz", "z", "0", "string value")
 	f.StringP("stringx", "x", "0", "string value")
 	f.StringP("stringy", "y", "0", "string value")
+	f.StringP("stringo", "o", "0", "string value")
 	f.Lookup("stringx").NoOptDefVal = "1"
 	args := []string{
 		"-ab",
@@ -424,6 +426,10 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		"-q", //another unknown with bool value
 		"-y",
 		"ee",
+		"--unknown7=unknown7value",
+		"--stringo=ovalue",
+		"--unknown8=unknown8value",
+		"--boole",
 		"--unknown6",
 	}
 	want := []string{
@@ -435,6 +441,8 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		"boold", "true",
 		"stringx", "1",
 		"stringy", "ee",
+		"stringo", "ovalue",
+		"boole", "true",
 	}
 	got := []string{}
 	store := func(flag *Flag, value string) error {
