@@ -123,6 +123,12 @@ const (
 	PanicOnError
 )
 
+// ParseErrorsWhitelist defines the parsing errors that can be ignored
+type ParseErrorsWhitelist struct {
+	// UnknownFlags will ignore unknown flags errors and continue parsing rest of the flags
+	UnknownFlags bool
+}
+
 // NormalizedName is a flag name that has been normalized according to rules
 // for the FlagSet (e.g. making '-' and '_' equivalent).
 type NormalizedName string
@@ -138,8 +144,8 @@ type FlagSet struct {
 	// help/usage messages.
 	SortFlags bool
 
-	// IgnoreUnknownFlags is used to indicate to ignore unknown flags
-	IgnoreUnknownFlags bool
+	// ParseErrorsWhitelist is used to configure a whitelist of errors
+	ParseErrorsWhitelist ParseErrorsWhitelist
 
 	name              string
 	parsed            bool
@@ -935,7 +941,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 		case name == "help":
 			f.usage()
 			return a, ErrHelp
-		case f.IgnoreUnknownFlags:
+		case f.ParseErrorsWhitelist.UnknownFlags:
 			// --unknown=unknownval arg ...
 			// we do not want to lose arg in this case
 			if len(split) >= 2 {
@@ -989,7 +995,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 			f.usage()
 			err = ErrHelp
 			return
-		case f.IgnoreUnknownFlags:
+		case f.ParseErrorsWhitelist.UnknownFlags:
 			// '-f=arg arg ...'
 			// we do not want to lose arg in this case
 			if len(shorthands) > 2 && shorthands[1] == '=' {
