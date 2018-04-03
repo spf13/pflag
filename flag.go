@@ -101,6 +101,7 @@ package pflag
 import (
 	"bytes"
 	"errors"
+	goflag "flag"
 	"fmt"
 	"io"
 	"os"
@@ -162,6 +163,8 @@ type FlagSet struct {
 	output            io.Writer // nil means stderr; use out() accessor
 	interspersed      bool      // allow interspersed option/non-option args
 	normalizeNameFunc func(f *FlagSet, name string) NormalizedName
+
+	addedGoFlagSets []*goflag.FlagSet
 }
 
 // A Flag represents the state of a flag.
@@ -1098,6 +1101,11 @@ func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 // are defined and before flags are accessed by the program.
 // The return value will be ErrHelp if -help was set but not defined.
 func (f *FlagSet) Parse(arguments []string) error {
+	if f.addedGoFlagSets != nil {
+		for _, goFlagSet := range f.addedGoFlagSets {
+			goFlagSet.Parse(nil)
+		}
+	}
 	f.parsed = true
 
 	if len(arguments) < 0 {
