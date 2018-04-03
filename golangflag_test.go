@@ -39,6 +39,8 @@ func TestGoflags(t *testing.T) {
 	if !f.Parsed() {
 		t.Fatal("f.Parsed() return false after f.Parse() called")
 	}
+
+	// in fact it is useless. because `go test` called flag.Parse()
 	if !goflag.CommandLine.Parsed() {
 		t.Fatal("goflag.CommandLine.Parsed() return false after f.Parse() called")
 	}
