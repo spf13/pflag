@@ -36,4 +36,10 @@ func TestGoflags(t *testing.T) {
 	if getBool != true {
 		t.Fatalf("expected getBool=true but got getBool=%v", getBool)
 	}
+	if !f.Parsed() {
+		t.Fatal("f.Parsed() return false after f.Parse() called")
+	}
+	if !goflag.CommandLine.Parsed() {
+		t.Fatal("goflag.CommandLine.Parsed() return false after f.Parse() called")
+	}
 }
