@@ -966,10 +966,14 @@ func TestTermination(t *testing.T) {
 	}
 }
 
-func TestDeprecatedFlagInDocs(t *testing.T) {
+func getDeprecatedFlagSet() *FlagSet {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("badflag", true, "always true")
 	f.MarkDeprecated("badflag", "use --good-flag instead")
+	return f
+}
+func TestDeprecatedFlagInDocs(t *testing.T) {
+	f := getDeprecatedFlagSet()
 
 	out := new(bytes.Buffer)
 	f.SetOutput(out)
@@ -977,6 +981,27 @@ func TestDeprecatedFlagInDocs(t *testing.T) {
 
 	if strings.Contains(out.String(), "badflag") {
 		t.Errorf("found deprecated flag in usage!")
+	}
+}
+
+func TestUnHiddenDeprecatedFlagInDocs(t *testing.T) {
+	f := getDeprecatedFlagSet()
+	flg := f.Lookup("badflag")
+	if flg == nil {
+		t.Fatalf("Unable to lookup 'bob' in TestUnHiddenDeprecatedFlagInDocs")
+	}
+	flg.Hidden = false
+
+	out := new(bytes.Buffer)
+	f.SetOutput(out)
+	f.PrintDefaults()
+
+	defaults := out.String()
+	if !strings.Contains(defaults, "badflag") {
+		t.Errorf("Did not find deprecated flag in usage!")
+	}
+	if !strings.Contains(defaults, "use --good-flag instead") {
+		t.Errorf("Did not find 'use --good-flag instead' in defaults")
 	}
 }
 
