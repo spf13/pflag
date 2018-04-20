@@ -452,7 +452,10 @@ func (f *FlagSet) Set(name, value string) error {
 	if err != nil {
 		var flagName string
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			flagName = fmt.Sprintf("-%s, --%s", flag.Shorthand, flag.Name)
+			flagName = fmt.Sprintf("-%s", flag.Shorthand)
+			if flag.Name != flag.Shorthand {
+				flagName += fmt.Sprintf(", --%s", flag.Name)
+			}
 		} else {
 			flagName = fmt.Sprintf("--%s", flag.Name)
 		}
@@ -470,7 +473,11 @@ func (f *FlagSet) Set(name, value string) error {
 	}
 
 	if flag.Deprecated != "" {
-		fmt.Fprintf(f.out(), "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
+		if flag.Name == flag.Shorthand {
+			fmt.Fprintf(f.out(), "Flag -%s has been deprecated, %s\n", flag.Shorthand, flag.Deprecated)
+		} else {
+			fmt.Fprintf(f.out(), "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
+		}
 	}
 	return nil
 }
@@ -673,11 +680,14 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 			return
 		}
 
-		line := ""
+		line := "  "
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			line = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
+			line += fmt.Sprintf("-%s", flag.Shorthand)
+			if flag.Name != flag.Shorthand {
+				line += fmt.Sprintf(", --%s", flag.Name)
+			}
 		} else {
-			line = fmt.Sprintf("      --%s", flag.Name)
+			line += fmt.Sprintf("    --%s", flag.Name)
 		}
 
 		varname, usage := UnquoteUsage(flag)

@@ -12,6 +12,7 @@ const expectedOutput = `      --long-form    Some description
   -s, --long-name    Some description
   -t, --long-name2   Some description with
                        multiline
+  -v                 Shorthand without long name
 `
 
 func setUpPFlagSet(buf io.Writer) *FlagSet {
@@ -20,6 +21,7 @@ func setUpPFlagSet(buf io.Writer) *FlagSet {
 	f.Bool("long-form2", false, "Some description\n  with multiline")
 	f.BoolP("long-name", "s", false, "Some description")
 	f.BoolP("long-name2", "t", false, "Some description with\n  multiline")
+	f.BoolP("v", "v", false, "Shorthand without long name")
 	f.SetOutput(buf)
 	return f
 }
@@ -40,6 +42,7 @@ func setUpPFlagSet2(buf io.Writer) *FlagSet {
 	f.Bool("long-form2", false, "Some description\n  with multiline")
 	f.BoolP("long-name", "s", false, "Some description")
 	f.BoolP("long-name2", "t", false, "Some description with\n  multiline")
+	f.BoolP("v", "v", false, "Shorthand without long name")
 	f.StringP("some-very-long-arg", "l", "test", "Some very long description having break the limit")
 	f.StringP("other-very-long-arg", "o", "long-default-value", "Some very long description having break the limit")
 	f.String("some-very-long-arg2", "very long default value", "Some very long description\nwith line break\nmultiple")
@@ -62,6 +65,7 @@ const expectedOutput2 = `      --long-form                    Some description
                                      with line break
                                      multiple (default "very long default
                                      value")
+  -v                                 Shorthand without long name
 `
 
 func TestPrintUsage_2(t *testing.T) {
