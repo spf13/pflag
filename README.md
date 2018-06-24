@@ -104,11 +104,14 @@ The pflag package also defines some new functions that are not in flag,
 that give one-letter shorthands for flags. You can use these by appending
 'P' to the name of any function that defines a flag.
 
+It is possible to specify only shorthand flags by omitting name.
+
 ``` go
 var ip = flag.IntP("flagname", "f", 1234, "help message")
 var flagvar bool
 func init() {
 	flag.BoolVarP(&flagvar, "boolname", "b", true, "help message")
+	flag.BoolP("", "c", false, "help message")
 }
 flag.VarP(&flagVal, "varname", "v", "help message")
 ```
