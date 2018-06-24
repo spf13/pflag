@@ -180,6 +180,8 @@ type Flag struct {
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
 	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+
+	shorthandOnly bool // If the user set only the shorthand
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -452,7 +454,11 @@ func (f *FlagSet) Set(name, value string) error {
 	if err != nil {
 		var flagName string
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			flagName = fmt.Sprintf("-%s, --%s", flag.Shorthand, flag.Name)
+			if flag.shorthandOnly {
+				flagName = fmt.Sprintf("-%s", flag.Shorthand)
+			} else {
+				flagName = fmt.Sprintf("-%s, --%s", flag.Shorthand, flag.Name)
+			}
 		} else {
 			flagName = fmt.Sprintf("--%s", flag.Name)
 		}
@@ -675,7 +681,11 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 
 		line := ""
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			line = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
+			if flag.shorthandOnly {
+				line = fmt.Sprintf("  -%s", flag.Shorthand)
+			} else {
+				line = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
+			}
 		} else {
 			line = fmt.Sprintf("      --%s", flag.Name)
 		}
@@ -827,7 +837,13 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 
 // AddFlag will add the flag to the FlagSet
 func (f *FlagSet) AddFlag(flag *Flag) {
-	normalizedFlagName := f.normalizeFlagName(flag.Name)
+	var normalizedFlagName NormalizedName
+	if flag.Name == "" {
+		flag.shorthandOnly = true
+		normalizedFlagName = NormalizedName(flag.Shorthand)
+	} else {
+		normalizedFlagName = f.normalizeFlagName(flag.Name)
+	}
 
 	_, alreadyThere := f.formal[normalizedFlagName]
 	if alreadyThere {
@@ -946,7 +962,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	name = split[0]
 	flag, exists := f.formal[f.normalizeFlagName(name)]
 
-	if !exists {
+	if !exists || flag.shorthandOnly {
 		switch {
 		case name == "help":
 			f.usage()
