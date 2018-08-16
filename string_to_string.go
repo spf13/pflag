@@ -22,11 +22,22 @@ func newStringToStringValue(val map[string]string, p *map[string]string) *string
 
 // Format: a=1,b=2
 func (s *stringToStringValue) Set(val string) error {
-	r := csv.NewReader(strings.NewReader(val))
-	ss, err := r.Read()
-	if err != nil {
-		return err
+	var ss []string
+	n := strings.Count(val, "=")
+	switch n {
+	case 0:
+		return fmt.Errorf("%s must be formatted as key=value", val)
+	case 1:
+		ss = append(ss, strings.Trim(val, `"`))
+	default:
+		r := csv.NewReader(strings.NewReader(val))
+		var err error
+		ss, err = r.Read()
+		if err != nil {
+			return err
+		}
 	}
+
 	out := make(map[string]string, len(ss))
 	for _, pair := range ss {
 		kv := strings.SplitN(pair, "=", 2)

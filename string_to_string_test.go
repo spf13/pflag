@@ -140,15 +140,19 @@ func TestS2SCalledTwice(t *testing.T) {
 	var s2s map[string]string
 	f := setUpS2SFlagSet(&s2s)
 
-	in := []string{"a=1,b=2", "b=3", `"e=5,6"`, `f="7,8"`}
+	in := []string{"a=1,b=2", "b=3", `"e=5,6"`, `f=7,8`}
 	expected := map[string]string{"a": "1", "b": "3", "e": "5,6", "f": "7,8"}
 	argfmt := "--s2s=%s"
-	arg1 := fmt.Sprintf(argfmt, in[0])
-	arg2 := fmt.Sprintf(argfmt, in[1])
-	arg3 := fmt.Sprintf(argfmt, in[2])
-	err := f.Parse([]string{arg1, arg2, arg3})
+	arg0 := fmt.Sprintf(argfmt, in[0])
+	arg1 := fmt.Sprintf(argfmt, in[1])
+	arg2 := fmt.Sprintf(argfmt, in[2])
+	arg3 := fmt.Sprintf(argfmt, in[3])
+	err := f.Parse([]string{arg0, arg1, arg2, arg3})
 	if err != nil {
 		t.Fatal("expected no error; got", err)
+	}
+	if len(s2s) != len(expected) {
+		t.Fatalf("expected %d flags; got %d flags", len(expected), len(s2s))
 	}
 	for i, v := range s2s {
 		if expected[i] != v {
