@@ -186,6 +186,7 @@ type Flag struct {
 // (The default value is represented as a string.)
 type Value interface {
 	String() string
+	StringArray() []string
 	Set(string) error
 	Type() string
 }

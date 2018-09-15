@@ -62,6 +62,10 @@ func (s *stringSliceValue) String() string {
 	return "[" + str + "]"
 }
 
+func (s *stringSliceValue) StringArray() []string {
+	return *s.value
+}
+
 func stringSliceConv(sval string) (interface{}, error) {
 	sval = sval[1 : len(sval)-1]
 	// An empty string would cause a slice with one (empty) string

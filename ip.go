@@ -15,6 +15,9 @@ func newIPValue(val net.IP, p *net.IP) *ipValue {
 }
 
 func (i *ipValue) String() string { return net.IP(*i).String() }
+
+func (i *ipValue) StringArray() []string { return []string{i.String()} }
+
 func (i *ipValue) Set(s string) error {
 	ip := net.ParseIP(strings.TrimSpace(s))
 	if ip == nil {

@@ -28,8 +28,12 @@ func (s *stringArrayValue) Type() string {
 }
 
 func (s *stringArrayValue) String() string {
-	str, _ := writeAsCSV(*s.value)
+	str, _ := writeAsCSV(s.StringArray())
 	return "[" + str + "]"
+}
+
+func (s *stringArrayValue) StringArray() []string {
+	return *s.value
 }
 
 func stringArrayConv(sval string) (interface{}, error) {

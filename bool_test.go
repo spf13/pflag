@@ -50,6 +50,10 @@ func (v *triStateValue) String() string {
 	return strconv.FormatBool(*v == triStateTrue)
 }
 
+func (v *triStateValue) StringArray() []string {
+	return []string{v.String()}
+}
+
 // The type of the flag as required by the pflag.Value interface
 func (v *triStateValue) Type() string {
 	return "version"

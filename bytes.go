@@ -15,6 +15,11 @@ func (bytesHex bytesHexValue) String() string {
 	return fmt.Sprintf("%X", []byte(bytesHex))
 }
 
+// StringArray implements pflag.Value.StringArray.
+func (bytesHex bytesHexValue) StringArray() []string {
+	return []string{bytesHex.String()}
+}
+
 // Set implements pflag.Value.Set.
 func (bytesHex *bytesHexValue) Set(value string) error {
 	bin, err := hex.DecodeString(strings.TrimSpace(value))
@@ -114,6 +119,11 @@ type bytesBase64Value []byte
 // String implements pflag.Value.String.
 func (bytesBase64 bytesBase64Value) String() string {
 	return base64.StdEncoding.EncodeToString([]byte(bytesBase64))
+}
+
+// StringArray implements pflag.Value.StringArray.
+func (bytesBase64 bytesBase64Value) StringArray() []string {
+	return []string{bytesBase64.String()}
 }
 
 // Set implements pflag.Value.Set.

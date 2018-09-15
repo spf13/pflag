@@ -65,6 +65,10 @@ func (s *stringToIntValue) String() string {
 	return "[" + buf.String() + "]"
 }
 
+func (s *stringToIntValue) StringArray() []string {
+	return []string{s.String()}
+}
+
 func stringToIntConv(val string) (interface{}, error) {
 	val = strings.Trim(val, "[]")
 	// An empty string would cause an empty map

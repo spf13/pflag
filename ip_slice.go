@@ -62,14 +62,20 @@ func (s *ipSliceValue) Type() string {
 // String defines a "native" format for this net.IP slice flag value.
 func (s *ipSliceValue) String() string {
 
+	out, _ := writeAsCSV(s.StringArray())
+
+	return "[" + out + "]"
+}
+
+// StringArray defines a "native" format for this net.IP slice flag value.
+func (s *ipSliceValue) StringArray() []string {
+
 	ipStrSlice := make([]string, len(*s.value))
 	for i, ip := range *s.value {
 		ipStrSlice[i] = ip.String()
 	}
 
-	out, _ := writeAsCSV(ipStrSlice)
-
-	return "[" + out + "]"
+	return ipStrSlice
 }
 
 func ipSliceConv(val string) (interface{}, error) {

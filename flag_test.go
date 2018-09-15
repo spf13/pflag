@@ -817,6 +817,10 @@ func (f *flagVar) String() string {
 	return fmt.Sprint([]string(*f))
 }
 
+func (f *flagVar) StringArray() []string {
+	return []string{f.String()}
+}
+
 func (f *flagVar) Set(value string) error {
 	*f = append(*f, value)
 	return nil
@@ -1172,6 +1176,8 @@ const defaultOutput = `      --A                         for bootstrapping, allo
 type customValue int
 
 func (cv *customValue) String() string { return fmt.Sprintf("%v", *cv) }
+
+func (cv *customValue) StringArray() []string { return []string{cv.String()} }
 
 func (cv *customValue) Set(s string) error {
 	v, err := strconv.ParseInt(s, 0, 64)
