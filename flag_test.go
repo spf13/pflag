@@ -468,6 +468,43 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		t.Errorf("Got:  %v", got)
 		t.Errorf("Want: %v", want)
 	}
+	emptyShort := UnknownFlagValue{IsShort: true}
+	expectedUnknownFlags := map[string][]UnknownFlagValue{
+		"unknown1":  {{"unknown1Value", false}},
+		"unknown2":  {{"unknown2Value", false}},
+		"u":         {{"unknown3Value", true}, emptyShort, emptyShort, emptyShort, emptyShort, emptyShort}, // from -uuuu
+		"p":         {{"unknown4Value", true}},
+		"q":         {{"", true}},
+		"unknown7":  {{"unknown7value", false}},
+		"unknown8":  {{"unknown8value", false}},
+		"unknown6":  {{"", false}},
+		"unknown10": {{"", false}},
+		"unknown11": {{"", false}},
+	}
+
+	for kact, act := range f.UnknownFlags {
+		if exp, ok := expectedUnknownFlags[kact]; ok {
+			if len(act) != len(exp) {
+				t.Errorf("for [%s] lengths differ\nexp: %v\ngot: %v", kact, len(exp), len(act))
+			}
+
+			for _, a := range act {
+				for ei, e := range exp {
+					if a.Value == e.Value && a.IsShort == e.IsShort {
+						exp = append(exp[:ei], exp[ei+1:]...)
+						break
+					}
+				}
+			}
+			if len(exp) != 0 {
+				t.Errorf("mismatch for [%s]\nexpected but not found : %v", kact, exp)
+			}
+			delete(expectedUnknownFlags, kact)
+		}
+	}
+	if len(expectedUnknownFlags) != 0 {
+		t.Errorf("Missing unknown flags: %v", expectedUnknownFlags)
+	}
 }
 
 func TestShorthand(t *testing.T) {

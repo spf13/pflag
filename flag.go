@@ -148,6 +148,9 @@ type FlagSet struct {
 	// ParseErrorsWhitelist is used to configure a whitelist of errors
 	ParseErrorsWhitelist ParseErrorsWhitelist
 
+	// UnknownFlags collected only if ParseErrorsWhitelist.UnknownFlags is true
+	UnknownFlags map[string][]UnknownFlagValue
+
 	name              string
 	parsed            bool
 	actual            map[NormalizedName]*Flag
@@ -165,6 +168,14 @@ type FlagSet struct {
 	normalizeNameFunc func(f *FlagSet, name string) NormalizedName
 
 	addedGoFlagSets []*goflag.FlagSet
+}
+
+// UnknownFlagValue instance, value may be en empty string
+type UnknownFlagValue struct {
+	// Value
+	Value string
+	// IsShort if true, this instance was defined using the short syntax
+	IsShort bool
 }
 
 // A Flag represents the state of a flag.
@@ -918,23 +929,23 @@ func (f *FlagSet) usage() {
 //--unknown (args will be empty)
 //--unknown --next-flag ... (args will be --next-flag ...)
 //--unknown arg ... (args will be arg ...)
-func stripUnknownFlagValue(args []string) []string {
+func stripUnknownFlagValue(args []string) (string, []string) {
 	if len(args) == 0 {
 		//--unknown
-		return args
+		return "", args
 	}
 
 	first := args[0]
 	if len(first) > 0 && first[0] == '-' {
 		//--unknown --next-flag ...
-		return args
+		return "", args
 	}
 
 	//--unknown arg ... (args will be arg ...)
 	if len(args) > 1 {
-		return args[1:]
+		return args[0], args[1:]
 	}
-	return nil
+	return "", nil
 }
 
 func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []string, err error) {
@@ -958,10 +969,14 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 			// --unknown=unknownval arg ...
 			// we do not want to lose arg in this case
 			if len(split) >= 2 {
+				f.addUnknownFlag(name, split[1], false)
 				return a, nil
 			}
 
-			return stripUnknownFlagValue(a), nil
+			value, ret := stripUnknownFlagValue(a)
+			f.addUnknownFlag(name, value, false)
+
+			return ret, nil
 		default:
 			err = f.failf("unknown flag: --%s", name)
 			return
@@ -1013,11 +1028,15 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 			// '-f=arg arg ...'
 			// we do not want to lose arg in this case
 			if len(shorthands) > 2 && shorthands[1] == '=' {
+
+				f.addUnknownFlag(string(c), shorthands[2:], true)
 				outShorts = ""
 				return
 			}
+			var value string
+			value, outArgs = stripUnknownFlagValue(outArgs)
+			f.addUnknownFlag(string(c), value, true)
 
-			outArgs = stripUnknownFlagValue(outArgs)
 			return
 		default:
 			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
@@ -1102,6 +1121,22 @@ func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 		}
 	}
 	return
+}
+
+func (f *FlagSet) addUnknownFlag(name, value string, isShort bool) {
+	if f == nil || name == "" {
+		return
+	}
+	if len(f.UnknownFlags) == 0 {
+		f.UnknownFlags = make(map[string][]UnknownFlagValue)
+	}
+
+	list, ok := f.UnknownFlags[name]
+	if !ok {
+		f.UnknownFlags[name] = []UnknownFlagValue{{Value: value, IsShort: isShort}}
+		return
+	}
+	f.UnknownFlags[name] = append(list, UnknownFlagValue{Value: value, IsShort: isShort})
 }
 
 // Parse parses flag definitions from the argument list, which should not
