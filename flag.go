@@ -940,7 +940,10 @@ func stripUnknownFlagValue(args []string) (string, []string) {
 		//--unknown --next-flag ...
 		return "", args
 	}
-
+	// arg (single argument value)
+	if len(args) == 1 && args[0][0] != '-' {
+		return args[0], nil
+	}
 	//--unknown arg ... (args will be arg ...)
 	if len(args) > 1 {
 		return args[0], args[1:]

@@ -618,6 +618,48 @@ func TestIgnoreUnknownFlags(t *testing.T) {
 	testParseWithUnknownFlags(GetCommandLine(), t)
 }
 
+func TestLastUnknownFlagValueIsCaptured(t *testing.T) {
+	const expected = "some_value"
+	testData := []struct {
+		testName string
+		input    []string
+		flagName string
+	}{
+		{"syntax(--name value)", []string{"--unknown", "some_value"}, "unknown"},
+		{"syntax(--name=value)", []string{"--unknown=some_value"}, "unknown"},
+
+		{"syntax(--name value)", []string{"-u", "some_value"}, "u"},
+		{"syntax(--name=value)", []string{"-u=some_value"}, "u"},
+	}
+	for _, td := range testData {
+		t.Run(td.testName, func(t *testing.T) {
+
+			f := NewFlagSet("normalized", ContinueOnError)
+			f.ParseErrorsWhitelist.UnknownFlags = true
+
+			err := f.Parse(td.input)
+			if err != nil {
+				t.Error("f.Parse() = false after Parse")
+			}
+
+			if len(f.UnknownFlags) == 0 {
+				t.Error("Expected at least 1 unknown flag")
+			}
+			actual, ok := f.UnknownFlags[td.flagName]
+			if !ok {
+				t.Errorf("'%s' flag not captured", td.flagName)
+			}
+			if len(actual) == 0 {
+				t.Errorf("Expected at least 1 %s flag instance", td.flagName)
+				return
+			}
+			if actual[0].Value != expected {
+				t.Errorf("flag value should be '%s' but was '%s'", expected, actual[0].Value)
+			}
+		})
+	}
+}
+
 func TestFlagSetParse(t *testing.T) {
 	testParse(NewFlagSet("test", ContinueOnError), t)
 }
