@@ -72,6 +72,34 @@ func TestI64S(t *testing.T) {
 			t.Fatalf("expected is[%d] to be %s but got: %d from GetInt64Slice", i, vals[i], v)
 		}
 	}
+
+	f.Visit(func(flag *Flag) {
+		err := flag.Value.Set(flag.Value.String())
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+	})
+}
+
+func TestI64SBraces(t *testing.T) {
+	var is []int64
+	f := setUpI64SFlagSet(&is)
+
+	vals := []string{"1", "2", "4", "3"}
+	arg := fmt.Sprintf("--is=[%s]", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range is {
+		d, err := strconv.ParseInt(vals[i], 0, 64)
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+		if d != v {
+			t.Fatalf("expected is[%d] to be %s but got: %d", i, vals[i], v)
+		}
+	}
 }
 
 func TestI64SDefault(t *testing.T) {

@@ -20,6 +20,8 @@ func newIntSliceValue(val []int, p *[]int) *intSliceValue {
 }
 
 func (s *intSliceValue) Set(val string) error {
+	val = strings.Trim(val, "[]")
+
 	ss := strings.Split(val, ",")
 	out := make([]int, len(ss))
 	for i, d := range ss {

@@ -20,6 +20,8 @@ func newDurationSliceValue(val []time.Duration, p *[]time.Duration) *durationSli
 }
 
 func (s *durationSliceValue) Set(val string) error {
+	val = strings.Trim(val, "[]")
+
 	ss := strings.Split(val, ",")
 	out := make([]time.Duration, len(ss))
 	for i, d := range ss {

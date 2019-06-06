@@ -72,6 +72,34 @@ func TestIS(t *testing.T) {
 			t.Fatalf("expected is[%d] to be %s but got: %d from GetIntSlice", i, vals[i], v)
 		}
 	}
+
+	f.Visit(func(flag *Flag) {
+		err := flag.Value.Set(flag.Value.String())
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+	})
+}
+
+func TestISBraces(t *testing.T) {
+	var is []int
+	f := setUpISFlagSet(&is)
+
+	vals := []string{"1", "2", "4", "3"}
+	arg := fmt.Sprintf("--is=[%s]", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range is {
+		d, err := strconv.Atoi(vals[i])
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+		if d != v {
+			t.Fatalf("expected is[%d] to be %s but got: %d", i, vals[i], v)
+		}
+	}
 }
 
 func TestISDefault(t *testing.T) {

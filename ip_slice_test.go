@@ -58,6 +58,32 @@ func TestIPS(t *testing.T) {
 			t.Fatalf("expected ips[%d] to be %s but got: %s from GetIPSlice", i, vals[i], v)
 		}
 	}
+
+	f.Visit(func(flag *Flag) {
+		err := flag.Value.Set(flag.Value.String())
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+	})
+}
+
+func TestIPSBraces(t *testing.T) {
+	var ips []net.IP
+	f := setUpIPSFlagSet(&ips)
+
+	vals := []string{"192.168.1.1", "10.0.0.1", "0:0:0:0:0:0:0:2"}
+	arg := fmt.Sprintf("--ips=[%s]", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range ips {
+		if ip := net.ParseIP(vals[i]); ip == nil {
+			t.Fatalf("invalid string being converted to IP address: %s", vals[i])
+		} else if !ip.Equal(v) {
+			t.Fatalf("expected ips[%d] to be %s but got: %s from GetIPSlice", i, vals[i], v)
+		}
+	}
 }
 
 func TestIPSDefault(t *testing.T) {

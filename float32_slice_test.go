@@ -76,6 +76,36 @@ func TestF32S(t *testing.T) {
 			t.Fatalf("expected f32s[%d] to be %s but got: %f from GetFloat32Slice", i, vals[i], v)
 		}
 	}
+
+	f.Visit(func(flag *Flag) {
+		err := flag.Value.Set(flag.Value.String())
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+	})
+}
+
+func TestF32SBraces(t *testing.T) {
+	var f32s []float32
+	f := setUpF32SFlagSet(&f32s)
+
+	vals := []string{"1.0", "2.0", "4.0", "3.0"}
+	arg := fmt.Sprintf("--f32s=[%s]", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range f32s {
+		d64, err := strconv.ParseFloat(vals[i], 32)
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+
+		d := float32(d64)
+		if d != v {
+			t.Fatalf("expected f32s[%d] to be %s but got: %f", i, vals[i], v)
+		}
+	}
 }
 
 func TestF32SDefault(t *testing.T) {

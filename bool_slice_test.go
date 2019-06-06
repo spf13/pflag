@@ -68,6 +68,34 @@ func TestBS(t *testing.T) {
 			t.Fatalf("expected bs[%d] to be %s but got: %t from GetBoolSlice", i, vals[i], v)
 		}
 	}
+
+	f.Visit(func(flag *Flag) {
+		err := flag.Value.Set(flag.Value.String())
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+	})
+}
+
+func TestBSBraces(t *testing.T) {
+	var bs []bool
+	f := setUpBSFlagSet(&bs)
+
+	vals := []string{"1", "F", "TRUE", "0"}
+	arg := fmt.Sprintf("--bs=[%s]", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range bs {
+		b, err := strconv.ParseBool(vals[i])
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+		if b != v {
+			t.Fatalf("expected is[%d] to be %s but got: %t", i, vals[i], v)
+		}
+	}
 }
 
 func TestBSDefault(t *testing.T) {

@@ -72,6 +72,34 @@ func TestDS(t *testing.T) {
 			t.Fatalf("expected ds[%d] to be %s but got: %d from GetDurationSlice", i, vals[i], v)
 		}
 	}
+
+	f.Visit(func(flag *Flag) {
+		err := flag.Value.Set(flag.Value.String())
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+	})
+}
+
+func TestDSBraces(t *testing.T) {
+	var ds []time.Duration
+	f := setUpDSFlagSet(&ds)
+
+	vals := []string{"1ns", "2ms", "3m", "4h"}
+	arg := fmt.Sprintf("--ds=[%s]", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range ds {
+		d, err := time.ParseDuration(vals[i])
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+		if d != v {
+			t.Fatalf("expected ds[%d] to be %s but got: %d", i, vals[i], v)
+		}
+	}
 }
 
 func TestDSDefault(t *testing.T) {

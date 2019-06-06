@@ -20,6 +20,8 @@ func newFloat64SliceValue(val []float64, p *[]float64) *float64SliceValue {
 }
 
 func (s *float64SliceValue) Set(val string) error {
+	val = strings.Trim(val, "[]")
+
 	ss := strings.Split(val, ",")
 	out := make([]float64, len(ss))
 	for i, d := range ss {

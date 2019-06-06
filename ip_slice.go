@@ -23,6 +23,7 @@ func newIPSliceValue(val []net.IP, p *[]net.IP) *ipSliceValue {
 // Set converts, and assigns, the comma-separated IP argument string representation as the []net.IP value of this flag.
 // If Set is called on a flag that already has a []net.IP assigned, the newly converted values will be appended.
 func (s *ipSliceValue) Set(val string) error {
+	val = strings.Trim(val, "[]")
 
 	// remove all quote characters
 	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")

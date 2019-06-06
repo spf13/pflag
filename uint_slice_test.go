@@ -68,6 +68,34 @@ func TestUIS(t *testing.T) {
 			t.Fatalf("expected uis[%d] to be %s but got: %d from GetUintSlice", i, vals[i], v)
 		}
 	}
+
+	f.Visit(func(flag *Flag) {
+		err := flag.Value.Set(flag.Value.String())
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+	})
+}
+
+func TestUISBraces(t *testing.T) {
+	var uis []uint
+	f := setUpUISFlagSet(&uis)
+
+	vals := []string{"1", "2", "4", "3"}
+	arg := fmt.Sprintf("--uis=[%s]", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range uis {
+		u, err := strconv.ParseUint(vals[i], 10, 0)
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+		if uint(u) != v {
+			t.Fatalf("expected uis[%d] to be %s but got %d", i, vals[i], v)
+		}
+	}
 }
 
 func TestUISDefault(t *testing.T) {

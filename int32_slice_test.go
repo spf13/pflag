@@ -74,6 +74,35 @@ func TestI32S(t *testing.T) {
 			t.Fatalf("expected is[%d] to be %s but got: %d from GetInt32Slice", i, vals[i], v)
 		}
 	}
+
+	f.Visit(func(flag *Flag) {
+		err := flag.Value.Set(flag.Value.String())
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+	})
+}
+
+func TestI32SBraces(t *testing.T) {
+	var is []int32
+	f := setUpI32SFlagSet(&is)
+
+	vals := []string{"1", "2", "4", "3"}
+	arg := fmt.Sprintf("--is=[%s]", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range is {
+		d64, err := strconv.ParseInt(vals[i], 0, 32)
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+		d := int32(d64)
+		if d != v {
+			t.Fatalf("expected is[%d] to be %s but got: %d", i, vals[i], v)
+		}
+	}
 }
 
 func TestI32SDefault(t *testing.T) {

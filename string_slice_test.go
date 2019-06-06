@@ -81,6 +81,30 @@ func TestSS(t *testing.T) {
 			t.Fatalf("expected ss[%d] to be %s from GetStringSlice but got: %s", i, vals[i], v)
 		}
 	}
+
+	f.Visit(func(flag *Flag) {
+		err := flag.Value.Set(flag.Value.String())
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+	})
+}
+
+func TestSSBraces(t *testing.T) {
+	var ss []string
+	f := setUpSSFlagSet(&ss)
+
+	vals := []string{"one", "two", "4", "3"}
+	arg := fmt.Sprintf("--ss=[%s]", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range ss {
+		if vals[i] != v {
+			t.Fatalf("expected ss[%d] to be %s but got: %s", i, vals[i], v)
+		}
+	}
 }
 
 func TestSSDefault(t *testing.T) {

@@ -72,6 +72,34 @@ func TestF64S(t *testing.T) {
 			t.Fatalf("expected f64s[%d] to be %s but got: %f from GetFloat64Slice", i, vals[i], v)
 		}
 	}
+
+	f.Visit(func(flag *Flag) {
+		err := flag.Value.Set(flag.Value.String())
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+	})
+}
+
+func TestF64SBraces(t *testing.T) {
+	var f64s []float64
+	f := setUpF64SFlagSet(&f64s)
+
+	vals := []string{"1.0", "2.0", "4.0", "3.0"}
+	arg := fmt.Sprintf("--f64s=[%s]", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range f64s {
+		d, err := strconv.ParseFloat(vals[i], 64)
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+		if d != v {
+			t.Fatalf("expected f64s[%d] to be %s but got: %f", i, vals[i], v)
+		}
+	}
 }
 
 func TestF64SDefault(t *testing.T) {
