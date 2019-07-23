@@ -854,6 +854,17 @@ func TestSetOutput(t *testing.T) {
 	}
 }
 
+func TestOutput(t *testing.T) {
+	var flags FlagSet
+	var buf bytes.Buffer
+	expect := "an example string"
+	flags.SetOutput(&buf)
+	fmt.Fprint(flags.Output(), expect)
+	if out := buf.String(); !strings.Contains(out, expect) {
+		t.Errorf("expected output %q; got %q", expect, out)
+	}
+}
+
 // This tests that one can reset the flags. This still works but not well, and is
 // superseded by FlagSet.
 func TestChangingArgs(t *testing.T) {
