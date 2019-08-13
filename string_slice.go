@@ -53,6 +53,9 @@ func (s *stringSliceValue) Set(val string) error {
 	return nil
 }
 
+// ReplaceStringSliceValue forcibly overwrites the underlying value,
+// in contrast to Set, which appends to the underlying value after the
+// first call.
 func ReplaceStringSliceValue(v Value, val string) error {
 	s := v.(*stringSliceValue)
 	//v :=stringSliceValue(sv)
