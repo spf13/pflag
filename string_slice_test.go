@@ -251,3 +251,18 @@ func TestSSWithSquareBrackets(t *testing.T) {
 		}
 	}
 }
+
+func TestReplaceStringSliceValue(t *testing.T) {
+	var underlyingValue []string
+	ssv := newStringSliceValue([]string{"foo", "bar"}, &underlyingValue)
+	ssv.Set("baz")
+	result := ssv.String()
+	if result != "[baz]" {
+		t.Fatalf("expected first Set() to overwrite to '[baz]', but got: %s", result)
+	}
+	ReplaceStringSliceValue(ssv, "bar,foo")
+	result = ssv.String()
+	if result != "[bar,foo]" {
+		t.Fatalf("expected Replace...() to overwrite to '[bar,foo]', but got: %s", result)
+	}
+}

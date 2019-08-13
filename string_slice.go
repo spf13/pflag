@@ -53,6 +53,13 @@ func (s *stringSliceValue) Set(val string) error {
 	return nil
 }
 
+func ReplaceStringSliceValue(v Value, val string) error {
+	s := v.(*stringSliceValue)
+	//v :=stringSliceValue(sv)
+	s.changed = false
+	return s.Set(val)
+}
+
 func (s *stringSliceValue) Type() string {
 	return "stringSlice"
 }
