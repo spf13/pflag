@@ -43,11 +43,16 @@ func (s *uintSliceValue) Type() string {
 }
 
 func (s *uintSliceValue) String() string {
+	out := s.StringArray()
+	return "[" + strings.Join(out, ",") + "]"
+}
+
+func (s *uintSliceValue) StringArray() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = fmt.Sprintf("%d", d)
 	}
-	return "[" + strings.Join(out, ",") + "]"
+	return out
 }
 
 func uintSliceConv(val string) (interface{}, error) {

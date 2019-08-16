@@ -43,11 +43,16 @@ func (s *durationSliceValue) Type() string {
 	return "durationSlice"
 }
 
-func (s *durationSliceValue) String() string {
+func (s *durationSliceValue) StringArray() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = fmt.Sprintf("%s", d)
 	}
+	return out
+}
+
+func (s *durationSliceValue) String() string {
+	out := s.StringArray()
 	return "[" + strings.Join(out, ",") + "]"
 }
 

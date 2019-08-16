@@ -22,6 +22,8 @@ func (i *int16Value) Type() string {
 
 func (i *int16Value) String() string { return strconv.FormatInt(int64(*i), 10) }
 
+func (i *int16Value) StringArray() []string { return []string{i.String()} }
+
 func int16Conv(sval string) (interface{}, error) {
 	v, err := strconv.ParseInt(sval, 0, 16)
 	if err != nil {

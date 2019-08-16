@@ -18,6 +18,8 @@ func (s *stringValue) Type() string {
 
 func (s *stringValue) String() string { return string(*s) }
 
+func (s *stringValue) StringArray() []string { return []string{s.String()} }
+
 func stringConv(sval string) (interface{}, error) {
 	return sval, nil
 }

@@ -22,6 +22,8 @@ func (i *intValue) Type() string {
 
 func (i *intValue) String() string { return strconv.Itoa(int(*i)) }
 
+func (i *intValue) StringArray() []string { return []string{i.String()} }
+
 func intConv(sval string) (interface{}, error) {
 	return strconv.Atoi(sval)
 }

@@ -24,6 +24,8 @@ func (d *durationValue) Type() string {
 
 func (d *durationValue) String() string { return (*time.Duration)(d).String() }
 
+func (d *durationValue) StringArray() []string { return []string{d.String()} }
+
 func durationConv(sval string) (interface{}, error) {
 	return time.ParseDuration(sval)
 }

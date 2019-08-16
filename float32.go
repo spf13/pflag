@@ -22,6 +22,8 @@ func (f *float32Value) Type() string {
 
 func (f *float32Value) String() string { return strconv.FormatFloat(float64(*f), 'g', -1, 32) }
 
+func (f *float32Value) StringArray() []string { return []string{f.String()} }
+
 func float32Conv(sval string) (interface{}, error) {
 	v, err := strconv.ParseFloat(sval, 32)
 	if err != nil {

@@ -14,6 +14,10 @@ func (ipnet ipNetValue) String() string {
 	return n.String()
 }
 
+func (ipnet ipNetValue) StringArray() []string {
+	return []string{ipnet.String()}
+}
+
 func (ipnet *ipNetValue) Set(value string) error {
 	_, n, err := net.ParseCIDR(strings.TrimSpace(value))
 	if err != nil {

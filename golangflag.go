@@ -49,6 +49,10 @@ func (v *flagValueWrapper) String() string {
 	return v.inner.String()
 }
 
+func (v *flagValueWrapper) StringArray() []string {
+	return []string{v.inner.String()}
+}
+
 func (v *flagValueWrapper) Set(s string) error {
 	return v.inner.Set(s)
 }

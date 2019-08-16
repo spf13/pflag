@@ -59,14 +59,20 @@ func (s *boolSliceValue) Type() string {
 }
 
 // String defines a "native" format for this boolean slice flag value.
-func (s *boolSliceValue) String() string {
+func (s *boolSliceValue) StringArray() []string {
 
 	boolStrSlice := make([]string, len(*s.value))
 	for i, b := range *s.value {
 		boolStrSlice[i] = strconv.FormatBool(b)
 	}
 
-	out, _ := writeAsCSV(boolStrSlice)
+	return boolStrSlice
+}
+
+// String defines a "native" format for this boolean slice flag value.
+func (s *boolSliceValue) String() string {
+
+	out, _ := writeAsCSV(s.StringArray())
 
 	return "[" + out + "]"
 }

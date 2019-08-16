@@ -27,6 +27,8 @@ func (i *countValue) Type() string {
 
 func (i *countValue) String() string { return strconv.Itoa(int(*i)) }
 
+func (i *countValue) StringArray() []string { return []string{i.String()} }
+
 func countConv(sval string) (interface{}, error) {
 	i, err := strconv.Atoi(sval)
 	if err != nil {
