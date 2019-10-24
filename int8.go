@@ -5,6 +5,7 @@ import "strconv"
 // -- int8 Value
 type int8Value int8
 
+// NewInt8Value creates int8 adapted to be used as flag (with Value interface implementation)
 func NewInt8Value(val int8, p *int8) *int8Value {
 	*p = val
 	return (*int8Value)(p)

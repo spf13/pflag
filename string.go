@@ -3,6 +3,7 @@ package pflag
 // -- string Value
 type stringValue string
 
+// NewStringValue creates string adapted to be used as flag (with Value interface implementation)
 func NewStringValue(val string, p *string) *stringValue {
 	*p = val
 	return (*stringValue)(p)

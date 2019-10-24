@@ -27,6 +27,7 @@ func (*ipNetValue) Type() string {
 	return "ipNet"
 }
 
+// NewIPNetValue creates net.IPNet adapted to be used as flag (with Value interface implementation)
 func NewIPNetValue(val net.IPNet, p *net.IPNet) *ipNetValue {
 	*p = val
 	return (*ipNetValue)(p)

@@ -13,6 +13,7 @@ type ipSliceValue struct {
 	changed bool
 }
 
+// NewIPSliceValue creates []net.IP adapted to be used as flag (with Value interface implementation)
 func NewIPSliceValue(val []net.IP, p *[]net.IP) *ipSliceValue {
 	ipsv := new(ipSliceValue)
 	ipsv.value = p

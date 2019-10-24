@@ -5,6 +5,7 @@ import "strconv"
 // -- float32 Value
 type float32Value float32
 
+// NewFloat32Value creates float32 adapted to be used as flag (with Value interface implementation)
 func NewFloat32Value(val float32, p *float32) *float32Value {
 	*p = val
 	return (*float32Value)(p)

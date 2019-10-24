@@ -12,6 +12,7 @@ type int32SliceValue struct {
 	changed bool
 }
 
+// NewInt32SliceValue creates []int32 adapted to be used as flag (with Value interface implementation)
 func NewInt32SliceValue(val []int32, p *[]int32) *int32SliceValue {
 	isv := new(int32SliceValue)
 	isv.value = p

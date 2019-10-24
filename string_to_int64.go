@@ -13,6 +13,7 @@ type stringToInt64Value struct {
 	changed bool
 }
 
+// NewStringToInt64Value creates map[string]int64 adapted to be used as flag (with Value interface implementation)
 func NewStringToInt64Value(val map[string]int64, p *map[string]int64) *stringToInt64Value {
 	ssv := new(stringToInt64Value)
 	ssv.value = p

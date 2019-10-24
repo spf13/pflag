@@ -33,6 +33,8 @@ func (*bytesHexValue) Type() string {
 	return "bytesHex"
 }
 
+// NewBytesHexValue creates []byte adapted to be used as flag (with Value interface implementation)
+// Value of flag is HEX encoded
 func NewBytesHexValue(val []byte, p *[]byte) *bytesHexValue {
 	*p = val
 	return (*bytesHexValue)(p)

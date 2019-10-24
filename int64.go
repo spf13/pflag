@@ -5,6 +5,7 @@ import "strconv"
 // -- int64 Value
 type int64Value int64
 
+// NewInt64Value creates int64 adapted to be used as flag (with Value interface implementation)
 func NewInt64Value(val int64, p *int64) *int64Value {
 	*p = val
 	return (*int64Value)(p)

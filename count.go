@@ -5,6 +5,8 @@ import "strconv"
 // -- count Value
 type countValue int
 
+// NewCountValue creates counter, that can be used as flag (with Value interface implementation).
+// This counter calculates the number of flag appearances in args
 func NewCountValue(val int, p *int) *countValue {
 	*p = val
 	return (*countValue)(p)

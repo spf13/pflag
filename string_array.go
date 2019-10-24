@@ -6,6 +6,7 @@ type stringArrayValue struct {
 	changed bool
 }
 
+// NewStringArrayValue creates []string adapted to be used as flag (with Value interface implementation)
 func NewStringArrayValue(val []string, p *[]string) *stringArrayValue {
 	ssv := new(stringArrayValue)
 	ssv.value = p

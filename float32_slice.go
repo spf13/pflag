@@ -12,6 +12,7 @@ type float32SliceValue struct {
 	changed bool
 }
 
+// NewFloat32SliceValue creates []float32 adapted to be used as flag (with Value interface implementation)
 func NewFloat32SliceValue(val []float32, p *[]float32) *float32SliceValue {
 	isv := new(float32SliceValue)
 	isv.value = p

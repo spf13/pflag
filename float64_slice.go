@@ -12,6 +12,7 @@ type float64SliceValue struct {
 	changed bool
 }
 
+// NewFloat64SliceValue creates []float64 adapted to be used as flag (with Value interface implementation)
 func NewFloat64SliceValue(val []float64, p *[]float64) *float64SliceValue {
 	isv := new(float64SliceValue)
 	isv.value = p

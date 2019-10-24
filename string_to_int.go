@@ -13,6 +13,7 @@ type stringToIntValue struct {
 	changed bool
 }
 
+// NewStringToIntValue creates map[string]int adapted to be used as flag (with Value interface implementation)
 func NewStringToIntValue(val map[string]int, p *map[string]int) *stringToIntValue {
 	ssv := new(stringToIntValue)
 	ssv.value = p

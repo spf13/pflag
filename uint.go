@@ -5,6 +5,7 @@ import "strconv"
 // -- uint Value
 type uintValue uint
 
+// NewUintValue creates uint adapted to be used as flag (with Value interface implementation)
 func NewUintValue(val uint, p *uint) *uintValue {
 	*p = val
 	return (*uintValue)(p)

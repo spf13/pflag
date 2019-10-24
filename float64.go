@@ -5,6 +5,7 @@ import "strconv"
 // -- float64 Value
 type float64Value float64
 
+// NewFloat64Value creates float64 adapted to be used as flag (with Value interface implementation)
 func NewFloat64Value(val float64, p *float64) *float64Value {
 	*p = val
 	return (*float64Value)(p)

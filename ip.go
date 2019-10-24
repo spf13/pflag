@@ -9,6 +9,7 @@ import (
 // -- net.IP value
 type ipValue net.IP
 
+// NewIPValue creates net.IP adapted to be used as flag (with Value interface implementation)
 func NewIPValue(val net.IP, p *net.IP) *ipValue {
 	*p = val
 	return (*ipValue)(p)

@@ -5,6 +5,7 @@ import "strconv"
 // -- int16 Value
 type int16Value int16
 
+// NewInt16Value creates int16 adapted to be used as flag (with Value interface implementation)
 func NewInt16Value(val int16, p *int16) *int16Value {
 	*p = val
 	return (*int16Value)(p)

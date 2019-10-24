@@ -9,6 +9,7 @@ import (
 // -- net.IPMask value
 type ipMaskValue net.IPMask
 
+// NewIPMaskValue creates net.IPMask adapted to be used as flag (with Value interface implementation)
 func NewIPMaskValue(val net.IPMask, p *net.IPMask) *ipMaskValue {
 	*p = val
 	return (*ipMaskValue)(p)

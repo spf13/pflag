@@ -12,6 +12,7 @@ type uintSliceValue struct {
 	changed bool
 }
 
+// NewUintSliceValue creates []uint adapted to be used as flag (with Value interface implementation)
 func NewUintSliceValue(val []uint, p *[]uint) *uintSliceValue {
 	uisv := new(uintSliceValue)
 	uisv.value = p

@@ -12,6 +12,7 @@ type stringSliceValue struct {
 	changed bool
 }
 
+// NewStringSliceValue creates []string adapted to be used as flag (with Value interface implementation)
 func NewStringSliceValue(val []string, p *[]string) *stringSliceValue {
 	ssv := new(stringSliceValue)
 	ssv.value = p

@@ -7,6 +7,7 @@ import (
 // -- time.Duration Value
 type durationValue time.Duration
 
+// NewDurationValue creates time.Duration adapted to be used as flag (with Value interface implementation)
 func NewDurationValue(val time.Duration, p *time.Duration) *durationValue {
 	*p = val
 	return (*durationValue)(p)

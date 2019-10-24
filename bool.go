@@ -12,6 +12,7 @@ type boolFlag interface {
 // -- bool Value
 type boolValue bool
 
+// NewBoolValue creates bool adapted to be used as flag (with Value interface implementation)
 func NewBoolValue(val bool, p *bool) *boolValue {
 	*p = val
 	return (*boolValue)(p)

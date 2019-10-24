@@ -5,6 +5,7 @@ import "strconv"
 // -- int32 Value
 type int32Value int32
 
+// NewInt32Value creates int32 adapted to be used as flag (with Value interface implementation)
 func NewInt32Value(val int32, p *int32) *int32Value {
 	*p = val
 	return (*int32Value)(p)

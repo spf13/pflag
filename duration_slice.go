@@ -12,6 +12,7 @@ type durationSliceValue struct {
 	changed bool
 }
 
+// NewDurationSliceValue creates []time.Duration adapted to be used as flag (with Value interface implementation)
 func NewDurationSliceValue(val []time.Duration, p *[]time.Duration) *durationSliceValue {
 	dsv := new(durationSliceValue)
 	dsv.value = p

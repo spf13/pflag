@@ -12,6 +12,7 @@ type boolSliceValue struct {
 	changed bool
 }
 
+// NewBoolSliceValue creates []bool adapted to be used as flag (with Value interface implementation)
 func NewBoolSliceValue(val []bool, p *[]bool) *boolSliceValue {
 	bsv := new(boolSliceValue)
 	bsv.value = p
