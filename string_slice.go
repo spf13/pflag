@@ -161,3 +161,13 @@ func StringSlice(name string, value []string, usage string) *[]string {
 func StringSliceP(name, shorthand string, value []string, usage string) *[]string {
 	return CommandLine.StringSliceP(name, shorthand, value, usage)
 }
+
+// Set string slice flag to flagSet
+func setStringSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := stringSliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.StringSliceP(name, shorthand, defVal.([]string), usage)
+	return nil
+}

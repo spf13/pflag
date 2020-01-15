@@ -184,3 +184,13 @@ func IPSlice(name string, value []net.IP, usage string) *[]net.IP {
 func IPSliceP(name, shorthand string, value []net.IP, usage string) *[]net.IP {
 	return CommandLine.IPSliceP(name, shorthand, value, usage)
 }
+
+// Set net.IP slice flag to flagSet
+func setIPSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := ipSliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IPSliceP(name, shorthand, defVal.([]net.IP), usage)
+	return nil
+}

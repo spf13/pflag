@@ -86,3 +86,13 @@ func Uint(name string, value uint, usage string) *uint {
 func UintP(name, shorthand string, value uint, usage string) *uint {
 	return CommandLine.UintP(name, shorthand, value, usage)
 }
+
+// Set uint flag to flagSet
+func setUintFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := uintConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.UintP(name, shorthand, defVal.(uint), usage)
+	return nil
+}

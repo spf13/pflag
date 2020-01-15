@@ -164,3 +164,13 @@ func Int64Slice(name string, value []int64, usage string) *[]int64 {
 func Int64SliceP(name, shorthand string, value []int64, usage string) *[]int64 {
 	return CommandLine.Int64SliceP(name, shorthand, value, usage)
 }
+
+// Set int64 slice flag to flagSet
+func setInt64SliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := int64SliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Int64SliceP(name, shorthand, defVal.([]int64), usage)
+	return nil
+}

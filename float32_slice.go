@@ -172,3 +172,13 @@ func Float32Slice(name string, value []float32, usage string) *[]float32 {
 func Float32SliceP(name, shorthand string, value []float32, usage string) *[]float32 {
 	return CommandLine.Float32SliceP(name, shorthand, value, usage)
 }
+
+// Set float32 slice flag to flagSet
+func setFloat32SliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := float32SliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Float32SliceP(name, shorthand, defVal.([]float32), usage)
+	return nil
+}

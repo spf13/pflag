@@ -86,3 +86,13 @@ func Uint16(name string, value uint16, usage string) *uint16 {
 func Uint16P(name, shorthand string, value uint16, usage string) *uint16 {
 	return CommandLine.Uint16P(name, shorthand, value, usage)
 }
+
+// Set uint16 flag to flagSet
+func setUint16Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := uint16Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Uint16P(name, shorthand, defVal.(uint16), usage)
+	return nil
+}

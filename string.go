@@ -78,3 +78,13 @@ func String(name string, value string, usage string) *string {
 func StringP(name, shorthand string, value string, usage string) *string {
 	return CommandLine.StringP(name, shorthand, value, usage)
 }
+
+// Set string flag to flagSet
+func setStringFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := stringConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.StringP(name, shorthand, defVal.(string), usage)
+	return nil
+}

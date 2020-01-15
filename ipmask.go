@@ -120,3 +120,13 @@ func IPMask(name string, value net.IPMask, usage string) *net.IPMask {
 func IPMaskP(name, shorthand string, value net.IPMask, usage string) *net.IPMask {
 	return CommandLine.IPMaskP(name, shorthand, value, usage)
 }
+
+// Set net.IPMask flag to flagSet
+func setIPMaskFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := parseIPv4Mask(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IPMaskP(name, shorthand, defVal.(net.IPMask), usage)
+	return nil
+}

@@ -164,3 +164,13 @@ func DurationSlice(name string, value []time.Duration, usage string) *[]time.Dur
 func DurationSliceP(name, shorthand string, value []time.Duration, usage string) *[]time.Duration {
 	return CommandLine.DurationSliceP(name, shorthand, value, usage)
 }
+
+// Set time.Duration slice flag to flagSet
+func setDurationSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := durationSliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.DurationSliceP(name, shorthand, defVal.([]time.Duration), usage)
+	return nil
+}

@@ -86,3 +86,13 @@ func Uint32(name string, value uint32, usage string) *uint32 {
 func Uint32P(name, shorthand string, value uint32, usage string) *uint32 {
 	return CommandLine.Uint32P(name, shorthand, value, usage)
 }
+
+// Set uint32 flag to flagSet
+func setUint32Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := uint32Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Uint32P(name, shorthand, defVal.(uint32), usage)
+	return nil
+}

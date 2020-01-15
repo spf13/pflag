@@ -86,3 +86,13 @@ func Int8(name string, value int8, usage string) *int8 {
 func Int8P(name, shorthand string, value int8, usage string) *int8 {
 	return CommandLine.Int8P(name, shorthand, value, usage)
 }
+
+// Set int8 flag to flagSet
+func setInt8Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := int8Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Int8P(name, shorthand, defVal.(int8), usage)
+	return nil
+}

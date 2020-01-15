@@ -86,3 +86,13 @@ func Uint64(name string, value uint64, usage string) *uint64 {
 func Uint64P(name, shorthand string, value uint64, usage string) *uint64 {
 	return CommandLine.Uint64P(name, shorthand, value, usage)
 }
+
+// Set uint64 flag to flagSet
+func setUint64Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := uint64Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Uint64P(name, shorthand, defVal.(uint64), usage)
+	return nil
+}

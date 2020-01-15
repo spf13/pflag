@@ -92,3 +92,13 @@ func BoolP(name, shorthand string, value bool, usage string) *bool {
 	b := CommandLine.BoolP(name, shorthand, value, usage)
 	return b
 }
+
+// Set bool flag to flagSet
+func setBoolFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := boolConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.BoolP(name, shorthand, defVal.(bool), usage)
+	return nil
+}

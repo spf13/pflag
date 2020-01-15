@@ -164,3 +164,13 @@ func Float64Slice(name string, value []float64, usage string) *[]float64 {
 func Float64SliceP(name, shorthand string, value []float64, usage string) *[]float64 {
 	return CommandLine.Float64SliceP(name, shorthand, value, usage)
 }
+
+// Set float64 slice flag to flagSet
+func setFloat64SliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := float64SliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Float64SliceP(name, shorthand, defVal.([]float64), usage)
+	return nil
+}

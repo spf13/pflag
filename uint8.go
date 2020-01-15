@@ -86,3 +86,13 @@ func Uint8(name string, value uint8, usage string) *uint8 {
 func Uint8P(name, shorthand string, value uint8, usage string) *uint8 {
 	return CommandLine.Uint8P(name, shorthand, value, usage)
 }
+
+// Set uint8 flag to flagSet
+func setUint8Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := uint8Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Uint8P(name, shorthand, defVal.(uint8), usage)
+	return nil
+}

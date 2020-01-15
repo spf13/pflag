@@ -84,3 +84,13 @@ func Duration(name string, value time.Duration, usage string) *time.Duration {
 func DurationP(name, shorthand string, value time.Duration, usage string) *time.Duration {
 	return CommandLine.DurationP(name, shorthand, value, usage)
 }
+
+// Set time.Duration flag to flagSet
+func setDurationFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := durationConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.DurationP(name, shorthand, defVal.(time.Duration), usage)
+	return nil
+}

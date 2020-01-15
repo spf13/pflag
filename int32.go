@@ -86,3 +86,13 @@ func Int32(name string, value int32, usage string) *int32 {
 func Int32P(name, shorthand string, value int32, usage string) *int32 {
 	return CommandLine.Int32P(name, shorthand, value, usage)
 }
+
+// Set int32 flag to flagSet
+func setInt32Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := int32Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Int32P(name, shorthand, defVal.(int32), usage)
+	return nil
+}

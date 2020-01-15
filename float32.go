@@ -86,3 +86,13 @@ func Float32(name string, value float32, usage string) *float32 {
 func Float32P(name, shorthand string, value float32, usage string) *float32 {
 	return CommandLine.Float32P(name, shorthand, value, usage)
 }
+
+// Set float32 flag to flagSet
+func setFloat32Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := float32Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Float32P(name, shorthand, defVal.(float32), usage)
+	return nil
+}

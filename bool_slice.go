@@ -183,3 +183,13 @@ func BoolSlice(name string, value []bool, usage string) *[]bool {
 func BoolSliceP(name, shorthand string, value []bool, usage string) *[]bool {
 	return CommandLine.BoolSliceP(name, shorthand, value, usage)
 }
+
+// Set bool slice flag to flagSet
+func setBoolSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := boolSliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.BoolSliceP(name, shorthand, defVal.([]bool), usage)
+	return nil
+}

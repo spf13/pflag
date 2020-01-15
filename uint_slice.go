@@ -166,3 +166,13 @@ func UintSlice(name string, value []uint, usage string) *[]uint {
 func UintSliceP(name, shorthand string, value []uint, usage string) *[]uint {
 	return CommandLine.UintSliceP(name, shorthand, value, usage)
 }
+
+// Set uint slice flag to flagSet
+func setUintSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := uintSliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.UintSliceP(name, shorthand, defVal.([]uint), usage)
+	return nil
+}

@@ -86,3 +86,13 @@ func Int16(name string, value int16, usage string) *int16 {
 func Int16P(name, shorthand string, value int16, usage string) *int16 {
 	return CommandLine.Int16P(name, shorthand, value, usage)
 }
+
+// Set int16 flag to flagSet
+func setInt16Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := int16Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Int16P(name, shorthand, defVal.(int16), usage)
+	return nil
+}

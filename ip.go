@@ -92,3 +92,13 @@ func IP(name string, value net.IP, usage string) *net.IP {
 func IPP(name, shorthand string, value net.IP, usage string) *net.IP {
 	return CommandLine.IPP(name, shorthand, value, usage)
 }
+
+// Set net.IP flag to flagSet
+func setIPFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := ipConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IPP(name, shorthand, defVal.(net.IP), usage)
+	return nil
+}

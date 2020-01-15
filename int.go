@@ -82,3 +82,13 @@ func Int(name string, value int, usage string) *int {
 func IntP(name, shorthand string, value int, usage string) *int {
 	return CommandLine.IntP(name, shorthand, value, usage)
 }
+
+// Set int flag to flagSet
+func setIntFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := intConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IntP(name, shorthand, defVal.(int), usage)
+	return nil
+}

@@ -156,3 +156,13 @@ func IntSlice(name string, value []int, usage string) *[]int {
 func IntSliceP(name, shorthand string, value []int, usage string) *[]int {
 	return CommandLine.IntSliceP(name, shorthand, value, usage)
 }
+
+// Set int slice flag to flagSet
+func setIntSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := intSliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IntSliceP(name, shorthand, defVal.([]int), usage)
+	return nil
+}

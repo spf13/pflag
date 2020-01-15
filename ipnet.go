@@ -96,3 +96,13 @@ func IPNet(name string, value net.IPNet, usage string) *net.IPNet {
 func IPNetP(name, shorthand string, value net.IPNet, usage string) *net.IPNet {
 	return CommandLine.IPNetP(name, shorthand, value, usage)
 }
+
+// Set net.IPNet flag to flagSet
+func setIPNetFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := ipNetConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IPNetP(name, shorthand, defVal.(net.IPNet), usage)
+	return nil
+}

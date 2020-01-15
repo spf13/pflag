@@ -172,3 +172,13 @@ func Int32Slice(name string, value []int32, usage string) *[]int32 {
 func Int32SliceP(name, shorthand string, value []int32, usage string) *[]int32 {
 	return CommandLine.Int32SliceP(name, shorthand, value, usage)
 }
+
+// Set int32 slice flag to flagSet
+func setInt32SliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := int32SliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Int32SliceP(name, shorthand, defVal.([]int32), usage)
+	return nil
+}
