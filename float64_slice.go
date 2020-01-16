@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -172,5 +173,15 @@ func setFloat64SliceFlag(flagSet *FlagSet, name, shorthand, value, usage string)
 		return err
 	}
 	flagSet.Float64SliceP(name, shorthand, defVal.([]float64), usage)
+	return nil
+}
+
+// Set float64 slice value from flagSet
+func setFloat64SliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetFloat64Slice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

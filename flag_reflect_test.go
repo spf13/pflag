@@ -52,6 +52,31 @@ type otherInfo struct {
 	String string `flag:"string" default:"string" desc:"this is others.string"`
 }
 
+func TestSetValues(t *testing.T) {
+	f := NewFlagSet("", ContinueOnError)
+	if err := f.AddFlags(testOptions{}); err != nil {
+		t.Error(err)
+	}
+
+	args := []string{"--bool", "true", "--string", "abcd"}
+	if err := f.Parse(args); err != nil {
+		t.Error(err)
+	}
+
+	var opts = testOptions{}
+	if err := f.SetValues(&opts); err != nil {
+		t.Error(err)
+	}
+
+	if opts.Bool != true {
+		t.Error("flag(bool) value is incorrent")
+	}
+	if opts.String != "abcd" {
+		t.Error("flag(string) value is incorrent")
+	}
+
+}
+
 func TestAddFlags(t *testing.T) {
 	f := NewFlagSet("", ContinueOnError)
 	err := f.AddFlags(testOptions{})

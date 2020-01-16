@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -164,5 +165,15 @@ func setIntSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) err
 		return err
 	}
 	flagSet.IntSliceP(name, shorthand, defVal.([]int), usage)
+	return nil
+}
+
+// Set int slice value from flagSet
+func setIntSliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetIntSlice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

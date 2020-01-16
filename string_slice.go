@@ -3,6 +3,7 @@ package pflag
 import (
 	"bytes"
 	"encoding/csv"
+	"reflect"
 	"strings"
 )
 
@@ -169,5 +170,15 @@ func setStringSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) 
 		return err
 	}
 	flagSet.StringSliceP(name, shorthand, defVal.([]string), usage)
+	return nil
+}
+
+// Set string slice value from flagSet
+func setStringSliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetStringSlice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

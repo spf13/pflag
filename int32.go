@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- int32 Value
 type int32Value int32
@@ -94,5 +97,15 @@ func setInt32Flag(flagSet *FlagSet, name, shorthand, value, usage string) error 
 		return err
 	}
 	flagSet.Int32P(name, shorthand, defVal.(int32), usage)
+	return nil
+}
+
+// Set int32 value from flagSet
+func setInt32Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetInt32(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

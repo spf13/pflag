@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- int8 Value
 type int8Value int8
@@ -94,5 +97,15 @@ func setInt8Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
 		return err
 	}
 	flagSet.Int8P(name, shorthand, defVal.(int8), usage)
+	return nil
+}
+
+// Set int8 value from flagSet
+func setInt8Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetInt8(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"io"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -191,5 +192,15 @@ func setBoolSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) er
 		return err
 	}
 	flagSet.BoolSliceP(name, shorthand, defVal.([]bool), usage)
+	return nil
+}
+
+// Set bool slice value from flagSet
+func setBoolSliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetBoolSlice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

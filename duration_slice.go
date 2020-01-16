@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -172,5 +173,15 @@ func setDurationSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string
 		return err
 	}
 	flagSet.DurationSliceP(name, shorthand, defVal.([]time.Duration), usage)
+	return nil
+}
+
+// Set duration slice value from flagSet
+func setDurationSliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetDurationSlice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

@@ -1,5 +1,7 @@
 package pflag
 
+import "reflect"
+
 // -- string Value
 type stringValue string
 
@@ -86,5 +88,15 @@ func setStringFlag(flagSet *FlagSet, name, shorthand, value, usage string) error
 		return err
 	}
 	flagSet.StringP(name, shorthand, defVal.(string), usage)
+	return nil
+}
+
+// Set string value from flagSet
+func setStringValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetString(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

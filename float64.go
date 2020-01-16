@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- float64 Value
 type float64Value float64
@@ -90,5 +93,15 @@ func setFloat64Flag(flagSet *FlagSet, name, shorthand, value, usage string) erro
 		return err
 	}
 	flagSet.Float64P(name, shorthand, defVal.(float64), usage)
+	return nil
+}
+
+// Set float64 value from flagSet
+func setFloat64Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetFloat64(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

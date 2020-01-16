@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"reflect"
 	"strings"
 )
 
@@ -192,5 +193,15 @@ func setIPSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) erro
 		return err
 	}
 	flagSet.IPSliceP(name, shorthand, defVal.([]net.IP), usage)
+	return nil
+}
+
+// Set net.IP slice value from flagSet
+func setIPSliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetIPSlice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

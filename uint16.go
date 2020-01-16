@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- uint16 value
 type uint16Value uint16
@@ -94,5 +97,15 @@ func setUint16Flag(flagSet *FlagSet, name, shorthand, value, usage string) error
 		return err
 	}
 	flagSet.Uint16P(name, shorthand, defVal.(uint16), usage)
+	return nil
+}
+
+// Set uint16 value from flagSet
+func setUint16Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetUint16(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

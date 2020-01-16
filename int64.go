@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- int64 Value
 type int64Value int64
@@ -90,5 +93,15 @@ func setInt64Flag(flagSet *FlagSet, name, shorthand, value, usage string) error 
 		return err
 	}
 	flagSet.Int64P(name, shorthand, defVal.(int64), usage)
+	return nil
+}
+
+// Set int64 value from flagSet
+func setInt64Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetInt64(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

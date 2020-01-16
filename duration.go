@@ -1,6 +1,7 @@
 package pflag
 
 import (
+	"reflect"
 	"time"
 )
 
@@ -92,5 +93,15 @@ func setDurationFlag(flagSet *FlagSet, name, shorthand, value, usage string) err
 		return err
 	}
 	flagSet.DurationP(name, shorthand, defVal.(time.Duration), usage)
+	return nil
+}
+
+// Set duration value from flagSet
+func setDurationValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetDuration(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

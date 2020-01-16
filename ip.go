@@ -3,6 +3,7 @@ package pflag
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"strings"
 )
 
@@ -100,5 +101,15 @@ func setIPFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
 		return err
 	}
 	flagSet.IPP(name, shorthand, defVal.(net.IP), usage)
+	return nil
+}
+
+// Set net.IP value from flagSet
+func setIPValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetIP(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

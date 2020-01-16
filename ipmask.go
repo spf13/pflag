@@ -3,6 +3,7 @@ package pflag
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"strconv"
 )
 
@@ -128,5 +129,15 @@ func setIPMaskFlag(flagSet *FlagSet, name, shorthand, value, usage string) error
 		return err
 	}
 	flagSet.IPMaskP(name, shorthand, defVal.(net.IPMask), usage)
+	return nil
+}
+
+// Set net.IPMask value from flagSet
+func setIPMaskValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetIPv4Mask(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }

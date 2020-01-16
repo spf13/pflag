@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // optional interface to indicate boolean flags that can be
 // supplied without "=value" text
@@ -100,5 +103,15 @@ func setBoolFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
 		return err
 	}
 	flagSet.BoolP(name, shorthand, defVal.(bool), usage)
+	return nil
+}
+
+// Set bool value from flagSet
+func setBoolValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetBool(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
 	return nil
 }
