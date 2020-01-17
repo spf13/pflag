@@ -1,6 +1,7 @@
 package pflag
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"os"
@@ -49,7 +50,7 @@ type testOptions struct {
 
 type otherInfo struct {
 	// can't set shorhand
-	String string `flag:"string" default:"string" desc:"this is others.string"`
+	String string `flag:"string" default:"abcd" desc:"this is others.string"`
 }
 
 func TestSetValues(t *testing.T) {
@@ -58,7 +59,14 @@ func TestSetValues(t *testing.T) {
 		t.Error(err)
 	}
 
-	args := []string{"--bool", "true", "--string", "abcd"}
+	args := []string{
+		"--bool", "true",
+		"--string", "abcd",
+		"--int", "2",
+		"--duration", "2s",
+		"--ip", "127.0.0.2",
+		"--others.string", "abcde",
+	}
 	if err := f.Parse(args); err != nil {
 		t.Error(err)
 	}
@@ -69,10 +77,23 @@ func TestSetValues(t *testing.T) {
 	}
 
 	if opts.Bool != true {
-		t.Error("flag(bool) value is incorrent")
+		t.Errorf("bool(%v) is not equals (%v)", opts.Bool, true)
 	}
 	if opts.String != "abcd" {
-		t.Error("flag(string) value is incorrent")
+		t.Errorf("string(%v) is not equals (%v)", opts.String, "abcd")
+	}
+	if opts.Int != 2 {
+		t.Errorf("int(%v) is not equals (%v)", opts.Int, 1)
+	}
+	if opts.Duration != 2*time.Second {
+		t.Errorf("duration(%v) is not equals (%v)", opts.Duration, 2*time.Second)
+	}
+
+	if !bytes.Equal(opts.IP, net.ParseIP("127.0.0.2")) {
+		t.Errorf("ip(%v) is not equals (%v)", opts.IP, net.ParseIP("127.0.0.2"))
+	}
+	if opts.Others.String != "abcde" {
+		t.Errorf("others.string(%v) is not equals (%v)", opts.Others.String, "abcde")
 	}
 
 }
@@ -243,7 +264,7 @@ func TestAddFlags(t *testing.T) {
 		},
 		{
 			Name:  "others.string",
-			Def:   "string",
+			Def:   "abcd",
 			Usage: "this is others.string",
 		},
 	}
