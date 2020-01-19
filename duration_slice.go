@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -163,4 +164,24 @@ func DurationSlice(name string, value []time.Duration, usage string) *[]time.Dur
 // DurationSliceP is like DurationSlice, but accepts a shorthand letter that can be used after a single dash.
 func DurationSliceP(name, shorthand string, value []time.Duration, usage string) *[]time.Duration {
 	return CommandLine.DurationSliceP(name, shorthand, value, usage)
+}
+
+// Set time.Duration slice flag to flagSet
+func setDurationSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := durationSliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.DurationSliceP(name, shorthand, defVal.([]time.Duration), usage)
+	return nil
+}
+
+// Set duration slice value from flagSet
+func setDurationSliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetDurationSlice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

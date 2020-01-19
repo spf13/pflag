@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- int32 Value
 type int32Value int32
@@ -85,4 +88,24 @@ func Int32(name string, value int32, usage string) *int32 {
 // Int32P is like Int32, but accepts a shorthand letter that can be used after a single dash.
 func Int32P(name, shorthand string, value int32, usage string) *int32 {
 	return CommandLine.Int32P(name, shorthand, value, usage)
+}
+
+// Set int32 flag to flagSet
+func setInt32Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := int32Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Int32P(name, shorthand, defVal.(int32), usage)
+	return nil
+}
+
+// Set int32 value from flagSet
+func setInt32Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetInt32(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

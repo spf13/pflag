@@ -3,6 +3,7 @@ package pflag
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"strconv"
 )
 
@@ -119,4 +120,24 @@ func IPMask(name string, value net.IPMask, usage string) *net.IPMask {
 // IPMaskP is like IP, but accepts a shorthand letter that can be used after a single dash.
 func IPMaskP(name, shorthand string, value net.IPMask, usage string) *net.IPMask {
 	return CommandLine.IPMaskP(name, shorthand, value, usage)
+}
+
+// Set net.IPMask flag to flagSet
+func setIPMaskFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := parseIPv4Mask(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IPMaskP(name, shorthand, defVal.(net.IPMask), usage)
+	return nil
+}
+
+// Set net.IPMask value from flagSet
+func setIPMaskValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetIPv4Mask(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

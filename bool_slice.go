@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"io"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -182,4 +183,24 @@ func BoolSlice(name string, value []bool, usage string) *[]bool {
 // BoolSliceP is like BoolSlice, but accepts a shorthand letter that can be used after a single dash.
 func BoolSliceP(name, shorthand string, value []bool, usage string) *[]bool {
 	return CommandLine.BoolSliceP(name, shorthand, value, usage)
+}
+
+// Set bool slice flag to flagSet
+func setBoolSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := boolSliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.BoolSliceP(name, shorthand, defVal.([]bool), usage)
+	return nil
+}
+
+// Set bool slice value from flagSet
+func setBoolSliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetBoolSlice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

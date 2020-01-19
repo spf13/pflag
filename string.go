@@ -1,5 +1,7 @@
 package pflag
 
+import "reflect"
+
 // -- string Value
 type stringValue string
 
@@ -77,4 +79,24 @@ func String(name string, value string, usage string) *string {
 // StringP is like String, but accepts a shorthand letter that can be used after a single dash.
 func StringP(name, shorthand string, value string, usage string) *string {
 	return CommandLine.StringP(name, shorthand, value, usage)
+}
+
+// Set string flag to flagSet
+func setStringFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := stringConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.StringP(name, shorthand, defVal.(string), usage)
+	return nil
+}
+
+// Set string value from flagSet
+func setStringValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetString(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }
