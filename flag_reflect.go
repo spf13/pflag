@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-// add flags to FlagSet by struct
+// AddFlags can add flags to FlagSet by struct
 func (f *FlagSet) AddFlags(obj interface{}) error {
 	objT := reflect.TypeOf(obj)
 	if isStructPtr(objT) {
@@ -18,7 +18,7 @@ func (f *FlagSet) AddFlags(obj interface{}) error {
 	return parseFlagsFromTag("", f, objT)
 }
 
-// set struct values from FlagSet
+// SetValues can set struct values from FlagSet
 func (f *FlagSet) SetValues(obj interface{}) error {
 	objT := reflect.TypeOf(obj)
 	objV := reflect.ValueOf(obj)
