@@ -100,24 +100,24 @@ func (f *FlagSet) GetStringToInt(name string) (map[string]int, error) {
 // The argument p points to a map[string]int variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma
 func (f *FlagSet) StringToIntVar(p *map[string]int, name string, value map[string]int, usage string) {
-	f.VarP(newStringToIntValue(value, p), name, "", usage)
+	f.Var(newStringToIntValue(value, p), name, usage)
 }
 
 // StringToIntVarP is like StringToIntVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) StringToIntVarP(p *map[string]int, name, shorthand string, value map[string]int, usage string) {
-	f.VarP(newStringToIntValue(value, p), name, shorthand, usage)
+	f.Var(newStringToIntValue(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // StringToIntVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a map[string]int variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma
 func StringToIntVar(p *map[string]int, name string, value map[string]int, usage string) {
-	CommandLine.VarP(newStringToIntValue(value, p), name, "", usage)
+	CommandLine.Var(newStringToIntValue(value, p), name, usage)
 }
 
 // StringToIntVarP is like StringToIntVar, but accepts a shorthand letter that can be used after a single dash.
 func StringToIntVarP(p *map[string]int, name, shorthand string, value map[string]int, usage string) {
-	CommandLine.VarP(newStringToIntValue(value, p), name, shorthand, usage)
+	CommandLine.Var(newStringToIntValue(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // StringToInt defines a string flag with specified name, default value, and usage string.

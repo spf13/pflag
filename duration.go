@@ -40,23 +40,23 @@ func (f *FlagSet) GetDuration(name string) (time.Duration, error) {
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
 func (f *FlagSet) DurationVar(p *time.Duration, name string, value time.Duration, usage string) {
-	f.VarP(newDurationValue(value, p), name, "", usage)
+	f.Var(newDurationValue(value, p), name, usage)
 }
 
 // DurationVarP is like DurationVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) DurationVarP(p *time.Duration, name, shorthand string, value time.Duration, usage string) {
-	f.VarP(newDurationValue(value, p), name, shorthand, usage)
+	f.Var(newDurationValue(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
 func DurationVar(p *time.Duration, name string, value time.Duration, usage string) {
-	CommandLine.VarP(newDurationValue(value, p), name, "", usage)
+	CommandLine.Var(newDurationValue(value, p), name, usage)
 }
 
 // DurationVarP is like DurationVar, but accepts a shorthand letter that can be used after a single dash.
 func DurationVarP(p *time.Duration, name, shorthand string, value time.Duration, usage string) {
-	CommandLine.VarP(newDurationValue(value, p), name, shorthand, usage)
+	CommandLine.Var(newDurationValue(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // Duration defines a time.Duration flag with specified name, default value, and usage string.
