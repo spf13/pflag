@@ -28,6 +28,18 @@ func (bytesHex *bytesHexValue) Set(value string) error {
 	return nil
 }
 
+func (bytesHex *bytesHexValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case []byte:
+		*bytesHex = tv
+	case string:
+		return bytesHex.Set(tv)
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 // Type implements pflag.Value.Type.
 func (*bytesHexValue) Type() string {
 	return "bytesHex"
@@ -126,6 +138,19 @@ func (bytesBase64 *bytesBase64Value) Set(value string) error {
 
 	*bytesBase64 = bin
 
+	return nil
+}
+
+// Setv tries its best to set the value from an arbitrary type
+func (bytesBase64 *bytesBase64Value) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case []byte:
+		*bytesBase64 = tv
+	case string:
+		return bytesBase64.Set(tv)
+	default:
+		return ErrSetv
+	}
 	return nil
 }
 

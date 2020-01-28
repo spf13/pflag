@@ -1,5 +1,7 @@
 package pflag
 
+import "fmt"
+
 // -- string Value
 type stringValue string
 
@@ -12,6 +14,14 @@ func (s *stringValue) Set(val string) error {
 	*s = stringValue(val)
 	return nil
 }
+
+func (s *stringValue) Setv(v interface{}) error { // handled specially, since target is a string
+	if tv, ok := v.(string); ok {
+		return s.Set(tv)
+	}
+	return s.Set(fmt.Sprint(v))
+}
+
 func (s *stringValue) Type() string {
 	return "string"
 }

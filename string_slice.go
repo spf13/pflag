@@ -53,6 +53,16 @@ func (s *stringSliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *stringSliceValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case []string:
+		*s.value = tv
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (s *stringSliceValue) Type() string {
 	return "stringSlice"
 }

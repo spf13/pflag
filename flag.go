@@ -112,6 +112,9 @@ import (
 // ErrHelp is the error returned if the flag -help is invoked but no such flag is defined.
 var ErrHelp = errors.New("pflag: help requested")
 
+// ErrSetv is the error returned if Setv(interface{}) couldn't do a sane conversion.
+var ErrSetv = errors.New("pflag: could not convert type for Setv()") // TODO: error wrapping once go 1.13 is the minimal version
+
 // ErrorHandling defines how to handle flag parsing errors.
 type ErrorHandling int
 
@@ -188,6 +191,11 @@ type Value interface {
 	String() string
 	Set(string) error
 	Type() string
+}
+
+// Setter is the interface that represents a Value that can be set directly.
+type Setter interface {
+	Setv(interface{}) error
 }
 
 // SliceValue is a secondary interface to all flags which hold a list
@@ -452,15 +460,27 @@ func ShorthandLookup(name string) *Flag {
 	return CommandLine.ShorthandLookup(name)
 }
 
-// Set sets the value of the named flag.
+// Set sets the value of the named flag to a string.
 func (f *FlagSet) Set(name, value string) error {
+	return f.Setv(name, value)
+}
+
+// Setv sets the value of the named flag.
+func (f *FlagSet) Setv(name string, value interface{}) error {
 	normalName := f.normalizeFlagName(name)
 	flag, ok := f.formal[normalName]
 	if !ok {
 		return fmt.Errorf("no such flag -%v", name)
 	}
 
-	err := flag.Value.Set(value)
+	var err error
+	if s, ok := value.(string); ok {
+		err = flag.Value.Set(s) // guaranteed backwards-compat
+	} else if s, ok := flag.Value.(Setter); ok {
+		err = s.Setv(value)
+	} else {
+		err = ErrSetv
+	}
 	if err != nil {
 		var flagName string
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
@@ -514,9 +534,14 @@ func (f *FlagSet) Changed(name string) bool {
 	return flag.Changed
 }
 
-// Set sets the value of the named command-line flag.
+// Set sets the string value of the named command-line flag.
 func Set(name, value string) error {
 	return CommandLine.Set(name, value)
+}
+
+// Setv sets the value of the named command-line flag.
+func Setv(name string, value interface{}) error {
+	return CommandLine.Setv(name, value)
 }
 
 // PrintDefaults prints, to standard error unless configured
