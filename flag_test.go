@@ -115,6 +115,13 @@ func TestAddFlagSet(t *testing.T) {
 	oldSet := NewFlagSet("old", ContinueOnError)
 	newSet := NewFlagSet("new", ContinueOnError)
 
+	if oldSet.Name() != "old" {
+		t.Errorf("When reading a flagset's name, expected %s, but found %s", "old", oldSet.Name())
+	}
+	if newSet.Name() != "new" {
+		t.Errorf("When reading a flagset's name, expected %s, but found %s", "new", newSet.Name())
+	}
+
 	oldSet.String("flag1", "flag1", "flag1")
 	oldSet.String("flag2", "flag2", "flag2")
 

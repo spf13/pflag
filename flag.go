@@ -264,6 +264,11 @@ func (f *FlagSet) Output() io.Writer {
 	return f.output
 }
 
+// Name returns the name of the flag set.
+func (f *FlagSet) Name() string {
+	return f.name
+}
+
 // SetOutput sets the destination for usage and error messages.
 // If output is nil, os.Stderr is used.
 func (f *FlagSet) SetOutput(output io.Writer) {
