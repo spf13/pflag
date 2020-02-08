@@ -1262,3 +1262,39 @@ func TestVisitFlagOrder(t *testing.T) {
 		i++
 	})
 }
+
+// TestCustomFlagValue verifies that custom flag usage string doesn't change its "default" section after parsing
+func TestCustomFlagDefValue(t *testing.T) {
+	fs := NewFlagSet("TestCustomFlagDefValue", ContinueOnError)
+	var buf bytes.Buffer
+	fs.SetOutput(&buf)
+
+	var cv customValue
+	fs.VarP(&cv, "customP", "", "a VarP with no default")
+
+	fs.PrintDefaults()
+	beforeParse := buf.String()
+	buf.Reset()
+
+	args := []string{
+		"--customP=10",
+	}
+
+	if err := fs.Parse(args); err != nil {
+		t.Error("expected no error, got ", err)
+	}
+
+	val := fs.Lookup("customP").Value.String()
+	if val != "10" {
+		t.Errorf("expected customP to be set to the new value, got %s\n", val)
+	}
+
+	fs.PrintDefaults()
+	afterParse := buf.String()
+
+	if beforeParse != afterParse {
+		fmt.Println("\n" + beforeParse)
+		fmt.Println("\n" + afterParse)
+		t.Errorf("got %q want %q\n", afterParse, beforeParse)
+	}
+}
