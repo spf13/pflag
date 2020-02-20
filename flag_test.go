@@ -115,13 +115,6 @@ func TestAddFlagSet(t *testing.T) {
 	oldSet := NewFlagSet("old", ContinueOnError)
 	newSet := NewFlagSet("new", ContinueOnError)
 
-	if oldSet.Name() != "old" {
-		t.Errorf("When reading a flagset's name, expected %s, but found %s", "old", oldSet.Name())
-	}
-	if newSet.Name() != "new" {
-		t.Errorf("When reading a flagset's name, expected %s, but found %s", "new", newSet.Name())
-	}
-
 	oldSet.String("flag1", "flag1", "flag1")
 	oldSet.String("flag2", "flag2", "flag2")
 
@@ -163,6 +156,16 @@ func TestAnnotation(t *testing.T) {
 	}
 	if annotation := f.Lookup("stringb").Annotations["key"]; !reflect.DeepEqual(annotation, []string{"value2"}) {
 		t.Errorf("Unexpected annotation: %v", annotation)
+	}
+}
+
+func TestName(t *testing.T) {
+	flagSetName := "bob"
+	f := NewFlagSet(flagSetName, ContinueOnError)
+
+	givenName := f.Name()
+	if givenName != flagSetName {
+		t.Errorf("Unexpected result when retrieving a FlagSet's name: expected %s, but found %s", flagSetName, givenName)
 	}
 }
 
