@@ -20,17 +20,30 @@ import (
 )
 
 var (
-	testBool                     = Bool("test_bool", false, "bool value")
-	testInt                      = Int("test_int", 0, "int value")
-	testInt64                    = Int64("test_int64", 0, "int64 value")
-	testUint                     = Uint("test_uint", 0, "uint value")
-	testUint64                   = Uint64("test_uint64", 0, "uint64 value")
-	testString                   = String("test_string", "0", "string value")
-	testFloat                    = Float64("test_float64", 0, "float64 value")
-	testDuration                 = Duration("test_duration", 0, "time.Duration value")
-	testOptionalInt              = Int("test_optional_int", 0, "optional int value")
+	testBool        *bool
+	testInt         *int
+	testInt64       *int64
+	testUint        *uint
+	testUint64      *uint64
+	testString      *string
+	testFloat       *float64
+	testDuration    *time.Duration
+	testOptionalInt *int
+
 	normalizeFlagNameInvocations = 0
 )
+
+func init() {
+	testBool = Bool("test_bool", false, "bool value")
+	testInt = Int("test_int", 0, "int value")
+	testInt64 = Int64("test_int64", 0, "int64 value")
+	testUint = Uint("test_uint", 0, "uint value")
+	testUint64 = Uint64("test_uint64", 0, "uint64 value")
+	testString = String("test_string", "0", "string value")
+	testFloat = Float64("test_float64", 0, "float64 value")
+	testDuration = Duration("test_duration", 0, "time.Duration value")
+	testOptionalInt = Int("test_optional_int", 0, "optional int value")
+}
 
 func boolString(s string) string {
 	if s == "0" {
@@ -560,6 +573,7 @@ func TestShorthandLookup(t *testing.T) {
 	flag := f.ShorthandLookup("a")
 	if flag == nil {
 		t.Errorf("f.ShorthandLookup(\"a\") returned nil")
+		return // required
 	}
 	if flag.Name != "boola" {
 		t.Errorf("f.ShorthandLookup(\"a\") found %q instead of \"boola\"", flag.Name)
@@ -571,7 +585,7 @@ func TestShorthandLookup(t *testing.T) {
 	defer func() {
 		recover()
 	}()
-	flag = f.ShorthandLookup("ab")
+	_ = f.ShorthandLookup("ab")
 	// should NEVER get here. lookup should panic. defer'd func should recover it.
 	t.Errorf("f.ShorthandLookup(\"ab\") did not panic")
 }
