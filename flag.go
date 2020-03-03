@@ -178,6 +178,7 @@ type Flag struct {
 	NoOptDefVal         string              // default value (as text); if the flag is on the command line without any options
 	Deprecated          string              // If this flag is deprecated, this string is the new or now thing to use
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
+	HideDefaultUsage    bool                // used to hide [="<default>"] addition in help/usage text if a default is set
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
 	Annotations         map[string][]string // used by cobra.Command bash autocomple code
 }
@@ -696,7 +697,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		if varname != "" {
 			line += " " + varname
 		}
-		if flag.NoOptDefVal != "" {
+		if flag.NoOptDefVal != "" && !flag.HideDefaultUsage {
 			switch flag.Value.Type() {
 			case "string":
 				line += fmt.Sprintf("[=\"%s\"]", flag.NoOptDefVal)
