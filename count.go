@@ -57,6 +57,12 @@ func (f *FlagSet) CountVarP(p *int, name, shorthand string, usage string) {
 	flag.NoOptDefVal = "+1"
 }
 
+// CountVarS is like CountVar only take a shorthand for the flag name, alone.
+func (f *FlagSet) CountVarS(p *int, name, shorthand string, usage string) {
+	flag := f.VarSF(newCountValue(0, p), name, shorthand, usage)
+	flag.NoOptDefVal = "+1"
+}
+
 // CountVar like CountVar only the flag is placed on the CommandLine instead of a given flag set
 func CountVar(p *int, name string, usage string) {
 	CommandLine.CountVar(p, name, usage)
@@ -65,6 +71,11 @@ func CountVar(p *int, name string, usage string) {
 // CountVarP is like CountVar only take a shorthand for the flag name.
 func CountVarP(p *int, name, shorthand string, usage string) {
 	CommandLine.CountVarP(p, name, shorthand, usage)
+}
+
+// CountVarS is like CountVar only take a shorthand for the flag name, alone.
+func CountVarS(p *int, name, shorthand string, usage string) {
+	CommandLine.CountVarS(p, name, shorthand, usage)
 }
 
 // Count defines a count flag with specified name, default value, and usage string.
@@ -83,6 +94,13 @@ func (f *FlagSet) CountP(name, shorthand string, usage string) *int {
 	return p
 }
 
+// CountS is like Count only takes a shorthand for the flag name, alone.
+func (f *FlagSet) CountS(name, shorthand string, usage string) *int {
+	p := new(int)
+	f.CountVarS(p, name, shorthand, usage)
+	return p
+}
+
 // Count defines a count flag with specified name, default value, and usage string.
 // The return value is the address of an int variable that stores the value of the flag.
 // A count flag will add 1 to its value evey time it is found on the command line
@@ -93,4 +111,9 @@ func Count(name string, usage string) *int {
 // CountP is like Count only takes a shorthand for the flag name.
 func CountP(name, shorthand string, usage string) *int {
 	return CommandLine.CountP(name, shorthand, usage)
+}
+
+// CountS is like Count only takes a shorthand for the flag name, alone.
+func CountS(name, shorthand string, usage string) *int {
+	return CommandLine.CountS(name, shorthand, usage)
 }

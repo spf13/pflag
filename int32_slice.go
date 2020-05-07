@@ -136,6 +136,11 @@ func (f *FlagSet) Int32SliceVarP(p *[]int32, name, shorthand string, value []int
 	f.VarP(newInt32SliceValue(value, p), name, shorthand, usage)
 }
 
+// Int32SliceVarS is like Int32SliceVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) Int32SliceVarS(p *[]int32, name, shorthand string, value []int32, usage string) {
+	f.VarS(newInt32SliceValue(value, p), name, shorthand, usage)
+}
+
 // Int32SliceVar defines a int32[] flag with specified name, default value, and usage string.
 // The argument p points to a int32[] variable in which to store the value of the flag.
 func Int32SliceVar(p *[]int32, name string, value []int32, usage string) {
@@ -145,6 +150,11 @@ func Int32SliceVar(p *[]int32, name string, value []int32, usage string) {
 // Int32SliceVarP is like Int32SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Int32SliceVarP(p *[]int32, name, shorthand string, value []int32, usage string) {
 	CommandLine.VarP(newInt32SliceValue(value, p), name, shorthand, usage)
+}
+
+// Int32SliceVarS is like Int32SliceVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func Int32SliceVarS(p *[]int32, name, shorthand string, value []int32, usage string) {
+	CommandLine.VarS(newInt32SliceValue(value, p), name, shorthand, usage)
 }
 
 // Int32Slice defines a []int32 flag with specified name, default value, and usage string.
@@ -162,6 +172,13 @@ func (f *FlagSet) Int32SliceP(name, shorthand string, value []int32, usage strin
 	return &p
 }
 
+// Int32SliceS is like Int32Slice, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) Int32SliceS(name, shorthand string, value []int32, usage string) *[]int32 {
+	p := []int32{}
+	f.Int32SliceVarS(&p, name, shorthand, value, usage)
+	return &p
+}
+
 // Int32Slice defines a []int32 flag with specified name, default value, and usage string.
 // The return value is the address of a []int32 variable that stores the value of the flag.
 func Int32Slice(name string, value []int32, usage string) *[]int32 {
@@ -171,4 +188,9 @@ func Int32Slice(name string, value []int32, usage string) *[]int32 {
 // Int32SliceP is like Int32Slice, but accepts a shorthand letter that can be used after a single dash.
 func Int32SliceP(name, shorthand string, value []int32, usage string) *[]int32 {
 	return CommandLine.Int32SliceP(name, shorthand, value, usage)
+}
+
+// Int32SliceS is like Int32Slice, but accepts a shorthand letter that can be used after a single dash, alone.
+func Int32SliceS(name, shorthand string, value []int32, usage string) *[]int32 {
+	return CommandLine.Int32SliceS(name, shorthand, value, usage)
 }

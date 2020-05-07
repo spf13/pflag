@@ -128,6 +128,11 @@ func (f *FlagSet) DurationSliceVarP(p *[]time.Duration, name, shorthand string, 
 	f.VarP(newDurationSliceValue(value, p), name, shorthand, usage)
 }
 
+// DurationSliceVarS is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) DurationSliceVarS(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) {
+	f.VarS(newDurationSliceValue(value, p), name, shorthand, usage)
+}
+
 // DurationSliceVar defines a duration[] flag with specified name, default value, and usage string.
 // The argument p points to a duration[] variable in which to store the value of the flag.
 func DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string) {
@@ -137,6 +142,11 @@ func DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, us
 // DurationSliceVarP is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func DurationSliceVarP(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) {
 	CommandLine.VarP(newDurationSliceValue(value, p), name, shorthand, usage)
+}
+
+// DurationSliceVarS is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func DurationSliceVarS(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) {
+	CommandLine.VarS(newDurationSliceValue(value, p), name, shorthand, usage)
 }
 
 // DurationSlice defines a []time.Duration flag with specified name, default value, and usage string.
@@ -154,6 +164,13 @@ func (f *FlagSet) DurationSliceP(name, shorthand string, value []time.Duration, 
 	return &p
 }
 
+// DurationSliceS is like DurationSlice, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) DurationSliceS(name, shorthand string, value []time.Duration, usage string) *[]time.Duration {
+	p := []time.Duration{}
+	f.DurationSliceVarS(&p, name, shorthand, value, usage)
+	return &p
+}
+
 // DurationSlice defines a []time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a []time.Duration variable that stores the value of the flag.
 func DurationSlice(name string, value []time.Duration, usage string) *[]time.Duration {
@@ -163,4 +180,9 @@ func DurationSlice(name string, value []time.Duration, usage string) *[]time.Dur
 // DurationSliceP is like DurationSlice, but accepts a shorthand letter that can be used after a single dash.
 func DurationSliceP(name, shorthand string, value []time.Duration, usage string) *[]time.Duration {
 	return CommandLine.DurationSliceP(name, shorthand, value, usage)
+}
+
+// DurationSliceS is like DurationSlice, but accepts a shorthand letter that can be used after a single dash, alone.
+func DurationSliceS(name, shorthand string, value []time.Duration, usage string) *[]time.Duration {
+	return CommandLine.DurationSliceS(name, shorthand, value, usage)
 }

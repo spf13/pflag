@@ -108,6 +108,11 @@ func (f *FlagSet) StringToIntVarP(p *map[string]int, name, shorthand string, val
 	f.VarP(newStringToIntValue(value, p), name, shorthand, usage)
 }
 
+// StringToIntVarS is like StringToIntVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) StringToIntVarS(p *map[string]int, name, shorthand string, value map[string]int, usage string) {
+	f.VarS(newStringToIntValue(value, p), name, shorthand, usage)
+}
+
 // StringToIntVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a map[string]int variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma
@@ -118,6 +123,11 @@ func StringToIntVar(p *map[string]int, name string, value map[string]int, usage 
 // StringToIntVarP is like StringToIntVar, but accepts a shorthand letter that can be used after a single dash.
 func StringToIntVarP(p *map[string]int, name, shorthand string, value map[string]int, usage string) {
 	CommandLine.VarP(newStringToIntValue(value, p), name, shorthand, usage)
+}
+
+// StringToIntVarS is like StringToIntVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func StringToIntVarS(p *map[string]int, name, shorthand string, value map[string]int, usage string) {
+	CommandLine.VarS(newStringToIntValue(value, p), name, shorthand, usage)
 }
 
 // StringToInt defines a string flag with specified name, default value, and usage string.
@@ -136,6 +146,13 @@ func (f *FlagSet) StringToIntP(name, shorthand string, value map[string]int, usa
 	return &p
 }
 
+// StringToIntS is like StringToInt, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) StringToIntS(name, shorthand string, value map[string]int, usage string) *map[string]int {
+	p := map[string]int{}
+	f.StringToIntVarS(&p, name, shorthand, value, usage)
+	return &p
+}
+
 // StringToInt defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a map[string]int variable that stores the value of the flag.
 // The value of each argument will not try to be separated by comma
@@ -146,4 +163,9 @@ func StringToInt(name string, value map[string]int, usage string) *map[string]in
 // StringToIntP is like StringToInt, but accepts a shorthand letter that can be used after a single dash.
 func StringToIntP(name, shorthand string, value map[string]int, usage string) *map[string]int {
 	return CommandLine.StringToIntP(name, shorthand, value, usage)
+}
+
+// StringToIntS is like StringToInt, but accepts a shorthand letter that can be used after a single dash, alone.
+func StringToIntS(name, shorthand string, value map[string]int, usage string) *map[string]int {
+	return CommandLine.StringToIntS(name, shorthand, value, usage)
 }

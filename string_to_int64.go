@@ -108,6 +108,11 @@ func (f *FlagSet) StringToInt64VarP(p *map[string]int64, name, shorthand string,
 	f.VarP(newStringToInt64Value(value, p), name, shorthand, usage)
 }
 
+// StringToInt64VarS is like StringToInt64Var, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) StringToInt64VarS(p *map[string]int64, name, shorthand string, value map[string]int64, usage string) {
+	f.VarS(newStringToInt64Value(value, p), name, shorthand, usage)
+}
+
 // StringToInt64Var defines a string flag with specified name, default value, and usage string.
 // The argument p point64s to a map[string]int64 variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma
@@ -118,6 +123,11 @@ func StringToInt64Var(p *map[string]int64, name string, value map[string]int64, 
 // StringToInt64VarP is like StringToInt64Var, but accepts a shorthand letter that can be used after a single dash.
 func StringToInt64VarP(p *map[string]int64, name, shorthand string, value map[string]int64, usage string) {
 	CommandLine.VarP(newStringToInt64Value(value, p), name, shorthand, usage)
+}
+
+// StringToInt64VarS is like StringToInt64Var, but accepts a shorthand letter that can be used after a single dash, alone.
+func StringToInt64VarS(p *map[string]int64, name, shorthand string, value map[string]int64, usage string) {
+	CommandLine.VarS(newStringToInt64Value(value, p), name, shorthand, usage)
 }
 
 // StringToInt64 defines a string flag with specified name, default value, and usage string.
@@ -136,6 +146,13 @@ func (f *FlagSet) StringToInt64P(name, shorthand string, value map[string]int64,
 	return &p
 }
 
+// StringToInt64S is like StringToInt64, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) StringToInt64S(name, shorthand string, value map[string]int64, usage string) *map[string]int64 {
+	p := map[string]int64{}
+	f.StringToInt64VarS(&p, name, shorthand, value, usage)
+	return &p
+}
+
 // StringToInt64 defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a map[string]int64 variable that stores the value of the flag.
 // The value of each argument will not try to be separated by comma
@@ -146,4 +163,9 @@ func StringToInt64(name string, value map[string]int64, usage string) *map[strin
 // StringToInt64P is like StringToInt64, but accepts a shorthand letter that can be used after a single dash.
 func StringToInt64P(name, shorthand string, value map[string]int64, usage string) *map[string]int64 {
 	return CommandLine.StringToInt64P(name, shorthand, value, usage)
+}
+
+// StringToInt64S is like StringToInt64, but accepts a shorthand letter that can be used after a single dash, alone.
+func StringToInt64S(name, shorthand string, value map[string]int64, usage string) *map[string]int64 {
+	return CommandLine.StringToInt64S(name, shorthand, value, usage)
 }

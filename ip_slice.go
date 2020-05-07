@@ -148,6 +148,11 @@ func (f *FlagSet) IPSliceVarP(p *[]net.IP, name, shorthand string, value []net.I
 	f.VarP(newIPSliceValue(value, p), name, shorthand, usage)
 }
 
+// IPSliceVarS is like IPSliceVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) IPSliceVarS(p *[]net.IP, name, shorthand string, value []net.IP, usage string) {
+	f.VarS(newIPSliceValue(value, p), name, shorthand, usage)
+}
+
 // IPSliceVar defines a []net.IP flag with specified name, default value, and usage string.
 // The argument p points to a []net.IP variable in which to store the value of the flag.
 func IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string) {
@@ -157,6 +162,11 @@ func IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string) {
 // IPSliceVarP is like IPSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func IPSliceVarP(p *[]net.IP, name, shorthand string, value []net.IP, usage string) {
 	CommandLine.VarP(newIPSliceValue(value, p), name, shorthand, usage)
+}
+
+// IPSliceVarS is like IPSliceVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func IPSliceVarS(p *[]net.IP, name, shorthand string, value []net.IP, usage string) {
+	CommandLine.VarS(newIPSliceValue(value, p), name, shorthand, usage)
 }
 
 // IPSlice defines a []net.IP flag with specified name, default value, and usage string.
@@ -174,6 +184,13 @@ func (f *FlagSet) IPSliceP(name, shorthand string, value []net.IP, usage string)
 	return &p
 }
 
+// IPSliceS is like IPSlice, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) IPSliceS(name, shorthand string, value []net.IP, usage string) *[]net.IP {
+	p := []net.IP{}
+	f.IPSliceVarS(&p, name, shorthand, value, usage)
+	return &p
+}
+
 // IPSlice defines a []net.IP flag with specified name, default value, and usage string.
 // The return value is the address of a []net.IP variable that stores the value of the flag.
 func IPSlice(name string, value []net.IP, usage string) *[]net.IP {
@@ -183,4 +200,9 @@ func IPSlice(name string, value []net.IP, usage string) *[]net.IP {
 // IPSliceP is like IPSlice, but accepts a shorthand letter that can be used after a single dash.
 func IPSliceP(name, shorthand string, value []net.IP, usage string) *[]net.IP {
 	return CommandLine.IPSliceP(name, shorthand, value, usage)
+}
+
+// IPSliceS is like IPSlice, but accepts a shorthand letter that can be used after a single dash, alone.
+func IPSliceS(name, shorthand string, value []net.IP, usage string) *[]net.IP {
+	return CommandLine.IPSliceS(name, shorthand, value, usage)
 }

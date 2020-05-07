@@ -48,6 +48,11 @@ func (f *FlagSet) DurationVarP(p *time.Duration, name, shorthand string, value t
 	f.VarP(newDurationValue(value, p), name, shorthand, usage)
 }
 
+// DurationVarS is like DurationVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) DurationVarS(p *time.Duration, name, shorthand string, value time.Duration, usage string) {
+	f.VarS(newDurationValue(value, p), name, shorthand, usage)
+}
+
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
 func DurationVar(p *time.Duration, name string, value time.Duration, usage string) {
@@ -57,6 +62,11 @@ func DurationVar(p *time.Duration, name string, value time.Duration, usage strin
 // DurationVarP is like DurationVar, but accepts a shorthand letter that can be used after a single dash.
 func DurationVarP(p *time.Duration, name, shorthand string, value time.Duration, usage string) {
 	CommandLine.VarP(newDurationValue(value, p), name, shorthand, usage)
+}
+
+// DurationVarS is like DurationVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func DurationVarS(p *time.Duration, name, shorthand string, value time.Duration, usage string) {
+	CommandLine.VarS(newDurationValue(value, p), name, shorthand, usage)
 }
 
 // Duration defines a time.Duration flag with specified name, default value, and usage string.
@@ -74,6 +84,13 @@ func (f *FlagSet) DurationP(name, shorthand string, value time.Duration, usage s
 	return p
 }
 
+// DurationS is like Duration, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) DurationS(name, shorthand string, value time.Duration, usage string) *time.Duration {
+	p := new(time.Duration)
+	f.DurationVarS(p, name, shorthand, value, usage)
+	return p
+}
+
 // Duration defines a time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a time.Duration variable that stores the value of the flag.
 func Duration(name string, value time.Duration, usage string) *time.Duration {
@@ -83,4 +100,9 @@ func Duration(name string, value time.Duration, usage string) *time.Duration {
 // DurationP is like Duration, but accepts a shorthand letter that can be used after a single dash.
 func DurationP(name, shorthand string, value time.Duration, usage string) *time.Duration {
 	return CommandLine.DurationP(name, shorthand, value, usage)
+}
+
+// DurationS is like Duration, but accepts a shorthand letter that can be used after a single dash, alone.
+func DurationS(name, shorthand string, value time.Duration, usage string) *time.Duration {
+	return CommandLine.DurationS(name, shorthand, value, usage)
 }

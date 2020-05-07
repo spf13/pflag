@@ -171,6 +171,7 @@ type FlagSet struct {
 type Flag struct {
 	Name                string              // name as it appears on command line
 	Shorthand           string              // one-letter abbreviated flag
+	ShorthandOnly       bool                // If the user set only the shorthand
 	Usage               string              // help message
 	Value               Value               // value as set
 	DefValue            string              // default value (as text); for usage message
@@ -471,7 +472,10 @@ func (f *FlagSet) Set(name, value string) error {
 	if err != nil {
 		var flagName string
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			flagName = fmt.Sprintf("-%s, --%s", flag.Shorthand, flag.Name)
+			flagName = fmt.Sprintf("-%s", flag.Shorthand)
+			if !flag.ShorthandOnly {
+				flagName = fmt.Sprintf("%s, --%s", flagName, flag.Name)
+			}
 		} else {
 			flagName = fmt.Sprintf("--%s", flag.Name)
 		}
@@ -694,7 +698,10 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 
 		line := ""
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			line = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
+			line = fmt.Sprintf("  -%s", flag.Shorthand)
+			if !flag.ShorthandOnly {
+				line = fmt.Sprintf("%s, --%s", line, flag.Name)
+			}
 		} else {
 			line = fmt.Sprintf("      --%s", flag.Name)
 		}
@@ -844,6 +851,25 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 	f.VarPF(value, name, shorthand, usage)
 }
 
+// VarSF is like VarS, but returns the flag created
+func (f *FlagSet) VarSF(value Value, name string, shorthand string, usage string) *Flag {
+	flag := &Flag{
+		Name:          name,
+		Shorthand:     shorthand,
+		ShorthandOnly: true,
+		Usage:         usage,
+		Value:         value,
+		DefValue:      value.String(),
+	}
+	f.AddFlag(flag)
+	return flag
+}
+
+// VarS is like Var, but accepts a shorthand letter to be used after a single dash, alone.
+func (f *FlagSet) VarS(value Value, name string, shorthand string, usage string) {
+	f.VarSF(value, name, shorthand, usage)
+}
+
 // AddFlag will add the flag to the FlagSet
 func (f *FlagSet) AddFlag(flag *Flag) {
 	normalizedFlagName := f.normalizeFlagName(flag.Name)
@@ -911,6 +937,11 @@ func VarP(value Value, name, shorthand, usage string) {
 	CommandLine.VarP(value, name, shorthand, usage)
 }
 
+// VarS is like Var, but accepts a shorthand letter that can be used after a single dash, alone.
+func VarS(value Value, name, shorthand, usage string) {
+	CommandLine.VarS(value, name, shorthand, usage)
+}
+
 // failf prints to standard error a formatted error and usage message and
 // returns the error.
 func (f *FlagSet) failf(format string, a ...interface{}) error {
@@ -968,7 +999,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	name = split[0]
 	flag, exists := f.formal[f.normalizeFlagName(name)]
 
-	if !exists {
+	if !exists || flag.ShorthandOnly {
 		switch {
 		case name == "help":
 			f.usage()
