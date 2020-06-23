@@ -165,6 +165,7 @@ type FlagSet struct {
 	normalizeNameFunc func(f *FlagSet, name string) NormalizedName
 
 	addedGoFlagSets []*goflag.FlagSet
+	unknownFlags    []*Flag
 }
 
 // A Flag represents the state of a flag.
@@ -180,6 +181,12 @@ type Flag struct {
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
 	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+}
+
+// A UnknownFlag represents the state of a flag that is not expected.
+type UnknownFlag struct {
+	Name  string // name as it appears on command line
+	Value Value  // value as set
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -273,6 +280,16 @@ func (f *FlagSet) Name() string {
 // If output is nil, os.Stderr is used.
 func (f *FlagSet) SetOutput(output io.Writer) {
 	f.output = output
+}
+
+func (f *FlagSet) VisitUnknowns(fn func(*Flag)) {
+	if len(f.unknownFlags) == 0 {
+		return
+	}
+
+	for _, flag := range f.unknownFlags {
+		fn(flag)
+	}
 }
 
 // VisitAll visits the flags in lexicographical order or
@@ -956,6 +973,18 @@ func stripUnknownFlagValue(args []string) []string {
 	return nil
 }
 
+func createUnknownFlag(name string, value string) *Flag {
+	flag := new(Flag)
+	flag.Name = name
+	flag.Value = newStringValue(value, &value)
+	return flag
+}
+
+func (f *FlagSet) addUnknownFlag(name string, value string) {
+	flag := createUnknownFlag(name, value)
+	f.unknownFlags = append(f.unknownFlags, flag)
+}
+
 func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []string, err error) {
 	a = args
 	name := s[2:]
@@ -969,19 +998,11 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	flag, exists := f.formal[f.normalizeFlagName(name)]
 
 	if !exists {
-		switch {
-		case name == "help":
+		if name == "help" {
 			f.usage()
 			return a, ErrHelp
-		case f.ParseErrorsWhitelist.UnknownFlags:
-			// --unknown=unknownval arg ...
-			// we do not want to lose arg in this case
-			if len(split) >= 2 {
-				return a, nil
-			}
-
-			return stripUnknownFlagValue(a), nil
-		default:
+		}
+		if !f.ParseErrorsWhitelist.UnknownFlags {
 			err = f.failf("unknown flag: --%s", name)
 			return
 		}
@@ -991,15 +1012,28 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	if len(split) == 2 {
 		// '--flag=arg'
 		value = split[1]
-	} else if flag.NoOptDefVal != "" {
+	} else if exists && flag.NoOptDefVal != "" {
 		// '--flag' (arg was optional)
 		value = flag.NoOptDefVal
 	} else if len(a) > 0 {
 		// '--flag arg'
-		value = a[0]
-		a = a[1:]
-	} else {
-		// '--flag' (arg was required)
+		if !exists && strings.HasPrefix(a[0], "-") {
+			value = ""
+		} else {
+			value = a[0]
+			a = a[1:]
+		}
+	} else if f.ParseErrorsWhitelist.UnknownFlags {
+		value = ""
+	}
+
+	if !exists && f.ParseErrorsWhitelist.UnknownFlags {
+		fmt.Println("in not exist flag")
+		f.addUnknownFlag(name, value)
+		return
+	}
+
+	if flag.NoOptDefVal == "" && value == "" {
 		err = f.failf("flag needs an argument: %s", s)
 		return
 	}
@@ -1023,22 +1057,12 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 
 	flag, exists := f.shorthands[c]
 	if !exists {
-		switch {
-		case c == 'h':
+		if c == 'h' {
 			f.usage()
 			err = ErrHelp
 			return
-		case f.ParseErrorsWhitelist.UnknownFlags:
-			// '-f=arg arg ...'
-			// we do not want to lose arg in this case
-			if len(shorthands) > 2 && shorthands[1] == '=' {
-				outShorts = ""
-				return
-			}
-
-			outArgs = stripUnknownFlagValue(outArgs)
-			return
-		default:
+		}
+		if !f.ParseErrorsWhitelist.UnknownFlags {
 			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
 			return
 		}
@@ -1049,8 +1073,8 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		// '-f=arg'
 		value = shorthands[2:]
 		outShorts = ""
-	} else if flag.NoOptDefVal != "" {
-		// '-f' (arg was optional)
+	} else if exists && flag.NoOptDefVal != "" {
+		// '--flag' (arg was optional)
 		value = flag.NoOptDefVal
 	} else if len(shorthands) > 1 {
 		// '-farg'
@@ -1058,9 +1082,23 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		outShorts = ""
 	} else if len(args) > 0 {
 		// '-f arg'
-		value = args[0]
-		outArgs = args[1:]
-	} else {
+		if !exists && strings.HasPrefix(args[0], "-") {
+			value = ""
+		} else {
+			value = args[0]
+			outArgs = args[1:]
+		}
+
+	} else if f.ParseErrorsWhitelist.UnknownFlags {
+		value = ""
+	}
+
+	if !exists && f.ParseErrorsWhitelist.UnknownFlags {
+		f.addUnknownFlag(string(c), value)
+		return
+	}
+
+	if flag.NoOptDefVal == "" && value == "" {
 		// '-f' (arg was required)
 		err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
 		return
