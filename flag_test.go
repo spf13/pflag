@@ -1004,8 +1004,6 @@ func TestDeprecatedFlagInDocs(t *testing.T) {
 	out := new(bytes.Buffer)
 	f.SetOutput(out)
 	f.PrintDefaults()
-	tt := out.String()
-	fmt.Println(tt)
 
 	if strings.Contains(out.String(), "badflag") {
 		t.Errorf("found deprecated flag in usage!")
