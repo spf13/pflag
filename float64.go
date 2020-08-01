@@ -35,6 +35,15 @@ func (f *FlagSet) GetFloat64(name string) (float64, error) {
 	return val.(float64), nil
 }
 
+// MustGetFloat64 is like GetFloat64, but panics on error.
+func (f *FlagSet) MustGetFloat64(name string) float64 {
+	val, err := f.GetFloat64(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // Float64Var defines a float64 flag with specified name, default value, and usage string.
 // The argument p points to a float64 variable in which to store the value of the flag.
 func (f *FlagSet) Float64Var(p *float64, name string, value float64, usage string) {

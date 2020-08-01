@@ -60,6 +60,15 @@ func (f *FlagSet) GetBytesHex(name string) ([]byte, error) {
 	return val.([]byte), nil
 }
 
+// MustGetBytesHex is like GetBytesHex, but panics on error.
+func (f *FlagSet) MustGetBytesHex(name string) []byte {
+	val, err := f.GetBytesHex(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // BytesHexVar defines an []byte flag with specified name, default value, and usage string.
 // The argument p points to an []byte variable in which to store the value of the flag.
 func (f *FlagSet) BytesHexVar(p *[]byte, name string, value []byte, usage string) {
@@ -152,12 +161,20 @@ func bytesBase64ValueConv(sval string) (interface{}, error) {
 // GetBytesBase64 return the []byte value of a flag with the given name
 func (f *FlagSet) GetBytesBase64(name string) ([]byte, error) {
 	val, err := f.getFlagType(name, "bytesBase64", bytesBase64ValueConv)
-
 	if err != nil {
 		return []byte{}, err
 	}
 
 	return val.([]byte), nil
+}
+
+// MustGetBytesBase64 is like GetBytesBase64, but panics on error.
+func (f *FlagSet) MustGetBytesBase64(name string) []byte {
+	val, err := f.GetBytesBase64(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
 }
 
 // BytesBase64Var defines an []byte flag with specified name, default value, and usage string.

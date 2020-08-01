@@ -94,6 +94,15 @@ func (f *FlagSet) GetStringSlice(name string) ([]string, error) {
 	return val.([]string), nil
 }
 
+// MustGetStringSlice is like GetStringSlice, but panics on error.
+func (f *FlagSet) MustGetStringSlice(name string) []string {
+	val, err := f.GetStringSlice(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // StringSliceVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the value of the flag.
 // Compared to StringArray flags, StringSlice flags take comma-separated value as arguments and split them accordingly.

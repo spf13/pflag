@@ -125,6 +125,15 @@ func (f *FlagSet) GetFloat32Slice(name string) ([]float32, error) {
 	return val.([]float32), nil
 }
 
+// MustGetFloat32Slice is like GetFloat32Slice, but panics on error.
+func (f *FlagSet) MustGetFloat32Slice(name string) []float32 {
+	val, err := f.GetFloat32Slice(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // Float32SliceVar defines a float32Slice flag with specified name, default value, and usage string.
 // The argument p points to a []float32 variable in which to store the value of the flag.
 func (f *FlagSet) Float32SliceVar(p *[]float32, name string, value []float32, usage string) {

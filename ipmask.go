@@ -73,6 +73,15 @@ func (f *FlagSet) GetIPv4Mask(name string) (net.IPMask, error) {
 	return val.(net.IPMask), nil
 }
 
+// MustGetIPv4Mask is like GetIPv4Mask, but panics on error.
+func (f *FlagSet) MustGetIPv4Mask(name string) net.IPMask {
+	val, err := f.GetIPv4Mask(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // IPMaskVar defines an net.IPMask flag with specified name, default value, and usage string.
 // The argument p points to an net.IPMask variable in which to store the value of the flag.
 func (f *FlagSet) IPMaskVar(p *net.IPMask, name string, value net.IPMask, usage string) {

@@ -96,6 +96,15 @@ func (f *FlagSet) GetStringToInt64(name string) (map[string]int64, error) {
 	return val.(map[string]int64), nil
 }
 
+// MustGetStringToInt64 is like GetStringToInt64, but panics on error.
+func (f *FlagSet) MustGetStringToInt64(name string) map[string]int64 {
+	val, err := f.GetStringToInt64(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // StringToInt64Var defines a string flag with specified name, default value, and usage string.
 // The argument p point64s to a map[string]int64 variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma

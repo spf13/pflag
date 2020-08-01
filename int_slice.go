@@ -109,6 +109,15 @@ func (f *FlagSet) GetIntSlice(name string) ([]int, error) {
 	return val.([]int), nil
 }
 
+// MustGetIntSlice is like GetIntSlice, but panics on error.
+func (f *FlagSet) MustGetIntSlice(name string) []int {
+	val, err := f.GetIntSlice(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // IntSliceVar defines a intSlice flag with specified name, default value, and usage string.
 // The argument p points to a []int variable in which to store the value of the flag.
 func (f *FlagSet) IntSliceVar(p *[]int, name string, value []int, usage string) {

@@ -76,6 +76,15 @@ func (f *FlagSet) GetStringArray(name string) ([]string, error) {
 	return val.([]string), nil
 }
 
+// MustGetStringArray is like GetStringArray, but panics on error.
+func (f *FlagSet) MustGetStringArray(name string) []string {
+	val, err := f.GetStringArray(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // StringArrayVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
