@@ -162,3 +162,18 @@ func TestInvalidValue(t *testing.T) {
 		t.Fatal("expected an error but did not get any, tristate has value", tristate)
 	}
 }
+
+func TestBoolP(t *testing.T) {
+	b := BoolP("bool", "b", false, "bool value in CommandLine")
+	c := BoolP("c", "c", false, "other bool value")
+	args := []string{"--bool"}
+	if err := CommandLine.Parse(args); err != nil {
+		t.Error("expected no error, got ", err)
+	}
+	if *b != true {
+		t.Errorf("expected b=true got b=%v", *b)
+	}
+	if *c != false {
+		t.Errorf("expect c=false got c=%v", *c)
+	}
+}
