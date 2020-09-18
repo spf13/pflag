@@ -282,6 +282,7 @@ func (f *FlagSet) SetOutput(output io.Writer) {
 	f.output = output
 }
 
+// VisitUnknowns visits all the flags that have not been registered.
 func (f *FlagSet) VisitUnknowns(fn func(*Flag)) {
 	if len(f.unknownFlags) == 0 {
 		return
@@ -1028,13 +1029,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	}
 
 	if !exists && f.ParseErrorsWhitelist.UnknownFlags {
-		fmt.Println("in not exist flag")
 		f.addUnknownFlag(name, value)
-		return
-	}
-
-	if flag.NoOptDefVal == "" && value == "" {
-		err = f.failf("flag needs an argument: %s", s)
 		return
 	}
 
