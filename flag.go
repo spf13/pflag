@@ -590,20 +590,24 @@ func UnquoteUsage(flag *Flag) (name string, usage string) {
 	switch name {
 	case "bool":
 		name = ""
-	case "float64":
-		name = "float"
-	case "int64":
-		name = "int"
-	case "uint64":
-		name = "uint"
-	case "stringSlice":
-		name = "strings"
-	case "intSlice":
-		name = "ints"
-	case "uintSlice":
-		name = "uints"
 	case "boolSlice":
 		name = "bools"
+	case "durationSlice":
+		name = "durations"
+	case "float32", "float64":
+		name = "float"
+	case "floatSlice", "float32Slice", "float64Slice":
+		name = "floats"
+	case "int32", "int64":
+		name = "int"
+	case "intSlice", "int8Slice", "int16Slice", "int32Slice", "int64Slice":
+		name = "ints"
+	case "stringSlice":
+		name = "strings"
+	case "uint32", "uint64":
+		name = "uint"
+	case "uintSlice", "uint8Slice", "uint16Slice", "uint32Slice", "uint64Slice":
+		name = "uints"
 	}
 
 	return
