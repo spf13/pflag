@@ -161,6 +161,7 @@ func bytesBase64ValueConv(sval string) (interface{}, error) {
 // GetBytesBase64 return the []byte value of a flag with the given name
 func (f *FlagSet) GetBytesBase64(name string) ([]byte, error) {
 	val, err := f.getFlagType(name, "bytesBase64", bytesBase64ValueConv)
+
 	if err != nil {
 		return []byte{}, err
 	}
