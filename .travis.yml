@@ -1,7 +1,9 @@
 sudo: false
 
 language: go
-
+arch:
+  - amd64
+  - ppc64le
 go:
   - 1.9.x
   - 1.10.x
