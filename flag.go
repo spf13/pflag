@@ -180,6 +180,7 @@ type Flag struct {
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
 	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+	OmitDefValInUsage   bool                // Omit (if true) or print (if false or by default) the default value in usage message
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -728,7 +729,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		}
 
 		line += usage
-		if !flag.defaultIsZeroValue() {
+		if !flag.defaultIsZeroValue() && !flag.OmitDefValInUsage {
 			if flag.Value.Type() == "string" {
 				line += fmt.Sprintf(" (default %q)", flag.DefValue)
 			} else {

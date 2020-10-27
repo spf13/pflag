@@ -143,6 +143,32 @@ Would result in something like
 | --flagname       | ip=4321         |
 | [nothing]        | ip=1234         |
 
+## Preventing non-zero default values printing
+
+Sometimes the default value of a flag is set internally to the
+value that is not allowed to be entered by an end-user, like '-1'
+for a network port value in range [0-65535]. To avoid confusion
+of an end-user, the printout of default value can be suppressed
+per flag:
+
+``` go
+var ip = flag.IntP("flagname", "f", 1234, "help message")
+flag.Lookup("flagname").OmitDefValInUsage = true
+```
+
+By default `OmitDefValInUsage` is set to `false` and the snippet
+above would print:
+
+```
+    --flagname int    help message (default 1234)
+```
+
+and with `OmitDefValInUsage` set to `true` it would print:
+
+```
+    --flagname int    help message
+```
+
 ## Command line flag syntax
 
 ```
