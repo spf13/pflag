@@ -124,8 +124,8 @@ const (
 	PanicOnError
 )
 
-// ParseErrorsWhitelist defines the parsing errors that can be ignored
-type ParseErrorsWhitelist struct {
+// ParseErrorsAllowlist defines the parsing errors that can be ignored
+type ParseErrorsAllowlist struct {
 	// UnknownFlags will ignore unknown flags errors and continue parsing rest of the flags
 	UnknownFlags bool
 }
@@ -145,8 +145,8 @@ type FlagSet struct {
 	// help/usage messages.
 	SortFlags bool
 
-	// ParseErrorsWhitelist is used to configure a whitelist of errors
-	ParseErrorsWhitelist ParseErrorsWhitelist
+	// ParseErrorsAllowlist is used to configure a whitelist of errors
+	ParseErrorsWhitelist ParseErrorsAllowlist
 
 	name              string
 	parsed            bool
