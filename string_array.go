@@ -76,7 +76,7 @@ func (f *FlagSet) GetStringArray(name string) ([]string, error) {
 // The argument p points to a []string variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
 func (f *FlagSet) StringArrayVar(p *[]string, name string, value []string, usage string) {
-	f.VarP(newStringArrayValue(value, p), name, "", usage)
+	f.StringArrayVarP(p, name, "", value, usage)
 }
 
 // StringArrayVarP is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash.
@@ -84,25 +84,33 @@ func (f *FlagSet) StringArrayVarP(p *[]string, name, shorthand string, value []s
 	f.VarP(newStringArrayValue(value, p), name, shorthand, usage)
 }
 
+// StringArrayVarS is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) StringArrayVarS(p *[]string, name, shorthand string, value []string, usage string) {
+	f.VarS(newStringArrayValue(value, p), name, shorthand, usage)
+}
+
 // StringArrayVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
 func StringArrayVar(p *[]string, name string, value []string, usage string) {
-	CommandLine.VarP(newStringArrayValue(value, p), name, "", usage)
+	CommandLine.StringArrayVar(p, name, value, usage)
 }
 
 // StringArrayVarP is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash.
 func StringArrayVarP(p *[]string, name, shorthand string, value []string, usage string) {
-	CommandLine.VarP(newStringArrayValue(value, p), name, shorthand, usage)
+	CommandLine.StringArrayVarP(p, name, shorthand, value, usage)
+}
+
+// StringArrayVarS is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func StringArrayVarS(p *[]string, name, shorthand string, value []string, usage string) {
+	CommandLine.StringArrayVarS(p, name, shorthand, value, usage)
 }
 
 // StringArray defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a []string variable that stores the value of the flag.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
 func (f *FlagSet) StringArray(name string, value []string, usage string) *[]string {
-	p := []string{}
-	f.StringArrayVarP(&p, name, "", value, usage)
-	return &p
+	return f.StringArrayP(name, "", value, usage)
 }
 
 // StringArrayP is like StringArray, but accepts a shorthand letter that can be used after a single dash.
@@ -112,14 +120,26 @@ func (f *FlagSet) StringArrayP(name, shorthand string, value []string, usage str
 	return &p
 }
 
+// StringArrayS is like StringArray, but accepts a shorthand letter that can be used after a single , alone, alone.
+func (f *FlagSet) StringArrayS(name, shorthand string, value []string, usage string) *[]string {
+	p := []string{}
+	f.StringArrayVarS(&p, name, shorthand, value, usage)
+	return &p
+}
+
 // StringArray defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a []string variable that stores the value of the flag.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
 func StringArray(name string, value []string, usage string) *[]string {
-	return CommandLine.StringArrayP(name, "", value, usage)
+	return CommandLine.StringArray(name, value, usage)
 }
 
 // StringArrayP is like StringArray, but accepts a shorthand letter that can be used after a single dash.
 func StringArrayP(name, shorthand string, value []string, usage string) *[]string {
 	return CommandLine.StringArrayP(name, shorthand, value, usage)
+}
+
+// StringArrayS is like StringArray, but accepts a shorthand letter that can be used after a single dash, alone.
+func StringArrayS(name, shorthand string, value []string, usage string) *[]string {
+	return CommandLine.StringArrayS(name, shorthand, value, usage)
 }

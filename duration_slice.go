@@ -120,7 +120,7 @@ func (f *FlagSet) GetDurationSlice(name string) ([]time.Duration, error) {
 // DurationSliceVar defines a durationSlice flag with specified name, default value, and usage string.
 // The argument p points to a []time.Duration variable in which to store the value of the flag.
 func (f *FlagSet) DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string) {
-	f.VarP(newDurationSliceValue(value, p), name, "", usage)
+	f.DurationSliceVarP(p, name, "", value, usage)
 }
 
 // DurationSliceVarP is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash.
@@ -128,23 +128,31 @@ func (f *FlagSet) DurationSliceVarP(p *[]time.Duration, name, shorthand string, 
 	f.VarP(newDurationSliceValue(value, p), name, shorthand, usage)
 }
 
+// DurationSliceVarS is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) DurationSliceVarS(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) {
+	f.VarS(newDurationSliceValue(value, p), name, shorthand, usage)
+}
+
 // DurationSliceVar defines a duration[] flag with specified name, default value, and usage string.
 // The argument p points to a duration[] variable in which to store the value of the flag.
 func DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string) {
-	CommandLine.VarP(newDurationSliceValue(value, p), name, "", usage)
+	CommandLine.DurationSliceVar(p, name, value, usage)
 }
 
 // DurationSliceVarP is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func DurationSliceVarP(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) {
-	CommandLine.VarP(newDurationSliceValue(value, p), name, shorthand, usage)
+	CommandLine.DurationSliceVarP(p, name, shorthand, value, usage)
+}
+
+// DurationSliceVarS is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func DurationSliceVarS(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) {
+	CommandLine.DurationSliceVarS(p, name, shorthand, value, usage)
 }
 
 // DurationSlice defines a []time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a []time.Duration variable that stores the value of the flag.
 func (f *FlagSet) DurationSlice(name string, value []time.Duration, usage string) *[]time.Duration {
-	p := []time.Duration{}
-	f.DurationSliceVarP(&p, name, "", value, usage)
-	return &p
+	return f.DurationSliceP(name, "", value, usage)
 }
 
 // DurationSliceP is like DurationSlice, but accepts a shorthand letter that can be used after a single dash.
@@ -154,13 +162,25 @@ func (f *FlagSet) DurationSliceP(name, shorthand string, value []time.Duration, 
 	return &p
 }
 
+// DurationSliceS is like DurationSlice, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) DurationSliceS(name, shorthand string, value []time.Duration, usage string) *[]time.Duration {
+	p := []time.Duration{}
+	f.DurationSliceVarS(&p, name, shorthand, value, usage)
+	return &p
+}
+
 // DurationSlice defines a []time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a []time.Duration variable that stores the value of the flag.
 func DurationSlice(name string, value []time.Duration, usage string) *[]time.Duration {
-	return CommandLine.DurationSliceP(name, "", value, usage)
+	return CommandLine.DurationSlice(name, value, usage)
 }
 
 // DurationSliceP is like DurationSlice, but accepts a shorthand letter that can be used after a single dash.
 func DurationSliceP(name, shorthand string, value []time.Duration, usage string) *[]time.Duration {
 	return CommandLine.DurationSliceP(name, shorthand, value, usage)
+}
+
+// DurationSliceS is like DurationSlice, but accepts a shorthand letter that can be used after a single dash, alone.
+func DurationSliceS(name, shorthand string, value []time.Duration, usage string) *[]time.Duration {
+	return CommandLine.DurationSliceS(name, shorthand, value, usage)
 }
