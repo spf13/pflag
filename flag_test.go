@@ -1186,6 +1186,31 @@ const defaultOutput = `      --A                         for bootstrapping, allo
       --custom custom             custom Value implementation
       --customP custom            a VarP with default (default 10)
       --maxT timeout              set timeout for dial
+      --omitDefault int           A non-zero int with OmitDefValInUsage (default 1234)
+  -v, --verbose count             verbosity
+`
+
+const defaultOutputWithoutDefaults = `      --A                         for bootstrapping, allow 'any' type
+      --Alongflagname             disable bounds checking
+  -C, --CCC                       a boolean defaulting to true (default true)
+      --D path                    set relative path for local imports
+  -E, --EEE num[=1234]            a num with NoOptDefVal (default 4321)
+      --F number                  a non-zero number (default 2.7)
+      --G float                   a float that defaults to zero
+      --IP ip                     IP address with no default
+      --IPMask ipMask             Netmask address with no default
+      --IPNet ipNet               IP network with no default
+      --Ints ints                 int slice with zero default
+      --N int                     a non-zero int (default 27)
+      --ND1 string[="bar"]        a string with NoOptDefVal (default "foo")
+      --ND2 num[=4321]            a num with NoOptDefVal (default 1234)
+      --StringArray stringArray   string array with zero default
+      --StringSlice strings       string slice with zero default
+      --Z int                     an int that defaults to zero
+      --custom custom             custom Value implementation
+      --customP custom            a VarP with default (default 10)
+      --maxT timeout              set timeout for dial
+      --omitDefault int           A non-zero int with OmitDefValInUsage
   -v, --verbose count             verbosity
 `
 
@@ -1228,6 +1253,7 @@ func TestPrintDefaults(t *testing.T) {
 	fs.StringSlice("StringSlice", []string{}, "string slice with zero default")
 	fs.StringArray("StringArray", []string{}, "string array with zero default")
 	fs.CountP("verbose", "v", "verbosity")
+	fs.Int("omitDefault", 1234, "A non-zero int with OmitDefValInUsage")
 
 	var cv customValue
 	fs.Var(&cv, "custom", "custom Value implementation")
@@ -1241,6 +1267,51 @@ func TestPrintDefaults(t *testing.T) {
 		fmt.Println("\n" + got)
 		fmt.Println("\n" + defaultOutput)
 		t.Errorf("got %q want %q\n", got, defaultOutput)
+	}
+}
+
+func TestPrintWithoutDefaults(t *testing.T) {
+	fs := NewFlagSet("print defaults test", ContinueOnError)
+	var buf bytes.Buffer
+	fs.SetOutput(&buf)
+	fs.Bool("A", false, "for bootstrapping, allow 'any' type")
+	fs.Bool("Alongflagname", false, "disable bounds checking")
+	fs.BoolP("CCC", "C", true, "a boolean defaulting to true")
+	fs.String("D", "", "set relative `path` for local imports")
+	fs.Float64("F", 2.7, "a non-zero `number`")
+	fs.Float64("G", 0, "a float that defaults to zero")
+	fs.Int("N", 27, "a non-zero int")
+	fs.IntSlice("Ints", []int{}, "int slice with zero default")
+	fs.IP("IP", nil, "IP address with no default")
+	fs.IPMask("IPMask", nil, "Netmask address with no default")
+	fs.IPNet("IPNet", net.IPNet{}, "IP network with no default")
+	fs.Int("Z", 0, "an int that defaults to zero")
+	fs.Duration("maxT", 0, "set `timeout` for dial")
+	fs.String("ND1", "foo", "a string with NoOptDefVal")
+	fs.Lookup("ND1").NoOptDefVal = "bar"
+	fs.Int("ND2", 1234, "a `num` with NoOptDefVal")
+	fs.Lookup("ND2").NoOptDefVal = "4321"
+	fs.IntP("EEE", "E", 4321, "a `num` with NoOptDefVal")
+	fs.ShorthandLookup("E").NoOptDefVal = "1234"
+	fs.StringSlice("StringSlice", []string{}, "string slice with zero default")
+	fs.StringArray("StringArray", []string{}, "string array with zero default")
+	fs.CountP("verbose", "v", "verbosity")
+	fs.Int("omitDefault", 1234, "A non-zero int with OmitDefValInUsage")
+
+	fs.Lookup("omitDefault").OmitDefValInUsage = true
+
+	var cv customValue
+	fs.Var(&cv, "custom", "custom Value implementation")
+
+	cv2 := customValue(10)
+	fs.VarP(&cv2, "customP", "", "a VarP with default")
+
+	fs.PrintDefaults()
+	got := buf.String()
+	if got != defaultOutputWithoutDefaults {
+		fmt.Println("\n" + got)
+		fmt.Println("\n" + defaultOutputWithoutDefaults)
+		t.Errorf("got %q want %q\n", got, defaultOutputWithoutDefaults)
 	}
 }
 
