@@ -464,7 +464,11 @@ func (f *FlagSet) Set(name, value string) error {
 	normalName := f.normalizeFlagName(name)
 	flag, ok := f.formal[normalName]
 	if !ok {
-		return fmt.Errorf("no such flag -%v", name)
+		dash := "--"
+		if len(name) == 1 {
+			dash = "-"
+		}
+		return fmt.Errorf("unknown flag: %v%v", dash, name)
 	}
 
 	err := flag.Value.Set(value)
@@ -501,7 +505,11 @@ func (f *FlagSet) SetAnnotation(name, key string, values []string) error {
 	normalName := f.normalizeFlagName(name)
 	flag, ok := f.formal[normalName]
 	if !ok {
-		return fmt.Errorf("no such flag -%v", name)
+		dash := "--"
+		if len(name) == 1 {
+			dash = "-"
+		}
+		return fmt.Errorf("unknown flag: %v%v", dash, name)
 	}
 	if flag.Annotations == nil {
 		flag.Annotations = map[string][]string{}
@@ -551,7 +559,7 @@ func (f *Flag) defaultIsZeroValue() bool {
 	case *intSliceValue, *stringSliceValue, *stringArrayValue:
 		return f.DefValue == "[]"
 	default:
-		switch f.Value.String() {
+		switch f.DefValue {
 		case "false":
 			return true
 		case "<nil>":
