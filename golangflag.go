@@ -8,6 +8,7 @@ import (
 	goflag "flag"
 	"reflect"
 	"strings"
+	"unicode/utf8"
 )
 
 // flagValueWrapper implements pflag.Value around a flag.Value.  The main
@@ -72,8 +73,9 @@ func PFlagFromGoFlag(goflag *goflag.Flag) *Flag {
 		DefValue: goflag.Value.String(),
 	}
 	// Ex: if the golang flag was -v, allow both -v and --v to work
-	if len(flag.Name) == 1 {
-		flag.Shorthand = flag.Name
+	if utf8.RuneCountInString(flag.Name) == 1 {
+		short, _ := utf8.DecodeRuneInString(flag.Name)
+		flag.Shorthand = short
 	}
 	if fv, ok := goflag.Value.(goBoolFlag); ok && fv.IsBoolFlag() {
 		flag.NoOptDefVal = "true"

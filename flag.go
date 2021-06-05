@@ -107,6 +107,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"unicode/utf8"
 )
 
 // ErrHelp is the error returned if the flag -help is invoked but no such flag is defined.
@@ -156,7 +157,7 @@ type FlagSet struct {
 	formal            map[NormalizedName]*Flag
 	orderedFormal     []*Flag
 	sortedFormal      []*Flag
-	shorthands        map[byte]*Flag
+	shorthands        map[rune]*Flag
 	args              []string // arguments after flags
 	argsLenAtDash     int      // len(args) when a '--' was located when parsing, or -1 if no --
 	errorHandling     ErrorHandling
@@ -170,7 +171,7 @@ type FlagSet struct {
 // A Flag represents the state of a flag.
 type Flag struct {
 	Name                string              // name as it appears on command line
-	Shorthand           string              // one-letter abbreviated flag
+	Shorthand           rune                // one-letter abbreviated flag
 	Usage               string              // help message
 	Value               Value               // value as set
 	DefValue            string              // default value (as text); for usage message
@@ -358,18 +359,18 @@ func (f *FlagSet) Lookup(name string) *Flag {
 
 // ShorthandLookup returns the Flag structure of the short handed flag,
 // returning nil if none exists.
-// It panics, if len(name) > 1.
+// It panics if name contains more than one UTF-8 character.
 func (f *FlagSet) ShorthandLookup(name string) *Flag {
-	if name == "" {
-		return nil
-	}
-	if len(name) > 1 {
-		msg := fmt.Sprintf("can not look up shorthand which is more than one ASCII character: %q", name)
-		fmt.Fprintf(f.Output(), msg)
+	if utf8.RuneCountInString(name) > 1 {
+		msg := fmt.Sprintf("can not look up shorthand which is more than one UTF-8 character: %q", name)
+		fmt.Fprintln(f.Output(), msg)
 		panic(msg)
 	}
-	c := name[0]
-	return f.shorthands[c]
+	r, _ := utf8.DecodeRuneInString(name)
+	if r == utf8.RuneError {
+		return nil
+	}
+	return f.shorthands[r]
 }
 
 // lookup returns the Flag structure of the named flag, returning nil if none exists.
@@ -470,8 +471,8 @@ func (f *FlagSet) Set(name, value string) error {
 	err := flag.Value.Set(value)
 	if err != nil {
 		var flagName string
-		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			flagName = fmt.Sprintf("-%s, --%s", flag.Shorthand, flag.Name)
+		if flag.Shorthand != 0 && flag.ShorthandDeprecated == "" {
+			flagName = fmt.Sprintf("-%c, --%s", flag.Shorthand, flag.Name)
 		} else {
 			flagName = fmt.Sprintf("--%s", flag.Name)
 		}
@@ -693,8 +694,8 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		}
 
 		line := ""
-		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			line = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
+		if flag.Shorthand != 0 && flag.ShorthandDeprecated == "" {
+			line = fmt.Sprintf("  -%c, --%s", flag.Shorthand, flag.Name)
 		} else {
 			line = fmt.Sprintf("      --%s", flag.Name)
 		}
@@ -827,10 +828,14 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 
 // VarPF is like VarP, but returns the flag created
 func (f *FlagSet) VarPF(value Value, name, shorthand, usage string) *Flag {
+	short, _ := utf8.DecodeRuneInString(shorthand)
+	if short == utf8.RuneError {
+		short = 0
+	}
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
 		Name:      name,
-		Shorthand: shorthand,
+		Shorthand: short,
 		Usage:     usage,
 		Value:     value,
 		DefValue:  value.String(),
@@ -862,25 +867,19 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	f.formal[normalizedFlagName] = flag
 	f.orderedFormal = append(f.orderedFormal, flag)
 
-	if flag.Shorthand == "" {
+	if flag.Shorthand == 0 {
 		return
 	}
-	if len(flag.Shorthand) > 1 {
-		msg := fmt.Sprintf("%q shorthand is more than one ASCII character", flag.Shorthand)
-		fmt.Fprintf(f.Output(), msg)
-		panic(msg)
-	}
 	if f.shorthands == nil {
-		f.shorthands = make(map[byte]*Flag)
+		f.shorthands = make(map[rune]*Flag)
 	}
-	c := flag.Shorthand[0]
-	used, alreadyThere := f.shorthands[c]
+	used, alreadyThere := f.shorthands[flag.Shorthand]
 	if alreadyThere {
-		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
+		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", flag.Shorthand, f.name, used.Name)
 		fmt.Fprintf(f.Output(), msg)
 		panic(msg)
 	}
-	f.shorthands[c] = flag
+	f.shorthands[flag.Shorthand] = flag
 }
 
 // AddFlagSet adds one FlagSet to another. If a flag is already present in f
@@ -1019,7 +1018,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 	}
 
 	outShorts = shorthands[1:]
-	c := shorthands[0]
+	c, _ := utf8.DecodeRuneInString(shorthands)
 
 	flag, exists := f.shorthands[c]
 	if !exists {
@@ -1067,7 +1066,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 	}
 
 	if flag.ShorthandDeprecated != "" {
-		fmt.Fprintf(f.Output(), "Flag shorthand -%s has been deprecated, %s\n", flag.Shorthand, flag.ShorthandDeprecated)
+		fmt.Fprintf(f.Output(), "Flag shorthand -%c has been deprecated, %s\n", flag.Shorthand, flag.ShorthandDeprecated)
 	}
 
 	err = fn(flag, value)
@@ -1082,7 +1081,7 @@ func (f *FlagSet) parseShortArg(s string, args []string, fn parseFunc) (a []stri
 	shorthands := s[1:]
 
 	// "shorthands" can be a series of shorthand letters of flags (e.g. "-vvv").
-	for len(shorthands) > 0 {
+	for utf8.RuneCountInString(shorthands) > 0 {
 		shorthands, a, err = f.parseSingleShortArg(shorthands, args, fn)
 		if err != nil {
 			return
