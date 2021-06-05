@@ -219,16 +219,23 @@ myFlagSet.SetNormalizeFunc(aliasNormalizeFunc)
 ```
 
 ## Deprecating a flag or its shorthand
-It is possible to deprecate a flag, or just its shorthand. Deprecating a flag/shorthand hides it from help text and prints a usage message when the deprecated flag/shorthand is used.
+It is possible to deprecate a flag, or just its shorthand. Deprecating a flag/shorthand prints a usage message when the deprecated flag/shorthand is used. Optionally flag/shorthand may be hidden from the help text.
 
-**Example #1**: You want to deprecate a flag named "badflag" as well as inform the users what flag they should use instead.
+**Example #1**: You want to deprecate a flag named "badflag", hide it from help text and inform the users what flag they should use instead.
 ```go
-// deprecate a flag by specifying its name and a usage message
-flags.MarkDeprecated("badflag", "please use --good-flag instead")
+// deprecate a flag and hide it from help text by specifying its name and a usage message
+flags.MarkDeprecated("badflag", "please use --good-flag instead", true)
 ```
 This hides "badflag" from help text, and prints `Flag --badflag has been deprecated, please use --good-flag instead` when "badflag" is used.
 
-**Example #2**: You want to keep a flag name "noshorthandflag" but deprecate its shortname "n".
+**Example #2**: You want to deprecate a flag named "badflag", inform the users what flag they should use instead but you still want to have the original one in the help text.
+```go
+// deprecate a flag but keep it in help text
+flags.MarkDeprecated("badflag", "please use --good-flag instead", false)
+```
+This prints `Flag --badflag has been deprecated, please use --good-flag instead` when "badflag" is used, but "badflag" will still appear in the help text.
+
+**Example #3**: You want to keep a flag name "noshorthandflag" but deprecate its shortname "n".
 ```go
 // deprecate a flag shorthand by specifying its flag name and a usage message
 flags.MarkShorthandDeprecated("noshorthandflag", "please use --noshorthandflag only")

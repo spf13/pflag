@@ -992,14 +992,14 @@ func TestTermination(t *testing.T) {
 	}
 }
 
-func getDeprecatedFlagSet() *FlagSet {
+func getDeprecatedFlagSet(hidden bool) *FlagSet {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("badflag", true, "always true")
-	f.MarkDeprecated("badflag", "use --good-flag instead")
+	f.MarkDeprecated("badflag", "use --good-flag instead", hidden)
 	return f
 }
 func TestDeprecatedFlagInDocs(t *testing.T) {
-	f := getDeprecatedFlagSet()
+	f := getDeprecatedFlagSet(true)
 
 	out := new(bytes.Buffer)
 	f.SetOutput(out)
@@ -1011,12 +1011,7 @@ func TestDeprecatedFlagInDocs(t *testing.T) {
 }
 
 func TestUnHiddenDeprecatedFlagInDocs(t *testing.T) {
-	f := getDeprecatedFlagSet()
-	flg := f.Lookup("badflag")
-	if flg == nil {
-		t.Fatalf("Unable to lookup 'bob' in TestUnHiddenDeprecatedFlagInDocs")
-	}
-	flg.Hidden = false
+	f := getDeprecatedFlagSet(false)
 
 	out := new(bytes.Buffer)
 	f.SetOutput(out)
@@ -1072,7 +1067,7 @@ func TestDeprecatedFlagUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("badflag", true, "always true")
 	usageMsg := "use --good-flag instead"
-	f.MarkDeprecated("badflag", usageMsg)
+	f.MarkDeprecated("badflag", usageMsg, true)
 
 	args := []string{"--badflag"}
 	out, err := parseReturnStderr(t, f, args)
@@ -1108,7 +1103,7 @@ func TestDeprecatedFlagUsageNormalized(t *testing.T) {
 	f.Bool("bad-double_flag", true, "always true")
 	f.SetNormalizeFunc(wordSepNormalizeFunc)
 	usageMsg := "use --good-flag instead"
-	f.MarkDeprecated("bad_double-flag", usageMsg)
+	f.MarkDeprecated("bad_double-flag", usageMsg, true)
 
 	args := []string{"--bad_double_flag"}
 	out, err := parseReturnStderr(t, f, args)
