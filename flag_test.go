@@ -480,6 +480,68 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 	}
 }
 
+func testRetrieveUknowsWhenUnknownFlagsParsed(t *testing.T) {
+	f := NewFlagSet("unknwonFlags", ContinueOnError)
+	if f.Parsed() {
+		t.Error("f.Parse() = true before Parse")
+	}
+	boolaFlag := f.BoolP("boola", "a", false, "bool value")
+	stringaFlag := f.StringP("stringa", "s", "0", "string value")
+
+	args := []string{
+		"-a",
+		"--stringa",
+		"hello",
+		"--unknownFlag1",
+		"unknownValue1",
+		"--unknownFlag2",
+		"--unknownFlag3=unknownValue3",
+		"-e",
+		"unknownValue4",
+		"-f=unknownValue5",
+		"-g",
+	}
+
+	f.ParseErrorsWhitelist.UnknownFlags = true
+
+	want := map[string]string{
+		"unknownFlag1": "unknownValue1",
+		"unknownFlag2": "",
+		"unknownFlag3": "unknownValue3",
+		"e":            "unknownValue4",
+		"f":            "unknownValue5",
+		"g":            "",
+	}
+
+	f.SetOutput(ioutil.Discard)
+	if err := f.Parse(args); err != nil {
+		t.Error("expected no error, got ", err)
+	}
+	if !f.Parsed() {
+		t.Error("f.Parse() = false after Parse")
+	}
+	if *boolaFlag != true {
+		t.Error("boola flag should be true, is ", *boolaFlag)
+	}
+	if *stringaFlag != "hello" {
+		t.Error("stringa flag should be `hello`, is ", *stringaFlag)
+	}
+	if len(f.unknownFlags) != len(want) {
+		t.Errorf("f.ParseAll() failed to parse unknown flags")
+	}
+	for _, flag := range f.unknownFlags {
+		wantedValue, ok := want[flag.Name]
+		if !ok {
+			t.Errorf("f.unknownFlags contains a flag \"%s\" and shouldn't", flag.Name)
+			break
+		}
+		if wantedValue != flag.Value.String() {
+			t.Errorf("value for the unknown flag \"%s\" should be \"%s\", got \"%s\"", flag.Name, wantedValue, flag.Value.String())
+		}
+
+	}
+}
+
 func TestShorthand(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
 	if f.Parsed() {
@@ -588,6 +650,7 @@ func TestParseAll(t *testing.T) {
 
 func TestIgnoreUnknownFlags(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
+	testRetrieveUknowsWhenUnknownFlagsParsed(t)
 	testParseWithUnknownFlags(GetCommandLine(), t)
 }
 
