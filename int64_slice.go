@@ -117,6 +117,15 @@ func (f *FlagSet) GetInt64Slice(name string) ([]int64, error) {
 	return val.([]int64), nil
 }
 
+// MustGetInt64Slice is like GetInt64Slice, but panics on error.
+func (f *FlagSet) MustGetInt64Slice(name string) []int64 {
+	val, err := f.GetInt64Slice(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // Int64SliceVar defines a int64Slice flag with specified name, default value, and usage string.
 // The argument p points to a []int64 variable in which to store the value of the flag.
 func (f *FlagSet) Int64SliceVar(p *[]int64, name string, value []int64, usage string) {

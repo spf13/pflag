@@ -107,6 +107,15 @@ func (f *FlagSet) GetStringToString(name string) (map[string]string, error) {
 	return val.(map[string]string), nil
 }
 
+// MustGetStringToString is like GetStringToString, but panics on error.
+func (f *FlagSet) MustGetStringToString(name string) map[string]string {
+	val, err := f.GetStringToString(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // StringToStringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a map[string]string variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma
