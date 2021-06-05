@@ -24,6 +24,18 @@ func (i *ipMaskValue) Set(s string) error {
 	return nil
 }
 
+func (i *ipMaskValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case net.IPMask:
+		*i = ipMaskValue(tv)
+	case string:
+		return i.Set(tv)
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (i *ipMaskValue) Type() string {
 	return "ipMask"
 }

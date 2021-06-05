@@ -38,6 +38,16 @@ func (s *uintSliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *uintSliceValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case []uint:
+		*s.value = tv
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (s *uintSliceValue) Type() string {
 	return "uintSlice"
 }
