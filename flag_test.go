@@ -1186,7 +1186,7 @@ const defaultOutput = `      --A                         for bootstrapping, allo
       --custom custom             custom Value implementation
       --customP custom            a VarP with default (default 10)
       --maxT timeout              set timeout for dial
-  -v, --verbose count             verbosity
+  -v, --verbose=count             verbosity
 `
 
 // Custom value that satisfies the Value interface.
