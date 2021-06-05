@@ -398,6 +398,13 @@ func (f *FlagSet) getFlagType(name string, ftype string, convFunc func(sval stri
 	return result, nil
 }
 
+// ArgsLenAtDash will return the length of pflag.Args at the moment when a --
+// was found during arg parsing. This allows your program to know which args
+// were before the -- and which came after.
+func ArgsLenAtDash() int {
+	return CommandLine.ArgsLenAtDash()
+}
+
 // ArgsLenAtDash will return the length of f.Args at the moment when a -- was
 // found during arg parsing. This allows your program to know which args were
 // before the -- and which came after.
