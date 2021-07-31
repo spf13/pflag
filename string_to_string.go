@@ -57,6 +57,10 @@ func (s *stringToStringValue) Set(val string) error {
 	return nil
 }
 
+func (s *stringToStringValue) Get() interface{} {
+	return *s.value
+}
+
 func (s *stringToStringValue) Type() string {
 	return "stringToString"
 }
@@ -76,31 +80,9 @@ func (s *stringToStringValue) String() string {
 	return "[" + strings.TrimSpace(buf.String()) + "]"
 }
 
-func stringToStringConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// An empty string would cause an empty map
-	if len(val) == 0 {
-		return map[string]string{}, nil
-	}
-	r := csv.NewReader(strings.NewReader(val))
-	ss, err := r.Read()
-	if err != nil {
-		return nil, err
-	}
-	out := make(map[string]string, len(ss))
-	for _, pair := range ss {
-		kv := strings.SplitN(pair, "=", 2)
-		if len(kv) != 2 {
-			return nil, fmt.Errorf("%s must be formatted as key=value", pair)
-		}
-		out[kv[0]] = kv[1]
-	}
-	return out, nil
-}
-
 // GetStringToString return the map[string]string value of a flag with the given name
 func (f *FlagSet) GetStringToString(name string) (map[string]string, error) {
-	val, err := f.getFlagType(name, "stringToString", stringToStringConv)
+	val, err := f.getFlagType(name, "stringToString")
 	if err != nil {
 		return map[string]string{}, err
 	}

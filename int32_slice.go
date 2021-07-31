@@ -41,6 +41,10 @@ func (s *int32SliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *int32SliceValue) Get() interface{} {
+	return *s.value
+}
+
 func (s *int32SliceValue) Type() string {
 	return "int32Slice"
 }
@@ -95,30 +99,9 @@ func (s *int32SliceValue) GetSlice() []string {
 	return out
 }
 
-func int32SliceConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// Empty string would cause a slice with one (empty) entry
-	if len(val) == 0 {
-		return []int32{}, nil
-	}
-	ss := strings.Split(val, ",")
-	out := make([]int32, len(ss))
-	for i, d := range ss {
-		var err error
-		var temp64 int64
-		temp64, err = strconv.ParseInt(d, 0, 32)
-		if err != nil {
-			return nil, err
-		}
-		out[i] = int32(temp64)
-
-	}
-	return out, nil
-}
-
 // GetInt32Slice return the []int32 value of a flag with the given name
 func (f *FlagSet) GetInt32Slice(name string) ([]int32, error) {
-	val, err := f.getFlagType(name, "int32Slice", int32SliceConv)
+	val, err := f.getFlagType(name, "int32Slice")
 	if err != nil {
 		return []int32{}, err
 	}

@@ -173,6 +173,7 @@ type Flag struct {
 	Shorthand           string              // one-letter abbreviated flag
 	Usage               string              // help message
 	Value               Value               // value as set
+	Getter              Getter              // value as set
 	DefValue            string              // default value (as text); for usage message
 	Changed             bool                // If the user set the value (or if left to default)
 	NoOptDefVal         string              // default value (as text); if the flag is on the command line without any options
@@ -188,6 +189,13 @@ type Value interface {
 	String() string
 	Set(string) error
 	Type() string
+}
+
+type Getter interface {
+	String() string
+	Set(string) error
+	Type() string
+	Get() interface{}
 }
 
 // SliceValue is a secondary interface to all flags which hold a list
@@ -352,6 +360,11 @@ func Visit(fn func(*Flag)) {
 }
 
 // Lookup returns the Flag structure of the named flag, returning nil if none exists.
+func (f *FlagSet) Get(name string) (interface{}, error) {
+	return f.getFlagType(name, "")
+}
+
+// Lookup returns the Flag structure of the named flag, returning nil if none exists.
 func (f *FlagSet) Lookup(name string) *Flag {
 	return f.lookup(f.normalizeFlagName(name))
 }
@@ -378,24 +391,25 @@ func (f *FlagSet) lookup(name NormalizedName) *Flag {
 }
 
 // func to return a given type for a given flag name
-func (f *FlagSet) getFlagType(name string, ftype string, convFunc func(sval string) (interface{}, error)) (interface{}, error) {
+func (f *FlagSet) getFlagType(name string, ftype string) (interface{}, error) {
 	flag := f.Lookup(name)
 	if flag == nil {
 		err := fmt.Errorf("flag accessed but not defined: %s", name)
 		return nil, err
 	}
 
-	if flag.Value.Type() != ftype {
+	if ftype != "" && flag.Value.Type() != ftype {
 		err := fmt.Errorf("trying to get %s value of flag of type %s", ftype, flag.Value.Type())
 		return nil, err
 	}
 
-	sval := flag.Value.String()
-	result, err := convFunc(sval)
-	if err != nil {
-		return nil, err
+	var getter Getter
+	var ok bool
+	if getter, ok = flag.Value.(Getter); !ok {
+		return nil, fmt.Errorf("flag %s does not implement the Getter interface", name)
 	}
-	return result, nil
+
+	return getter.Get(), nil
 }
 
 // ArgsLenAtDash will return the length of f.Args at the moment when a -- was

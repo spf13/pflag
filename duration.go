@@ -18,19 +18,19 @@ func (d *durationValue) Set(s string) error {
 	return err
 }
 
+func (d *durationValue) Get() interface{} {
+	return time.Duration(*d)
+}
+
 func (d *durationValue) Type() string {
 	return "duration"
 }
 
 func (d *durationValue) String() string { return (*time.Duration)(d).String() }
 
-func durationConv(sval string) (interface{}, error) {
-	return time.ParseDuration(sval)
-}
-
 // GetDuration return the duration value of a flag with the given name
 func (f *FlagSet) GetDuration(name string) (time.Duration, error) {
-	val, err := f.getFlagType(name, "duration", durationConv)
+	val, err := f.getFlagType(name, "duration")
 	if err != nil {
 		return 0, err
 	}
