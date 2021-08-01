@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/big"
 	"net"
 	"os"
 	"reflect"
@@ -189,6 +190,7 @@ func testParse(f *FlagSet, t *testing.T) {
 	stringFlag := f.String("string", "0", "string value")
 	float32Flag := f.Float32("float32", 0, "float32 value")
 	float64Flag := f.Float64("float64", 0, "float64 value")
+	bigIntFlag := f.BigInt("bigint", *big.NewInt(30), "bigint value")
 	ipFlag := f.IP("ip", net.ParseIP("127.0.0.1"), "ip value")
 	maskFlag := f.IPMask("mask", ParseIPv4Mask("0.0.0.0"), "mask value")
 	durationFlag := f.Duration("duration", 5*time.Second, "time.Duration value")
@@ -197,6 +199,7 @@ func testParse(f *FlagSet, t *testing.T) {
 	optionalIntWithValueFlag := f.Int("optional-int-with-value", 0, "int value")
 	f.Lookup("optional-int-no-value").NoOptDefVal = "9"
 	extra := "one-extra-argument"
+
 	args := []string{
 		"--bool",
 		"--bool2=true",
@@ -214,6 +217,7 @@ func testParse(f *FlagSet, t *testing.T) {
 		"--string=hello",
 		"--float32=-172e12",
 		"--float64=2718e28",
+		"--bigint=111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
 		"--ip=10.11.12.13",
 		"--mask=255.255.255.0",
 		"--duration=2m",
@@ -359,6 +363,15 @@ func testParse(f *FlagSet, t *testing.T) {
 	if v, err := f.Get("float64"); err != nil || v.(float64) != *float64Flag {
 		t.Errorf("Get returned %v but float64Flag was %v", v, *float64Flag)
 	}
+	if bigIntFlag.String() != "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" {
+		t.Error("bigint flag should be 111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111, is ", bigIntFlag.String())
+	}
+	if v, err := f.GetBigInt("bigint"); err != nil || bigIntFlag.Cmp(&v) != 0 {
+		t.Errorf("GetBigInt returned %v but bigIntFlag was %v", v, *bigIntFlag)
+	}
+	if v, err := f.Get("bigint"); err != nil || bigIntFlag.Cmp(bigIntPtr(v.(big.Int))) != 0 {
+		t.Errorf("GetBigInt returned %v but bigIntFlag was %v", v, *bigIntFlag)
+	}
 	if !(*ipFlag).Equal(net.ParseIP("10.11.12.13")) {
 		t.Error("ip flag should be 10.11.12.13, is ", *ipFlag)
 	}
@@ -400,6 +413,10 @@ func testParse(f *FlagSet, t *testing.T) {
 	} else if f.Args()[0] != extra {
 		t.Errorf("expected argument %q got %q", extra, f.Args()[0])
 	}
+}
+
+func bigIntPtr(i big.Int) *big.Int {
+	return &i
 }
 
 func testParseAll(f *FlagSet, t *testing.T) {
