@@ -358,9 +358,14 @@ func Visit(fn func(*Flag)) {
 	CommandLine.Visit(fn)
 }
 
-// Lookup returns the Flag structure of the named flag, returning nil if none exists.
+// Get returns the value of the named flag.
 func (f *FlagSet) Get(name string) (interface{}, error) {
 	return f.getFlagType(name, "")
+}
+
+// Get returns the value of the named flag.
+func Get(name string) (interface{}, error) {
+	return CommandLine.Get(name)
 }
 
 // Lookup returns the Flag structure of the named flag, returning nil if none exists.
