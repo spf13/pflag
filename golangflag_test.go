@@ -28,6 +28,13 @@ func TestGoflags(t *testing.T) {
 	if getString != "bob" {
 		t.Fatalf("expected getString=bob but got getString=%s", getString)
 	}
+	getString2, err := f.Get("stringFlag")
+	if err != nil {
+		t.Fatal("expected no error; get", err)
+	}
+	if getString2 != "bob" {
+		t.Fatalf("expected getString=bob but got getString=%s", getString2)
+	}
 
 	getBool, err := f.GetBool("boolFlag")
 	if err != nil {
@@ -35,6 +42,13 @@ func TestGoflags(t *testing.T) {
 	}
 	if getBool != true {
 		t.Fatalf("expected getBool=true but got getBool=%v", getBool)
+	}
+	getBool2, err := f.Get("boolFlag")
+	if err != nil {
+		t.Fatal("expected no error; get", err)
+	}
+	if getBool2.(bool) != true {
+		t.Fatalf("expected getBool2=true but got getBool2=%v", getBool2)
 	}
 	if !f.Parsed() {
 		t.Fatal("f.Parsed() return false after f.Parse() called")

@@ -53,6 +53,10 @@ func (s *boolSliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *boolSliceValue) Get() interface{} {
+	return *s.value
+}
+
 // Type returns a string that uniquely represents this flag's type.
 func (s *boolSliceValue) Type() string {
 	return "boolSlice"
@@ -109,27 +113,9 @@ func (s *boolSliceValue) GetSlice() []string {
 	return out
 }
 
-func boolSliceConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// Empty string would cause a slice with one (empty) entry
-	if len(val) == 0 {
-		return []bool{}, nil
-	}
-	ss := strings.Split(val, ",")
-	out := make([]bool, len(ss))
-	for i, t := range ss {
-		var err error
-		out[i], err = strconv.ParseBool(t)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return out, nil
-}
-
 // GetBoolSlice returns the []bool value of a flag with the given name.
 func (f *FlagSet) GetBoolSlice(name string) ([]bool, error) {
-	val, err := f.getFlagType(name, "boolSlice", boolSliceConv)
+	val, err := f.getFlagType(name, "boolSlice")
 	if err != nil {
 		return []bool{}, err
 	}

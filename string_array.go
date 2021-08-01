@@ -14,6 +14,9 @@ func newStringArrayValue(val []string, p *[]string) *stringArrayValue {
 }
 
 func (s *stringArrayValue) Set(val string) error {
+	if val == "" {
+		return nil
+	}
 	if !s.changed {
 		*s.value = []string{val}
 		s.changed = true
@@ -21,6 +24,10 @@ func (s *stringArrayValue) Set(val string) error {
 		*s.value = append(*s.value, val)
 	}
 	return nil
+}
+
+func (s *stringArrayValue) Get() interface{} {
+	return *s.value
 }
 
 func (s *stringArrayValue) Append(val string) error {
@@ -54,18 +61,9 @@ func (s *stringArrayValue) String() string {
 	return "[" + str + "]"
 }
 
-func stringArrayConv(sval string) (interface{}, error) {
-	sval = sval[1 : len(sval)-1]
-	// An empty string would cause a array with one (empty) string
-	if len(sval) == 0 {
-		return []string{}, nil
-	}
-	return readAsCSV(sval)
-}
-
 // GetStringArray return the []string value of a flag with the given name
 func (f *FlagSet) GetStringArray(name string) ([]string, error) {
-	val, err := f.getFlagType(name, "stringArray", stringArrayConv)
+	val, err := f.getFlagType(name, "stringArray")
 	if err != nil {
 		return []string{}, err
 	}

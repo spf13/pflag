@@ -16,23 +16,19 @@ func (i *uintValue) Set(s string) error {
 	return err
 }
 
+func (i *uintValue) Get() interface{} {
+	return uint(*i)
+}
+
 func (i *uintValue) Type() string {
 	return "uint"
 }
 
 func (i *uintValue) String() string { return strconv.FormatUint(uint64(*i), 10) }
 
-func uintConv(sval string) (interface{}, error) {
-	v, err := strconv.ParseUint(sval, 0, 0)
-	if err != nil {
-		return 0, err
-	}
-	return uint(v), nil
-}
-
 // GetUint return the uint value of a flag with the given name
 func (f *FlagSet) GetUint(name string) (uint, error) {
-	val, err := f.getFlagType(name, "uint", uintConv)
+	val, err := f.getFlagType(name, "uint")
 	if err != nil {
 		return 0, err
 	}

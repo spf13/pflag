@@ -7,6 +7,7 @@ package pflag
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"strconv"
 	"testing"
 )
@@ -38,6 +39,14 @@ func createS2IFlag(vals map[string]int) string {
 	return buf.String()
 }
 
+func TestS2IValueImplementsGetter(t *testing.T) {
+	var v Value = new(stringToIntValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
+}
+
 func TestEmptyS2I(t *testing.T) {
 	var s2i map[string]int
 	f := setUpS2IFlagSet(&s2i)
@@ -52,6 +61,13 @@ func TestEmptyS2I(t *testing.T) {
 	}
 	if len(getS2I) != 0 {
 		t.Fatalf("got s2i %v with len=%d but expected length=0", getS2I, len(getS2I))
+	}
+	getS2I_2, err := f.Get("s2i")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getS2I_2, getS2I) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getS2I, getS2I, getS2I_2, getS2I_2)
 	}
 }
 
@@ -78,6 +94,13 @@ func TestS2I(t *testing.T) {
 		if vals[k] != v {
 			t.Fatalf("expected s2i[%s] to be %d but got: %d from GetStringToInt", k, vals[k], v)
 		}
+	}
+	getS2I_2, err := f.Get("s2i")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getS2I_2, getS2I) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getS2I, getS2I, getS2I_2, getS2I_2)
 	}
 }
 
@@ -106,6 +129,13 @@ func TestS2IDefault(t *testing.T) {
 			t.Fatalf("expected s2i[%s] to be %d from GetStringToInt but got: %d", k, vals[k], v)
 		}
 	}
+	getS2I_2, err := f.Get("s2i")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getS2I_2, getS2I) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getS2I, getS2I, getS2I_2, getS2I_2)
+	}
 }
 
 func TestS2IWithDefault(t *testing.T) {
@@ -132,6 +162,13 @@ func TestS2IWithDefault(t *testing.T) {
 		if vals[k] != v {
 			t.Fatalf("expected s2i[%s] to be %d from GetStringToInt but got: %d", k, vals[k], v)
 		}
+	}
+	getS2I_2, err := f.Get("s2i")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getS2I_2, getS2I) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getS2I, getS2I, getS2I_2, getS2I_2)
 	}
 }
 

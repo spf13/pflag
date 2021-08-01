@@ -53,6 +53,14 @@ func (v *flagValueWrapper) Set(s string) error {
 	return v.inner.Set(s)
 }
 
+func (v *flagValueWrapper) Get() interface{} {
+	if getter, ok := v.inner.(goflag.Getter); ok {
+		return getter.Get()
+	}
+
+	return v.inner.String()
+}
+
 func (v *flagValueWrapper) Type() string {
 	return v.flagType
 }

@@ -1,7 +1,6 @@
 package pflag
 
 import (
-	"fmt"
 	"net"
 	"strings"
 )
@@ -23,6 +22,10 @@ func (ipnet *ipNetValue) Set(value string) error {
 	return nil
 }
 
+func (i *ipNetValue) Get() interface{} {
+	return net.IPNet(*i)
+}
+
 func (*ipNetValue) Type() string {
 	return "ipNet"
 }
@@ -32,17 +35,9 @@ func newIPNetValue(val net.IPNet, p *net.IPNet) *ipNetValue {
 	return (*ipNetValue)(p)
 }
 
-func ipNetConv(sval string) (interface{}, error) {
-	_, n, err := net.ParseCIDR(strings.TrimSpace(sval))
-	if err == nil {
-		return *n, nil
-	}
-	return nil, fmt.Errorf("invalid string being converted to IPNet: %s", sval)
-}
-
 // GetIPNet return the net.IPNet value of a flag with the given name
 func (f *FlagSet) GetIPNet(name string) (net.IPNet, error) {
-	val, err := f.getFlagType(name, "ipNet", ipNetConv)
+	val, err := f.getFlagType(name, "ipNet")
 	if err != nil {
 		return net.IPNet{}, err
 	}

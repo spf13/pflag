@@ -46,6 +46,10 @@ func (s *stringToInt64Value) Set(val string) error {
 	return nil
 }
 
+func (s *stringToInt64Value) Get() interface{} {
+	return *s.value
+}
+
 func (s *stringToInt64Value) Type() string {
 	return "stringToInt64"
 }
@@ -65,31 +69,9 @@ func (s *stringToInt64Value) String() string {
 	return "[" + buf.String() + "]"
 }
 
-func stringToInt64Conv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// An empty string would cause an empty map
-	if len(val) == 0 {
-		return map[string]int64{}, nil
-	}
-	ss := strings.Split(val, ",")
-	out := make(map[string]int64, len(ss))
-	for _, pair := range ss {
-		kv := strings.SplitN(pair, "=", 2)
-		if len(kv) != 2 {
-			return nil, fmt.Errorf("%s must be formatted as key=value", pair)
-		}
-		var err error
-		out[kv[0]], err = strconv.ParseInt(kv[1], 10, 64)
-		if err != nil {
-			return nil, err
-		}
-	}
-	return out, nil
-}
-
 // GetStringToInt64 return the map[string]int64 value of a flag with the given name
 func (f *FlagSet) GetStringToInt64(name string) (map[string]int64, error) {
-	val, err := f.getFlagType(name, "stringToInt64", stringToInt64Conv)
+	val, err := f.getFlagType(name, "stringToInt64")
 	if err != nil {
 		return map[string]int64{}, err
 	}

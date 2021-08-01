@@ -19,6 +19,14 @@ func setUpBSFlagSetWithDefault(bsp *[]bool) *FlagSet {
 	return f
 }
 
+func TestBoolSliceValueImplementsGetter(t *testing.T) {
+	var v Value = new(boolSliceValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
+}
+
 func TestEmptyBS(t *testing.T) {
 	var bs []bool
 	f := setUpBSFlagSet(&bs)
@@ -33,6 +41,13 @@ func TestEmptyBS(t *testing.T) {
 	}
 	if len(getBS) != 0 {
 		t.Fatalf("got bs %v with len=%d but expected length=0", getBS, len(getBS))
+	}
+	getBS2, err := f.Get("bs")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if len(getBS2.([]bool)) != 0 {
+		t.Fatalf("got bs %v with len=%d but expected length=0", getBS2.([]bool), len(getBS2.([]bool)))
 	}
 }
 

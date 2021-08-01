@@ -6,6 +6,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -23,6 +24,14 @@ func setUpI32SFlagSetWithDefault(isp *[]int32) *FlagSet {
 	return f
 }
 
+func TestI32SValueImplementsGetter(t *testing.T) {
+	var v Value = new(int32SliceValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
+}
+
 func TestEmptyI32S(t *testing.T) {
 	var is []int32
 	f := setUpI32SFlagSet(&is)
@@ -37,6 +46,14 @@ func TestEmptyI32S(t *testing.T) {
 	}
 	if len(getI32S) != 0 {
 		t.Fatalf("got is %v with len=%d but expected length=0", getI32S, len(getI32S))
+	}
+	getI32S_2, err := f.Get("is")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+
+	if !reflect.DeepEqual(getI32S_2, getI32S) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getI32S, getI32S, getI32S_2, getI32S_2)
 	}
 }
 
@@ -73,6 +90,14 @@ func TestI32S(t *testing.T) {
 		if d != v {
 			t.Fatalf("expected is[%d] to be %s but got: %d from GetInt32Slice", i, vals[i], v)
 		}
+	}
+	getI32S_2, err := f.Get("is")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+
+	if !reflect.DeepEqual(getI32S_2, getI32S) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getI32S, getI32S, getI32S_2, getI32S_2)
 	}
 }
 

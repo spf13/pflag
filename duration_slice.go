@@ -39,6 +39,10 @@ func (s *durationSliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *durationSliceValue) Get() interface{} {
+	return *s.value
+}
+
 func (s *durationSliceValue) Type() string {
 	return "durationSlice"
 }
@@ -89,28 +93,9 @@ func (s *durationSliceValue) GetSlice() []string {
 	return out
 }
 
-func durationSliceConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// Empty string would cause a slice with one (empty) entry
-	if len(val) == 0 {
-		return []time.Duration{}, nil
-	}
-	ss := strings.Split(val, ",")
-	out := make([]time.Duration, len(ss))
-	for i, d := range ss {
-		var err error
-		out[i], err = time.ParseDuration(d)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-	return out, nil
-}
-
 // GetDurationSlice returns the []time.Duration value of a flag with the given name
 func (f *FlagSet) GetDurationSlice(name string) ([]time.Duration, error) {
-	val, err := f.getFlagType(name, "durationSlice", durationSliceConv)
+	val, err := f.getFlagType(name, "durationSlice")
 	if err != nil {
 		return []time.Duration{}, err
 	}
