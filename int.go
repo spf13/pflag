@@ -16,19 +16,19 @@ func (i *intValue) Set(s string) error {
 	return err
 }
 
+func (i *intValue) Get() interface{} {
+	return int(*i)
+}
+
 func (i *intValue) Type() string {
 	return "int"
 }
 
 func (i *intValue) String() string { return strconv.Itoa(int(*i)) }
 
-func intConv(sval string) (interface{}, error) {
-	return strconv.Atoi(sval)
-}
-
 // GetInt return the int value of a flag with the given name
 func (f *FlagSet) GetInt(name string) (int, error) {
-	val, err := f.getFlagType(name, "int", intConv)
+	val, err := f.getFlagType(name, "int")
 	if err != nil {
 		return 0, err
 	}

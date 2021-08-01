@@ -24,6 +24,10 @@ func (i *ipMaskValue) Set(s string) error {
 	return nil
 }
 
+func (i *ipMaskValue) Get() interface{} {
+	return net.IPMask(*i)
+}
+
 func (i *ipMaskValue) Type() string {
 	return "ipMask"
 }
@@ -56,17 +60,9 @@ func ParseIPv4Mask(s string) net.IPMask {
 	return net.IPv4Mask(mask[12], mask[13], mask[14], mask[15])
 }
 
-func parseIPv4Mask(sval string) (interface{}, error) {
-	mask := ParseIPv4Mask(sval)
-	if mask == nil {
-		return nil, fmt.Errorf("unable to parse %s as net.IPMask", sval)
-	}
-	return mask, nil
-}
-
 // GetIPv4Mask return the net.IPv4Mask value of a flag with the given name
 func (f *FlagSet) GetIPv4Mask(name string) (net.IPMask, error) {
-	val, err := f.getFlagType(name, "ipMask", parseIPv4Mask)
+	val, err := f.getFlagType(name, "ipMask")
 	if err != nil {
 		return nil, err
 	}

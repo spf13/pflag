@@ -16,23 +16,19 @@ func (i *int32Value) Set(s string) error {
 	return err
 }
 
+func (i *int32Value) Get() interface{} {
+	return int32(*i)
+}
+
 func (i *int32Value) Type() string {
 	return "int32"
 }
 
 func (i *int32Value) String() string { return strconv.FormatInt(int64(*i), 10) }
 
-func int32Conv(sval string) (interface{}, error) {
-	v, err := strconv.ParseInt(sval, 0, 32)
-	if err != nil {
-		return 0, err
-	}
-	return int32(v), nil
-}
-
 // GetInt32 return the int32 value of a flag with the given name
 func (f *FlagSet) GetInt32(name string) (int32, error) {
-	val, err := f.getFlagType(name, "int32", int32Conv)
+	val, err := f.getFlagType(name, "int32")
 	if err != nil {
 		return 0, err
 	}
