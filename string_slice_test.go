@@ -274,3 +274,21 @@ func TestSSAsSliceValue(t *testing.T) {
 		t.Fatalf("Expected ss to be overwritten with 'three', but got: %s", ss)
 	}
 }
+
+func TestSSMultValues(t *testing.T) {
+	var arrOne []string
+	var arrTwo []string
+	var together []*[]string
+
+	together = append(together, &arrOne)
+	together = append(together, &arrTwo)
+
+	f := NewFlagSet("test", ContinueOnError)
+	err := f.StringSliceVarMult(together, "ss", []string{}, "Multple values")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+	if together[0] != together[1] {
+		t.Fatalf("memory locations not the same for the two arrays")
+	}
+}

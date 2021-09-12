@@ -3,6 +3,7 @@ package pflag
 import (
 	"bytes"
 	"encoding/csv"
+	"errors"
 	"strings"
 )
 
@@ -124,6 +125,40 @@ func StringSliceVar(p *[]string, name string, value []string, usage string) {
 // StringSliceVarP is like StringSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func StringSliceVarP(p *[]string, name, shorthand string, value []string, usage string) {
 	CommandLine.VarP(newStringSliceValue(value, p), name, shorthand, usage)
+}
+
+// StringSliceVarMult functions similarly to StringSlice but allows the user to place the value of the flag in multiple pointers
+// this is useful in applications where flags are inherited from a parent entity
+func (f *FlagSet) StringSliceVarMult(pointers []*[]string, name string, value []string, usage string) error {
+	if len(pointers) < 2 {
+		return errors.New("must pass at least two pointers to string arrays")
+	}
+	f.VarP(newStringSliceValue(value, pointers[0]), name, "", usage)
+	mainPointer := pointers[0]
+	for i := range pointers {
+		if pointers[i] == mainPointer {
+			continue
+		}
+		pointers[i] = mainPointer
+	}
+	return nil
+}
+
+// StringSliceVarMult functions similarly to StringSlice but allows the user to place the value of the flag in multiple pointers
+// this is useful in applications where flags are inherited from a parent entity
+func StringSliceVarMult(pointers []*[]string, name string, value []string, usage string) error {
+	if len(pointers) < 2 {
+		return errors.New("must pass at least two pointers to string arrays")
+	}
+	CommandLine.VarP(newStringSliceValue(value, pointers[0]), name, "", usage)
+	mainPointer := pointers[0]
+	for i := range pointers {
+		if pointers[i] == mainPointer {
+			continue
+		}
+		pointers[i] = mainPointer
+	}
+	return nil
 }
 
 // StringSlice defines a string flag with specified name, default value, and usage string.
