@@ -846,13 +846,26 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 
 // AddFlag will add the flag to the FlagSet
 func (f *FlagSet) AddFlag(flag *Flag) {
+	f.innerAddFlag(flag, false)
+}
+
+// TryAddFlag will add the flag to the FlagSet while not conflict
+func (f *FlagSet) TryAddFlag(flag *Flag) {
+	f.innerAddFlag(flag, true)
+}
+
+// AddFlag will add the flag to the FlagSet
+func (f *FlagSet) innerAddFlag(flag *Flag, tryAdd bool) {
 	normalizedFlagName := f.normalizeFlagName(flag.Name)
 
 	_, alreadyThere := f.formal[normalizedFlagName]
-	if alreadyThere {
+	if alreadyThere && !tryAdd {
 		msg := fmt.Sprintf("%s flag redefined: %s", f.name, flag.Name)
 		fmt.Fprintln(f.Output(), msg)
 		panic(msg) // Happens only if flags are declared with identical names
+	}
+	if alreadyThere && tryAdd {
+		return
 	}
 	if f.formal == nil {
 		f.formal = make(map[NormalizedName]*Flag)
@@ -875,12 +888,14 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	}
 	c := flag.Shorthand[0]
 	used, alreadyThere := f.shorthands[c]
-	if alreadyThere {
+	if alreadyThere && !tryAdd {
 		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
 		fmt.Fprintf(f.Output(), msg)
 		panic(msg)
 	}
-	f.shorthands[c] = flag
+	if !alreadyThere {
+		f.shorthands[c] = flag
+	}
 }
 
 // AddFlagSet adds one FlagSet to another. If a flag is already present in f
@@ -892,6 +907,19 @@ func (f *FlagSet) AddFlagSet(newSet *FlagSet) {
 	newSet.VisitAll(func(flag *Flag) {
 		if f.Lookup(flag.Name) == nil {
 			f.AddFlag(flag)
+		}
+	})
+}
+
+// TryAddFlagSet adds one FlagSet to another. If a flag is already present in f
+// the flag from newSet will be ignored.
+func (f *FlagSet) TryAddFlagSet(newSet *FlagSet) {
+	if newSet == nil {
+		return
+	}
+	newSet.VisitAll(func(flag *Flag) {
+		if f.Lookup(flag.Name) == nil {
+			f.TryAddFlag(flag)
 		}
 	})
 }
