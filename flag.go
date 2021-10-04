@@ -105,6 +105,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"sort"
 	"strings"
 )
@@ -172,6 +173,7 @@ type Flag struct {
 	Name                string              // name as it appears on command line
 	Shorthand           string              // one-letter abbreviated flag
 	Usage               string              // help message
+	EnvVars             []string            // environment vars
 	Value               Value               // value as set
 	DefValue            string              // default value (as text); for usage message
 	Changed             bool                // If the user set the value (or if left to default)
@@ -390,12 +392,28 @@ func (f *FlagSet) getFlagType(name string, ftype string, convFunc func(sval stri
 		return nil, err
 	}
 
-	sval := flag.Value.String()
+	envVal, exist := getFlagTypeFromEnv(flag.EnvVars)
+	var sval string
+	if exist {
+		sval = envVal
+	} else {
+		sval = flag.Value.String()
+	}
 	result, err := convFunc(sval)
 	if err != nil {
 		return nil, err
 	}
 	return result, nil
+}
+
+func getFlagTypeFromEnv(envVars []string) (string, bool) {
+	for _, envVar := range envVars {
+		val, exist := os.LookupEnv(envVar)
+		if exist {
+			return val, exist
+		}
+	}
+	return "", false
 }
 
 // ArgsLenAtDash will return the length of f.Args at the moment when a -- was
@@ -738,6 +756,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		if len(flag.Deprecated) != 0 {
 			line += fmt.Sprintf(" (DEPRECATED: %s)", flag.Deprecated)
 		}
+		line += envHint(flag.EnvVars)
 
 		lines = append(lines, line)
 	})
@@ -750,6 +769,23 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 	}
 
 	return buf.String()
+}
+
+func envHint(envVars []string) string {
+	envText := ""
+	if envVars != nil && len(envVars) > 0 {
+		prefix := "$"
+		suffix := ""
+		sep := ", $"
+		if runtime.GOOS == "windows" {
+			prefix = "%"
+			suffix = "%"
+			sep = "%, %"
+		}
+
+		envText = fmt.Sprintf(" [%s%s%s]", prefix, strings.Join(envVars, sep), suffix)
+	}
+	return envText
 }
 
 // FlagUsages returns a string containing the usage information for all flags in
@@ -846,13 +882,26 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 
 // AddFlag will add the flag to the FlagSet
 func (f *FlagSet) AddFlag(flag *Flag) {
+	f.innerAddFlag(flag, false)
+}
+
+// TryAddFlag will add the flag to the FlagSet while not conflict
+func (f *FlagSet) TryAddFlag(flag *Flag) {
+	f.innerAddFlag(flag, true)
+}
+
+// AddFlag will add the flag to the FlagSet
+func (f *FlagSet) innerAddFlag(flag *Flag, tryAdd bool) {
 	normalizedFlagName := f.normalizeFlagName(flag.Name)
 
 	_, alreadyThere := f.formal[normalizedFlagName]
-	if alreadyThere {
+	if alreadyThere && !tryAdd {
 		msg := fmt.Sprintf("%s flag redefined: %s", f.name, flag.Name)
 		fmt.Fprintln(f.Output(), msg)
 		panic(msg) // Happens only if flags are declared with identical names
+	}
+	if alreadyThere && tryAdd {
+		return
 	}
 	if f.formal == nil {
 		f.formal = make(map[NormalizedName]*Flag)
@@ -875,12 +924,14 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	}
 	c := flag.Shorthand[0]
 	used, alreadyThere := f.shorthands[c]
-	if alreadyThere {
+	if alreadyThere && !tryAdd {
 		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
 		fmt.Fprintf(f.Output(), msg)
 		panic(msg)
 	}
-	f.shorthands[c] = flag
+	if !alreadyThere {
+		f.shorthands[c] = flag
+	}
 }
 
 // AddFlagSet adds one FlagSet to another. If a flag is already present in f
@@ -892,6 +943,19 @@ func (f *FlagSet) AddFlagSet(newSet *FlagSet) {
 	newSet.VisitAll(func(flag *Flag) {
 		if f.Lookup(flag.Name) == nil {
 			f.AddFlag(flag)
+		}
+	})
+}
+
+// TryAddFlagSet adds one FlagSet to another. If a flag is already present in f
+// the flag from newSet will be ignored.
+func (f *FlagSet) TryAddFlagSet(newSet *FlagSet) {
+	if newSet == nil {
+		return
+	}
+	newSet.VisitAll(func(flag *Flag) {
+		if f.Lookup(flag.Name) == nil {
+			f.TryAddFlag(flag)
 		}
 	})
 }
