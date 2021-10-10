@@ -773,7 +773,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 
 func envHint(envVars []string) string {
 	envText := ""
-	if envVars != nil && len(envVars) > 0 {
+	if len(envVars) > 0 {
 		prefix := "$"
 		suffix := ""
 		sep := ", $"
