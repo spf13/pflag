@@ -848,6 +848,12 @@ func NArg() int { return len(CommandLine.args) }
 // Args returns the non-flag arguments.
 func (f *FlagSet) Args() []string { return f.args }
 
+// Args returns the non-flag arguments.
+func (f *FlagSet) SetArgs(args []string) {
+	f.args = make([]string, len(args))
+	copy(f.args, args)
+}
+
 // Args returns the non-flag command-line arguments.
 func Args() []string { return CommandLine.args }
 
