@@ -8,20 +8,20 @@ import (
 )
 
 // -- stringToInt Value
-type stringToIntValue struct {
+type StringToIntValue struct {
 	value   *map[string]int
 	changed bool
 }
 
-func newStringToIntValue(val map[string]int, p *map[string]int) *stringToIntValue {
-	ssv := new(stringToIntValue)
+func newStringToIntValue(val map[string]int, p *map[string]int) *StringToIntValue {
+	ssv := new(StringToIntValue)
 	ssv.value = p
 	*ssv.value = val
 	return ssv
 }
 
 // Format: a=1,b=2
-func (s *stringToIntValue) Set(val string) error {
+func (s *StringToIntValue) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make(map[string]int, len(ss))
 	for _, pair := range ss {
@@ -46,11 +46,11 @@ func (s *stringToIntValue) Set(val string) error {
 	return nil
 }
 
-func (s *stringToIntValue) Type() string {
+func (s *StringToIntValue) Type() string {
 	return "stringToInt"
 }
 
-func (s *stringToIntValue) String() string {
+func (s *StringToIntValue) String() string {
 	var buf bytes.Buffer
 	i := 0
 	for k, v := range *s.value {

@@ -7,19 +7,19 @@ import (
 )
 
 // -- float32Slice Value
-type float32SliceValue struct {
+type Float32SliceValue struct {
 	value   *[]float32
 	changed bool
 }
 
-func newFloat32SliceValue(val []float32, p *[]float32) *float32SliceValue {
-	isv := new(float32SliceValue)
+func newFloat32SliceValue(val []float32, p *[]float32) *Float32SliceValue {
+	isv := new(Float32SliceValue)
 	isv.value = p
 	*isv.value = val
 	return isv
 }
 
-func (s *float32SliceValue) Set(val string) error {
+func (s *Float32SliceValue) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make([]float32, len(ss))
 	for i, d := range ss {
@@ -41,11 +41,11 @@ func (s *float32SliceValue) Set(val string) error {
 	return nil
 }
 
-func (s *float32SliceValue) Type() string {
+func (s *Float32SliceValue) Type() string {
 	return "float32Slice"
 }
 
-func (s *float32SliceValue) String() string {
+func (s *Float32SliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = fmt.Sprintf("%f", d)
@@ -53,7 +53,7 @@ func (s *float32SliceValue) String() string {
 	return "[" + strings.Join(out, ",") + "]"
 }
 
-func (s *float32SliceValue) fromString(val string) (float32, error) {
+func (s *Float32SliceValue) fromString(val string) (float32, error) {
 	t64, err := strconv.ParseFloat(val, 32)
 	if err != nil {
 		return 0, err
@@ -61,11 +61,11 @@ func (s *float32SliceValue) fromString(val string) (float32, error) {
 	return float32(t64), nil
 }
 
-func (s *float32SliceValue) toString(val float32) string {
+func (s *Float32SliceValue) toString(val float32) string {
 	return fmt.Sprintf("%f", val)
 }
 
-func (s *float32SliceValue) Append(val string) error {
+func (s *Float32SliceValue) Append(val string) error {
 	i, err := s.fromString(val)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (s *float32SliceValue) Append(val string) error {
 	return nil
 }
 
-func (s *float32SliceValue) Replace(val []string) error {
+func (s *Float32SliceValue) Replace(val []string) error {
 	out := make([]float32, len(val))
 	for i, d := range val {
 		var err error
@@ -87,7 +87,7 @@ func (s *float32SliceValue) Replace(val []string) error {
 	return nil
 }
 
-func (s *float32SliceValue) GetSlice() []string {
+func (s *Float32SliceValue) GetSlice() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = s.toString(d)

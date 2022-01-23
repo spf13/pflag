@@ -1,19 +1,19 @@
 package pflag
 
 // -- stringArray Value
-type stringArrayValue struct {
+type StringArrayValue struct {
 	value   *[]string
 	changed bool
 }
 
-func newStringArrayValue(val []string, p *[]string) *stringArrayValue {
-	ssv := new(stringArrayValue)
+func newStringArrayValue(val []string, p *[]string) *StringArrayValue {
+	ssv := new(StringArrayValue)
 	ssv.value = p
 	*ssv.value = val
 	return ssv
 }
 
-func (s *stringArrayValue) Set(val string) error {
+func (s *StringArrayValue) Set(val string) error {
 	if !s.changed {
 		*s.value = []string{val}
 		s.changed = true
@@ -23,12 +23,12 @@ func (s *stringArrayValue) Set(val string) error {
 	return nil
 }
 
-func (s *stringArrayValue) Append(val string) error {
+func (s *StringArrayValue) Append(val string) error {
 	*s.value = append(*s.value, val)
 	return nil
 }
 
-func (s *stringArrayValue) Replace(val []string) error {
+func (s *StringArrayValue) Replace(val []string) error {
 	out := make([]string, len(val))
 	for i, d := range val {
 		out[i] = d
@@ -37,7 +37,7 @@ func (s *stringArrayValue) Replace(val []string) error {
 	return nil
 }
 
-func (s *stringArrayValue) GetSlice() []string {
+func (s *StringArrayValue) GetSlice() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = d
@@ -45,11 +45,11 @@ func (s *stringArrayValue) GetSlice() []string {
 	return out
 }
 
-func (s *stringArrayValue) Type() string {
+func (s *StringArrayValue) Type() string {
 	return "stringArray"
 }
 
-func (s *stringArrayValue) String() string {
+func (s *StringArrayValue) String() string {
 	str, _ := writeAsCSV(*s.value)
 	return "[" + str + "]"
 }

@@ -544,11 +544,11 @@ func (f *Flag) defaultIsZeroValue() bool {
 		return f.DefValue == "0" || f.DefValue == "0s"
 	case *intValue, *int8Value, *int32Value, *int64Value, *uintValue, *uint8Value, *uint16Value, *uint32Value, *uint64Value, *countValue, *float32Value, *float64Value:
 		return f.DefValue == "0"
-	case *stringValue:
+	case *StringValue:
 		return f.DefValue == ""
 	case *ipValue, *ipMaskValue, *ipNetValue:
 		return f.DefValue == "<nil>"
-	case *intSliceValue, *stringSliceValue, *stringArrayValue:
+	case *IntSliceValue, *StringSliceValue, *StringArrayValue:
 		return f.DefValue == "[]"
 	default:
 		switch f.Value.String() {

@@ -8,13 +8,13 @@ import (
 )
 
 // -- ipSlice Value
-type ipSliceValue struct {
+type IpSliceValue struct {
 	value   *[]net.IP
 	changed bool
 }
 
-func newIPSliceValue(val []net.IP, p *[]net.IP) *ipSliceValue {
-	ipsv := new(ipSliceValue)
+func newIPSliceValue(val []net.IP, p *[]net.IP) *IpSliceValue {
+	ipsv := new(IpSliceValue)
 	ipsv.value = p
 	*ipsv.value = val
 	return ipsv
@@ -22,7 +22,7 @@ func newIPSliceValue(val []net.IP, p *[]net.IP) *ipSliceValue {
 
 // Set converts, and assigns, the comma-separated IP argument string representation as the []net.IP value of this flag.
 // If Set is called on a flag that already has a []net.IP assigned, the newly converted values will be appended.
-func (s *ipSliceValue) Set(val string) error {
+func (s *IpSliceValue) Set(val string) error {
 
 	// remove all quote characters
 	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
@@ -55,12 +55,12 @@ func (s *ipSliceValue) Set(val string) error {
 }
 
 // Type returns a string that uniquely represents this flag's type.
-func (s *ipSliceValue) Type() string {
+func (s *IpSliceValue) Type() string {
 	return "ipSlice"
 }
 
 // String defines a "native" format for this net.IP slice flag value.
-func (s *ipSliceValue) String() string {
+func (s *IpSliceValue) String() string {
 
 	ipStrSlice := make([]string, len(*s.value))
 	for i, ip := range *s.value {
@@ -72,15 +72,15 @@ func (s *ipSliceValue) String() string {
 	return "[" + out + "]"
 }
 
-func (s *ipSliceValue) fromString(val string) (net.IP, error) {
+func (s *IpSliceValue) fromString(val string) (net.IP, error) {
 	return net.ParseIP(strings.TrimSpace(val)), nil
 }
 
-func (s *ipSliceValue) toString(val net.IP) string {
+func (s *IpSliceValue) toString(val net.IP) string {
 	return val.String()
 }
 
-func (s *ipSliceValue) Append(val string) error {
+func (s *IpSliceValue) Append(val string) error {
 	i, err := s.fromString(val)
 	if err != nil {
 		return err
@@ -89,7 +89,7 @@ func (s *ipSliceValue) Append(val string) error {
 	return nil
 }
 
-func (s *ipSliceValue) Replace(val []string) error {
+func (s *IpSliceValue) Replace(val []string) error {
 	out := make([]net.IP, len(val))
 	for i, d := range val {
 		var err error
@@ -102,7 +102,7 @@ func (s *ipSliceValue) Replace(val []string) error {
 	return nil
 }
 
-func (s *ipSliceValue) GetSlice() []string {
+func (s *IpSliceValue) GetSlice() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = s.toString(d)
