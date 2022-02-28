@@ -1231,6 +1231,7 @@ func TestPrintDefaults(t *testing.T) {
 
 	var cv customValue
 	fs.Var(&cv, "custom", "custom Value implementation")
+        cv = 1 // has value, but not default
 
 	cv2 := customValue(10)
 	fs.VarP(&cv2, "customP", "", "a VarP with default")
