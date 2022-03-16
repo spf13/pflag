@@ -411,7 +411,7 @@ func (f *FlagSet) ArgsLenAtDash() int {
 func (f *FlagSet) MarkDeprecated(name string, usageMessage string) error {
 	flag := f.Lookup(name)
 	if flag == nil {
-		return fmt.Errorf("flag %q does not exist", name)
+		return fmt.Errorf(`flag "%v" does not exist`, name)
 	}
 	if usageMessage == "" {
 		return fmt.Errorf("deprecated message for flag %q must be set", name)
@@ -475,7 +475,7 @@ func (f *FlagSet) Set(name, value string) error {
 		} else {
 			flagName = fmt.Sprintf("--%s", flag.Name)
 		}
-		return fmt.Errorf("invalid argument %q for %q flag: %v", value, flagName, err)
+		return fmt.Errorf(`invalid argument "%v" for "%v" flag: %v`, value, flagName, err)
 	}
 
 	if !flag.Changed {
@@ -730,7 +730,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		line += usage
 		if !flag.defaultIsZeroValue() {
 			if flag.Value.Type() == "string" {
-				line += fmt.Sprintf(" (default %q)", flag.DefValue)
+				line += fmt.Sprintf(` (default "%v")`, flag.DefValue)
 			} else {
 				line += fmt.Sprintf(" (default %s)", flag.DefValue)
 			}
