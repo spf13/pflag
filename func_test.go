@@ -58,6 +58,9 @@ func TestFunc(t *testing.T) {
 			t.Errorf("expected failure, got success")
 			continue
 		} else if tc.success {
+			if got, expected := len(m), len(tc.expected); got != expected {
+				t.Errorf("%d: expected map length %d, got %d", i, expected, got)
+			}
 			for key := range m {
 				got, expected := m[key], tc.expected[key]
 				if got != expected {
