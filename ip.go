@@ -32,8 +32,7 @@ func (i *ipValue) Type() string {
 }
 
 func ipConv(sval string) (interface{}, error) {
-	ip := net.ParseIP(sval)
-	if ip != nil {
+	if ip := net.ParseIP(sval); ip != nil {
 		return ip, nil
 	}
 	return nil, fmt.Errorf("invalid string being converted to IP address: %s", sval)
