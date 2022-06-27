@@ -1,7 +1,6 @@
 package pflag
 
 import (
-	"bytes"
 	"encoding/csv"
 	"strings"
 )
@@ -29,7 +28,7 @@ func readAsCSV(val string) ([]string, error) {
 }
 
 func writeAsCSV(vals []string) (string, error) {
-	b := &bytes.Buffer{}
+	b := new(strings.Builder)
 	w := csv.NewWriter(b)
 	err := w.Write(vals)
 	if err != nil {

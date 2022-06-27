@@ -1,8 +1,8 @@
 package pflag
 
 import (
-	"bytes"
 	"io"
+	"strings"
 	"testing"
 )
 
@@ -25,7 +25,7 @@ func setUpPFlagSet(buf io.Writer) *FlagSet {
 }
 
 func TestPrintUsage(t *testing.T) {
-	buf := bytes.Buffer{}
+	var buf strings.Builder
 	f := setUpPFlagSet(&buf)
 	f.PrintDefaults()
 	res := buf.String()
@@ -65,7 +65,7 @@ const expectedOutput2 = `      --long-form                    Some description
 `
 
 func TestPrintUsage_2(t *testing.T) {
-	buf := bytes.Buffer{}
+	var buf strings.Builder
 	f := setUpPFlagSet2(&buf)
 	res := f.FlagUsagesWrapped(80)
 	if res != expectedOutput2 {

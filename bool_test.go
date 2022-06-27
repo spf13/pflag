@@ -5,8 +5,8 @@
 package pflag
 
 import (
-	"bytes"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -155,7 +155,7 @@ func TestImplicitFalse(t *testing.T) {
 func TestInvalidValue(t *testing.T) {
 	var tristate triStateValue
 	f := setUpFlagSet(&tristate)
-	var buf bytes.Buffer
+	var buf strings.Builder
 	f.SetOutput(&buf)
 	err := f.Parse([]string{"--tristate=invalid"})
 	if err == nil {
