@@ -169,17 +169,17 @@ type FlagSet struct {
 
 // A Flag represents the state of a flag.
 type Flag struct {
+	Value               Value               // value as set
+	Annotations         map[string][]string // used by cobra.Command bash autocomple code
 	Name                string              // name as it appears on command line
 	Shorthand           string              // one-letter abbreviated flag
 	Usage               string              // help message
-	Value               Value               // value as set
 	DefValue            string              // default value (as text); for usage message
-	Changed             bool                // If the user set the value (or if left to default)
 	NoOptDefVal         string              // default value (as text); if the flag is on the command line without any options
 	Deprecated          string              // If this flag is deprecated, this string is the new or now thing to use
-	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
-	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+	Changed             bool                // If the user set the value (or if left to default)
+	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 }
 
 // Value is the interface to the dynamic value stored in a flag.
