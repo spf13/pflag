@@ -475,7 +475,7 @@ func (f *FlagSet) Set(name, value string) error {
 		} else {
 			flagName = fmt.Sprintf("--%s", flag.Name)
 		}
-		return fmt.Errorf("invalid argument %q for %q flag: %v", value, flagName, err)
+		return fmt.Errorf("invalid argument %q for %q flag: %w", value, flagName, err)
 	}
 
 	if !flag.Changed {

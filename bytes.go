@@ -46,7 +46,7 @@ func bytesHexConv(sval string) (interface{}, error) {
 		return bin, nil
 	}
 
-	return nil, fmt.Errorf("invalid string being converted to Bytes: %s %s", sval, err)
+	return nil, fmt.Errorf("invalid string being converted to Bytes: %s %w", sval, err)
 }
 
 // GetBytesHex return the []byte value of a flag with the given name
@@ -146,7 +146,7 @@ func bytesBase64ValueConv(sval string) (interface{}, error) {
 		return bin, nil
 	}
 
-	return nil, fmt.Errorf("invalid string being converted to Bytes: %s %s", sval, err)
+	return nil, fmt.Errorf("invalid string being converted to Bytes: %s %w", sval, err)
 }
 
 // GetBytesBase64 return the []byte value of a flag with the given name
