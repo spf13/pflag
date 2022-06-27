@@ -629,7 +629,7 @@ func TestChangedHelper(t *testing.T) {
 func replaceSeparators(name string, from []string, to string) string {
 	result := name
 	for _, sep := range from {
-		result = strings.Replace(result, sep, to, -1)
+		result = strings.ReplaceAll(result, sep, to)
 	}
 	// Type convert to indicate normalization has been done.
 	return result
