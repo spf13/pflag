@@ -680,11 +680,10 @@ func wrap(i, w int, s string) string {
 // for all flags in the FlagSet. Wrapped to `cols` columns (0 for no
 // wrapping)
 func (f *FlagSet) FlagUsagesWrapped(cols int) string {
-	buf := new(strings.Builder)
-
-	lines := make([]string, 0, len(f.formal))
-
-	maxlen := 0
+	var (
+		max, maxlen int
+		lines       = make([]string, 0, len(f.formal))
+	)
 	f.VisitAll(func(flag *Flag) {
 		if flag.Hidden {
 			return
@@ -738,8 +737,11 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		}
 
 		lines = append(lines, line)
+		max += len(line)
 	})
 
+	buf := new(strings.Builder)
+	buf.Grow(max)
 	for _, line := range lines {
 		sidx := strings.Index(line, "\x00")
 		spacing := strings.Repeat(" ", maxlen-sidx)
