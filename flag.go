@@ -99,7 +99,6 @@ flag set.
 package pflag
 
 import (
-	"bytes"
 	"errors"
 	goflag "flag"
 	"fmt"
@@ -169,17 +168,17 @@ type FlagSet struct {
 
 // A Flag represents the state of a flag.
 type Flag struct {
+	Value               Value               // value as set
+	Annotations         map[string][]string // used by cobra.Command bash autocomple code
 	Name                string              // name as it appears on command line
 	Shorthand           string              // one-letter abbreviated flag
 	Usage               string              // help message
-	Value               Value               // value as set
 	DefValue            string              // default value (as text); for usage message
-	Changed             bool                // If the user set the value (or if left to default)
 	NoOptDefVal         string              // default value (as text); if the flag is on the command line without any options
 	Deprecated          string              // If this flag is deprecated, this string is the new or now thing to use
-	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
-	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+	Changed             bool                // If the user set the value (or if left to default)
+	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -365,7 +364,7 @@ func (f *FlagSet) ShorthandLookup(name string) *Flag {
 	}
 	if len(name) > 1 {
 		msg := fmt.Sprintf("can not look up shorthand which is more than one ASCII character: %q", name)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	c := name[0]
@@ -475,7 +474,7 @@ func (f *FlagSet) Set(name, value string) error {
 		} else {
 			flagName = fmt.Sprintf("--%s", flag.Name)
 		}
-		return fmt.Errorf("invalid argument %q for %q flag: %v", value, flagName, err)
+		return fmt.Errorf("invalid argument %q for %q flag: %w", value, flagName, err)
 	}
 
 	if !flag.Changed {
@@ -634,7 +633,7 @@ func wrapN(i, slop int, s string) (string, string) {
 // caller). Pass `w` == 0 to do no wrapping
 func wrap(i, w int, s string) string {
 	if w == 0 {
-		return strings.Replace(s, "\n", "\n"+strings.Repeat(" ", i), -1)
+		return strings.ReplaceAll(s, "\n", "\n"+strings.Repeat(" ", i))
 	}
 
 	// space between indent i and end of line width w into which
@@ -652,7 +651,7 @@ func wrap(i, w int, s string) string {
 	}
 	// If still not enough space then don't even try to wrap.
 	if wrap < 24 {
-		return strings.Replace(s, "\n", r, -1)
+		return strings.ReplaceAll(s, "\n", r)
 	}
 
 	// Try to avoid short orphan words on the final line, by
@@ -664,35 +663,33 @@ func wrap(i, w int, s string) string {
 	// Handle first line, which is indented by the caller (or the
 	// special case above)
 	l, s = wrapN(wrap, slop, s)
-	r = r + strings.Replace(l, "\n", "\n"+strings.Repeat(" ", i), -1)
+	r = r + strings.ReplaceAll(l, "\n", "\n"+strings.Repeat(" ", i))
 
 	// Now wrap the rest
 	for s != "" {
 		var t string
 
 		t, s = wrapN(wrap, slop, s)
-		r = r + "\n" + strings.Repeat(" ", i) + strings.Replace(t, "\n", "\n"+strings.Repeat(" ", i), -1)
+		r = r + "\n" + strings.Repeat(" ", i) + strings.ReplaceAll(t, "\n", "\n"+strings.Repeat(" ", i))
 	}
 
 	return r
-
 }
 
 // FlagUsagesWrapped returns a string containing the usage information
 // for all flags in the FlagSet. Wrapped to `cols` columns (0 for no
 // wrapping)
 func (f *FlagSet) FlagUsagesWrapped(cols int) string {
-	buf := new(bytes.Buffer)
-
-	lines := make([]string, 0, len(f.formal))
-
-	maxlen := 0
+	var (
+		max, maxlen int
+		lines       = make([]string, 0, len(f.formal))
+	)
 	f.VisitAll(func(flag *Flag) {
 		if flag.Hidden {
 			return
 		}
 
-		line := ""
+		var line string
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
 			line = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
 		} else {
@@ -740,8 +737,11 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		}
 
 		lines = append(lines, line)
+		max += len(line)
 	})
 
+	buf := new(strings.Builder)
+	buf.Grow(max)
 	for _, line := range lines {
 		sidx := strings.Index(line, "\x00")
 		spacing := strings.Repeat(" ", maxlen-sidx)
@@ -867,7 +867,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	}
 	if len(flag.Shorthand) > 1 {
 		msg := fmt.Sprintf("%q shorthand is more than one ASCII character", flag.Shorthand)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	if f.shorthands == nil {
@@ -877,7 +877,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	used, alreadyThere := f.shorthands[c]
 	if alreadyThere {
 		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	f.shorthands[c] = flag
@@ -1134,10 +1134,6 @@ func (f *FlagSet) Parse(arguments []string) error {
 		}
 	}
 	f.parsed = true
-
-	if len(arguments) < 0 {
-		return nil
-	}
 
 	f.args = make([]string, 0, len(arguments))
 

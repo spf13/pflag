@@ -1,7 +1,6 @@
 package pflag
 
 import (
-	"bytes"
 	"fmt"
 	"strconv"
 	"strings"
@@ -51,7 +50,7 @@ func (s *stringToInt64Value) Type() string {
 }
 
 func (s *stringToInt64Value) String() string {
-	var buf bytes.Buffer
+	var buf strings.Builder
 	i := 0
 	for k, v := range *s.value {
 		if i > 0 {
