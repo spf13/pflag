@@ -1,0 +1,3 @@
+project_name: carapace-pflag
+build:
+  skip: true
