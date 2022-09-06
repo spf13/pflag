@@ -489,12 +489,13 @@ func TestShorthand(t *testing.T) {
 	boolbFlag := f.BoolP("boolb", "b", false, "bool2 value")
 	boolcFlag := f.BoolP("boolc", "c", false, "bool3 value")
 	booldFlag := f.BoolP("boold", "d", false, "bool4 value")
+	booleFlag := f.BoolS("boole", "e", false, "bool5 value")
 	stringaFlag := f.StringP("stringa", "s", "0", "string value")
 	stringzFlag := f.StringP("stringz", "z", "0", "string value")
 	extra := "interspersed-argument"
 	notaflag := "--i-look-like-a-flag"
 	args := []string{
-		"-ab",
+		"-abe",
 		extra,
 		"-cs",
 		"hello",
@@ -522,6 +523,9 @@ func TestShorthand(t *testing.T) {
 	if *booldFlag != true {
 		t.Error("boold flag should be true, is ", *booldFlag)
 	}
+	if *booleFlag != true {
+		t.Error("boole flag should be true, is ", *booleFlag)
+	}
 	if *stringaFlag != "hello" {
 		t.Error("stringa flag should be `hello`, is ", *stringaFlag)
 	}
@@ -537,6 +541,27 @@ func TestShorthand(t *testing.T) {
 	}
 	if f.ArgsLenAtDash() != 1 {
 		t.Errorf("expected argsLenAtDash %d got %d", f.ArgsLenAtDash(), 1)
+	}
+}
+
+func TestShorthandOnly(t *testing.T) {
+	f := NewFlagSet("shorthand", ContinueOnError)
+	f.SetOutput(ioutil.Discard)
+	if f.Parsed() {
+		t.Error("f.Parse() = true before Parse")
+	}
+	boolFlag := f.BoolS("bool", "1", false, "bool value")
+	args := []string{
+		"--bool",
+	}
+	if err := f.Parse(args); err != nil {
+		t.Error("expected no error, got ", err)
+	}
+	if !f.Parsed() {
+		t.Error("f.Parse() = false after Parse")
+	}
+	if *boolFlag {
+		t.Error("ShorthandOnly boolFlag should be false when passed in long form")
 	}
 }
 
@@ -571,7 +596,7 @@ func TestShorthandLookup(t *testing.T) {
 	defer func() {
 		recover()
 	}()
-	flag = f.ShorthandLookup("ab")
+	f.ShorthandLookup("ab")
 	// should NEVER get here. lookup should panic. defer'd func should recover it.
 	t.Errorf("f.ShorthandLookup(\"ab\") did not panic")
 }

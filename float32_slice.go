@@ -128,7 +128,7 @@ func (f *FlagSet) GetFloat32Slice(name string) ([]float32, error) {
 // Float32SliceVar defines a float32Slice flag with specified name, default value, and usage string.
 // The argument p points to a []float32 variable in which to store the value of the flag.
 func (f *FlagSet) Float32SliceVar(p *[]float32, name string, value []float32, usage string) {
-	f.VarP(newFloat32SliceValue(value, p), name, "", usage)
+	f.Float32SliceVarP(p, name, "", value, usage)
 }
 
 // Float32SliceVarP is like Float32SliceVar, but accepts a shorthand letter that can be used after a single dash.
@@ -136,23 +136,31 @@ func (f *FlagSet) Float32SliceVarP(p *[]float32, name, shorthand string, value [
 	f.VarP(newFloat32SliceValue(value, p), name, shorthand, usage)
 }
 
+// Float32SliceVarS is like Float32SliceVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) Float32SliceVarS(p *[]float32, name, shorthand string, value []float32, usage string) {
+	f.VarS(newFloat32SliceValue(value, p), name, shorthand, usage)
+}
+
 // Float32SliceVar defines a float32[] flag with specified name, default value, and usage string.
 // The argument p points to a float32[] variable in which to store the value of the flag.
 func Float32SliceVar(p *[]float32, name string, value []float32, usage string) {
-	CommandLine.VarP(newFloat32SliceValue(value, p), name, "", usage)
+	CommandLine.Float32SliceVar(p, name, value, usage)
 }
 
 // Float32SliceVarP is like Float32SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Float32SliceVarP(p *[]float32, name, shorthand string, value []float32, usage string) {
-	CommandLine.VarP(newFloat32SliceValue(value, p), name, shorthand, usage)
+	CommandLine.Float32SliceVarP(p, name, shorthand, value, usage)
+}
+
+// Float32SliceVarS is like Float32SliceVar, but accepts a shorthand letter that can be used after a single dash, alone.
+func Float32SliceVarS(p *[]float32, name, shorthand string, value []float32, usage string) {
+	CommandLine.Float32SliceVarS(p, name, shorthand, value, usage)
 }
 
 // Float32Slice defines a []float32 flag with specified name, default value, and usage string.
 // The return value is the address of a []float32 variable that stores the value of the flag.
 func (f *FlagSet) Float32Slice(name string, value []float32, usage string) *[]float32 {
-	p := []float32{}
-	f.Float32SliceVarP(&p, name, "", value, usage)
-	return &p
+	return f.Float32SliceP(name, "", value, usage)
 }
 
 // Float32SliceP is like Float32Slice, but accepts a shorthand letter that can be used after a single dash.
@@ -162,13 +170,25 @@ func (f *FlagSet) Float32SliceP(name, shorthand string, value []float32, usage s
 	return &p
 }
 
+// Float32SliceS is like Float32Slice, but accepts a shorthand letter that can be used after a single dash, alone.
+func (f *FlagSet) Float32SliceS(name, shorthand string, value []float32, usage string) *[]float32 {
+	p := []float32{}
+	f.Float32SliceVarS(&p, name, shorthand, value, usage)
+	return &p
+}
+
 // Float32Slice defines a []float32 flag with specified name, default value, and usage string.
 // The return value is the address of a []float32 variable that stores the value of the flag.
 func Float32Slice(name string, value []float32, usage string) *[]float32 {
-	return CommandLine.Float32SliceP(name, "", value, usage)
+	return CommandLine.Float32Slice(name, value, usage)
 }
 
 // Float32SliceP is like Float32Slice, but accepts a shorthand letter that can be used after a single dash.
 func Float32SliceP(name, shorthand string, value []float32, usage string) *[]float32 {
 	return CommandLine.Float32SliceP(name, shorthand, value, usage)
+}
+
+// Float32SliceS is like Float32Slice, but accepts a shorthand letter that can be used after a single dash, alone.
+func Float32SliceS(name, shorthand string, value []float32, usage string) *[]float32 {
+	return CommandLine.Float32SliceS(name, shorthand, value, usage)
 }
