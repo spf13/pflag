@@ -169,7 +169,7 @@ type FlagSet struct {
 	formal            map[NormalizedName]*Flag
 	orderedFormal     []*Flag
 	sortedFormal      []*Flag
-	shorthands        map[byte]*Flag
+	shorthands        map[string]*Flag
 	args              []string // arguments after flags
 	argsLenAtDash     int      // len(args) when a '--' was located when parsing, or -1 if no --
 	errorHandling     ErrorHandling
@@ -230,6 +230,16 @@ func sortFlags(flags map[NormalizedName]*Flag) []*Flag {
 		result[i] = flags[NormalizedName(name)]
 	}
 	return result
+}
+
+// IsPosix checks if any shorthand is more than one character long which implicitly disables posix shorthand chaining.
+func (f *FlagSet) IsPosix() bool {
+	for shorthand := range f.shorthands {
+		if len(shorthand) > 1 {
+			return false
+		}
+	}
+	return true
 }
 
 // SetNormalizeFunc allows you to add a function which can translate flag names.
@@ -377,13 +387,7 @@ func (f *FlagSet) ShorthandLookup(name string) *Flag {
 	if name == "" {
 		return nil
 	}
-	if len(name) > 1 {
-		msg := fmt.Sprintf("can not look up shorthand which is more than one ASCII character: %q", name)
-		fmt.Fprint(f.Output(), msg)
-		panic(msg)
-	}
-	c := name[0]
-	return f.shorthands[c]
+	return f.shorthands[name]
 }
 
 // lookup returns the Flag structure of the named flag, returning nil if none exists.
@@ -897,22 +901,16 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	if flag.Shorthand == "" {
 		return
 	}
-	if len(flag.Shorthand) > 1 {
-		msg := fmt.Sprintf("%q shorthand is more than one ASCII character", flag.Shorthand)
-		fmt.Fprint(f.Output(), msg)
-		panic(msg)
-	}
 	if f.shorthands == nil {
-		f.shorthands = make(map[byte]*Flag)
+		f.shorthands = make(map[string]*Flag)
 	}
-	c := flag.Shorthand[0]
-	used, alreadyThere := f.shorthands[c]
+	used, alreadyThere := f.shorthands[flag.Shorthand]
 	if alreadyThere {
-		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
+		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", flag.Shorthand, f.name, used.Name)
 		fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
-	f.shorthands[c] = flag
+	f.shorthands[flag.Shorthand] = flag
 }
 
 // AddFlagSet adds one FlagSet to another. If a flag is already present in f
@@ -1057,39 +1055,45 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 	}
 
 	outShorts = shorthands[1:]
-	char := shorthands[0]
+	name := shorthands[:1]
 
-	flag, exists := f.shorthands[char]
+	if !f.IsPosix() {
+		outShorts = ""
+		name = strings.SplitN(shorthands, "=", 2)[0]
+	}
+
+	flag, exists := f.shorthands[name]
 	if !exists {
 		switch {
-		case char == 'h':
+		case name == "h":
 			f.usage()
 			err = ErrHelp
 			return
 		case f.ParseErrorsWhitelist.UnknownFlags:
 			// '-f=arg arg ...'
 			// we do not want to lose arg in this case
-			if len(shorthands) > 2 && shorthands[1] == '=' {
+			if suffix := strings.TrimPrefix(shorthands, name); strings.HasPrefix(suffix, "=") {
 				outShorts = ""
 				return
 			}
 			outArgs = stripUnknownFlagValue(outArgs)
 			return
 		default:
-			err = f.failf("unknown shorthand flag: %q in -%s", char, shorthands)
+			err = f.failf("unknown shorthand flag: %q in -%s", name, shorthands)
 			return
 		}
 	}
 
 	var value string
-	if len(shorthands) > 2 && shorthands[1] == '=' {
+	if len(shorthands) > 2 &&
+		((shorthands[1] == '=' && f.IsPosix()) || (strings.Contains(shorthands, "=") && !f.IsPosix())) {
 		// '-f=arg'
-		value = shorthands[2:]
+		value = strings.SplitN(shorthands, "=", 2)[1]
 		outShorts = ""
 	} else if flag.NoOptDefVal != "" {
 		// '-f' (arg was optional)
 		value = flag.NoOptDefVal
-	} else if len(shorthands) > 1 {
+	} else if len(shorthands) > 1 && f.IsPosix() {
 		// '-farg'
 		value = shorthands[1:]
 		outShorts = ""
@@ -1099,7 +1103,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		outArgs = args[1:]
 	} else {
 		// '-f' (arg was required)
-		err = f.failf("flag needs an argument: %q in -%s", char, shorthands)
+		err = f.failf("flag needs an argument: %q in -%s", name, shorthands)
 		return
 	}
 
