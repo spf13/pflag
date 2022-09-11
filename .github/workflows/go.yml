@@ -26,9 +26,19 @@ jobs:
 
     - name: Build
       run: go build -v ./...
-
+    
     - name: Test
-      run: go test -v ./...
+      run: go test -v -coverprofile=profile.cov ./...
+
+    - name: "Check formatting"
+      run: '[ "$(gofmt -d -s . | tee -a /dev/stderr)" = "" ]'
+
+    - uses: shogo82148/actions-goveralls@v1
+      with:
+        path-to-profile: profile.cov
+
+    - name: "staticcheck"
+      run: go install honnef.co/go/tools/cmd/staticcheck@latest && staticcheck ./...
 
     -
       name: Run GoReleaser
