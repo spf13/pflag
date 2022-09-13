@@ -104,6 +104,11 @@ func (f *FlagSet) IPNetSliceVar(p *[]net.IPNet, name string, value []net.IPNet, 
 	f.IPNetSliceVarP(p, name, "", value, usage)
 }
 
+// IPNetSliceVarN is like IPNetSliceVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) IPNetSliceVarN(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string) {
+	f.VarN(newIPNetSliceValue(value, p), name, shorthand, usage)
+}
+
 // IPNetSliceVarP is like IPNetSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) IPNetSliceVarP(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string) {
 	f.VarP(newIPNetSliceValue(value, p), name, shorthand, usage)
@@ -120,6 +125,11 @@ func IPNetSliceVar(p *[]net.IPNet, name string, value []net.IPNet, usage string)
 	CommandLine.IPNetSliceVar(p, name, value, usage)
 }
 
+// IPNetSliceVarN is like IPNetSliceVarP, but adds the name as shorthand (non-posix).
+func IPNetSliceVarN(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string) {
+	CommandLine.IPNetSliceVarN(p, name, shorthand, value, usage)
+}
+
 // IPNetSliceVarP is like IPNetSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func IPNetSliceVarP(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string) {
 	CommandLine.IPNetSliceVarP(p, name, shorthand, value, usage)
@@ -134,6 +144,13 @@ func IPNetSliceVarS(p *[]net.IPNet, name, shorthand string, value []net.IPNet, u
 // The return value is the address of a []net.IPNet variable that stores the value of that flag.
 func (f *FlagSet) IPNetSlice(name string, value []net.IPNet, usage string) *[]net.IPNet {
 	return f.IPNetSliceP(name, "", value, usage)
+}
+
+// IPNetSliceN is like IPNetSliceP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) IPNetSliceN(name, shorthand string, value []net.IPNet, usage string) *[]net.IPNet {
+	p := []net.IPNet{}
+	f.IPNetSliceVarN(&p, name, shorthand, value, usage)
+	return &p
 }
 
 // IPNetSliceP is like IPNetSlice, but accepts a shorthand letter that can be used after a single dash.
@@ -154,6 +171,11 @@ func (f *FlagSet) IPNetSliceS(name, shorthand string, value []net.IPNet, usage s
 // The return value is the address of a []net.IP variable that stores the value of the flag.
 func IPNetSlice(name string, value []net.IPNet, usage string) *[]net.IPNet {
 	return CommandLine.IPNetSlice(name, value, usage)
+}
+
+// IPNetSliceN is like IPNetSliceP, but adds the name as shorthand (non-posix).
+func IPNetSliceN(name, shorthand string, value []net.IPNet, usage string) *[]net.IPNet {
+	return CommandLine.IPNetSliceN(name, shorthand, value, usage)
 }
 
 // IPNetSliceP is like IPNetSlice, but accepts a shorthand letter that can be used after a single dash.

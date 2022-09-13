@@ -103,6 +103,11 @@ func (f *FlagSet) StringToInt64Var(p *map[string]int64, name string, value map[s
 	f.StringToInt64VarP(p, name, "", value, usage)
 }
 
+// StringToInt64VarN is like StringToInt64VarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) StringToInt64VarN(p *map[string]int64, name, shorthand string, value map[string]int64, usage string) {
+	f.VarN(newStringToInt64Value(value, p), name, shorthand, usage)
+}
+
 // StringToInt64VarP is like StringToInt64Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) StringToInt64VarP(p *map[string]int64, name, shorthand string, value map[string]int64, usage string) {
 	f.VarP(newStringToInt64Value(value, p), name, shorthand, usage)
@@ -120,6 +125,11 @@ func StringToInt64Var(p *map[string]int64, name string, value map[string]int64, 
 	CommandLine.StringToInt64Var(p, name, value, usage)
 }
 
+// StringToInt64VarN is like StringToInt64VarP, but adds the name as shorthand (non-posix).
+func StringToInt64VarN(p *map[string]int64, name, shorthand string, value map[string]int64, usage string) {
+	CommandLine.StringToInt64VarN(p, name, shorthand, value, usage)
+}
+
 // StringToInt64VarP is like StringToInt64Var, but accepts a shorthand letter that can be used after a single dash.
 func StringToInt64VarP(p *map[string]int64, name, shorthand string, value map[string]int64, usage string) {
 	CommandLine.StringToInt64VarP(p, name, shorthand, value, usage)
@@ -135,6 +145,13 @@ func StringToInt64VarS(p *map[string]int64, name, shorthand string, value map[st
 // The value of each argument will not try to be separated by comma
 func (f *FlagSet) StringToInt64(name string, value map[string]int64, usage string) *map[string]int64 {
 	return f.StringToInt64P(name, "", value, usage)
+}
+
+// StringToInt64N is like StringToInt64P, but adds the name as shorthand (non-posix).
+func (f *FlagSet) StringToInt64N(name, shorthand string, value map[string]int64, usage string) *map[string]int64 {
+	p := map[string]int64{}
+	f.StringToInt64VarN(&p, name, shorthand, value, usage)
+	return &p
 }
 
 // StringToInt64P is like StringToInt64, but accepts a shorthand letter that can be used after a single dash.
@@ -156,6 +173,11 @@ func (f *FlagSet) StringToInt64S(name, shorthand string, value map[string]int64,
 // The value of each argument will not try to be separated by comma
 func StringToInt64(name string, value map[string]int64, usage string) *map[string]int64 {
 	return CommandLine.StringToInt64(name, value, usage)
+}
+
+// StringToInt64N is like StringToInt64P, but adds the name as shorthand (non-posix).
+func StringToInt64N(name, shorthand string, value map[string]int64, usage string) *map[string]int64 {
+	return CommandLine.StringToInt64N(name, shorthand, value, usage)
 }
 
 // StringToInt64P is like StringToInt64, but accepts a shorthand letter that can be used after a single dash.

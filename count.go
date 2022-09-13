@@ -51,6 +51,12 @@ func (f *FlagSet) CountVar(p *int, name string, usage string) {
 	f.CountVarP(p, name, "", usage)
 }
 
+// CountVarN is like CountVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) CountVarN(p *int, name, shorthand string, usage string) {
+	flag := f.VarNF(newCountValue(0, p), name, shorthand, usage)
+	flag.NoOptDefVal = "+1"
+}
+
 // CountVarP is like CountVar only take a shorthand for the flag name.
 func (f *FlagSet) CountVarP(p *int, name, shorthand string, usage string) {
 	flag := f.VarPF(newCountValue(0, p), name, shorthand, usage)
@@ -68,6 +74,11 @@ func CountVar(p *int, name string, usage string) {
 	CommandLine.CountVar(p, name, usage)
 }
 
+// CountVarN is like CountVarP, but adds the name as shorthand (non-posix).
+func CountVarN(p *int, name, shorthand string, usage string) {
+	CommandLine.CountVarN(p, name, shorthand, usage)
+}
+
 // CountVarP is like CountVar only take a shorthand for the flag name.
 func CountVarP(p *int, name, shorthand string, usage string) {
 	CommandLine.CountVarP(p, name, shorthand, usage)
@@ -83,6 +94,13 @@ func CountVarS(p *int, name, shorthand string, usage string) {
 // A count flag will add 1 to its value every time it is found on the command line
 func (f *FlagSet) Count(name string, usage string) *int {
 	return f.CountP(name, "", usage)
+}
+
+// CountN is like CountP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) CountN(name, shorthand string, usage string) *int {
+	p := new(int)
+	f.CountVarN(p, name, shorthand, usage)
+	return p
 }
 
 // CountP is like Count only takes a shorthand for the flag name.
@@ -104,6 +122,11 @@ func (f *FlagSet) CountS(name, shorthand string, usage string) *int {
 // A count flag will add 1 to its value evey time it is found on the command line
 func Count(name string, usage string) *int {
 	return CommandLine.Count(name, usage)
+}
+
+// CountN is like CountP, but adds the name as shorthand (non-posix).
+func CountN(name, shorthand string, usage string) *int {
+	return CommandLine.CountN(name, shorthand, usage)
 }
 
 // CountP is like Count only takes a shorthand for the flag name.

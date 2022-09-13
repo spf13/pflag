@@ -142,6 +142,11 @@ func (f *FlagSet) BoolSliceVar(p *[]bool, name string, value []bool, usage strin
 	f.BoolSliceVarP(p, name, "", value, usage)
 }
 
+// BoolSliceVarN is like BoolSliceVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) BoolSliceVarN(p *[]bool, name, shorthand string, value []bool, usage string) {
+	f.VarN(newBoolSliceValue(value, p), name, shorthand, usage)
+}
+
 // BoolSliceVarP is like BoolSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) BoolSliceVarP(p *[]bool, name, shorthand string, value []bool, usage string) {
 	f.VarP(newBoolSliceValue(value, p), name, shorthand, usage)
@@ -158,6 +163,11 @@ func BoolSliceVar(p *[]bool, name string, value []bool, usage string) {
 	CommandLine.BoolSliceVar(p, name, value, usage)
 }
 
+// BoolSliceVarN is like BoolSliceVarP, but adds the name as shorthand (non-posix).
+func BoolSliceVarN(p *[]bool, name, shorthand string, value []bool, usage string) {
+	CommandLine.BoolSliceVarN(p, name, shorthand, value, usage)
+}
+
 // BoolSliceVarP is like BoolSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func BoolSliceVarP(p *[]bool, name, shorthand string, value []bool, usage string) {
 	CommandLine.BoolSliceVarP(p, name, shorthand, value, usage)
@@ -172,6 +182,13 @@ func BoolSliceVarS(p *[]bool, name string, shorthand string, value []bool, usage
 // The return value is the address of a []bool variable that stores the value of the flag.
 func (f *FlagSet) BoolSlice(name string, value []bool, usage string) *[]bool {
 	return f.BoolSliceP(name, "", value, usage)
+}
+
+// BoolSliceN is like BoolSliceP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) BoolSliceN(name, shorthand string, value []bool, usage string) *[]bool {
+	p := []bool{}
+	f.BoolSliceVarN(&p, name, shorthand, value, usage)
+	return &p
 }
 
 // BoolSliceP is like BoolSlice, but accepts a shorthand letter that can be used after a single dash.
@@ -192,6 +209,11 @@ func (f *FlagSet) BoolSliceS(name string, shorthand string, value []bool, usage 
 // The return value is the address of a []bool variable that stores the value of the flag.
 func BoolSlice(name string, value []bool, usage string) *[]bool {
 	return CommandLine.BoolSlice(name, value, usage)
+}
+
+// BoolSliceN is like BoolSliceP, but adds the name as shorthand (non-posix).
+func BoolSliceN(name, shorthand string, value []bool, usage string) *[]bool {
+	return CommandLine.BoolSliceN(name, shorthand, value, usage)
 }
 
 // BoolSliceP is like BoolSlice, but accepts a shorthand letter that can be used after a single dash.

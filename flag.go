@@ -180,11 +180,20 @@ type FlagSet struct {
 	addedGoFlagSets []*goflag.FlagSet
 }
 
+// style defines how flags are represented
+type style int
+
+const (
+	Default         style = iota // default behaviour
+	ShorthandOnly                // only the shorthand should be used
+	NameAsShorthand              // non-posix style where the name is also added as shorthand (single `-` prefix)
+)
+
 // A Flag represents the state of a flag.
 type Flag struct {
 	Name                string              // name as it appears on command line
-	Shorthand           string              // one-letter abbreviated flag
-	ShorthandOnly       bool                // If the user set only the shorthand
+	Shorthand           string              // abbreviated flag
+	Style               style               // flag style
 	Usage               string              // help message
 	Value               Value               // value as set
 	DefValue            string              // default value (as text); for usage message
@@ -490,8 +499,12 @@ func (f *FlagSet) Set(name, value string) error {
 		var flagName string
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
 			flagName = fmt.Sprintf("-%s", flag.Shorthand)
-			if !flag.ShorthandOnly {
-				flagName = fmt.Sprintf("%s, --%s", flagName, flag.Name)
+			if flag.Style != ShorthandOnly {
+				if flag.Style != NameAsShorthand {
+					flagName = fmt.Sprintf("%s, --%s", flagName, flag.Name)
+				} else {
+					flagName = fmt.Sprintf("%s, -%s", flagName, flag.Name)
+				}
 			}
 		} else {
 			flagName = fmt.Sprintf("--%s", flag.Name)
@@ -716,7 +729,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		line := ""
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
 			line = fmt.Sprintf("  -%s", flag.Shorthand)
-			if !flag.ShorthandOnly {
+			if flag.Style != ShorthandOnly {
 				line = fmt.Sprintf("%s, --%s", line, flag.Name)
 			}
 		} else {
@@ -849,6 +862,26 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 	f.VarP(value, name, "", usage)
 }
 
+// VarNF is like VarN, but returns the flag created
+func (f *FlagSet) VarNF(value Value, name string, shorthand string, usage string) *Flag {
+	// Remember the default value as a string; it won't change.
+	flag := &Flag{
+		Name:      name,
+		Shorthand: shorthand,
+		Style:     NameAsShorthand,
+		Usage:     usage,
+		Value:     value,
+		DefValue:  value.String(),
+	}
+	f.AddFlag(flag)
+	return flag
+}
+
+// VarN is like VarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) VarN(value Value, name, shorthand, usage string) {
+	f.VarNF(value, name, shorthand, usage)
+}
+
 // VarPF is like VarP, but returns the flag created
 func (f *FlagSet) VarPF(value Value, name, shorthand, usage string) *Flag {
 	// Remember the default value as a string; it won't change.
@@ -870,8 +903,16 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 
 // VarSF is like VarS, but returns the flag created
 func (f *FlagSet) VarSF(value Value, name string, shorthand string, usage string) *Flag {
-	flag := f.VarPF(value, name, shorthand, usage)
-	flag.ShorthandOnly = true
+	// Remember the default value as a string; it won't change.
+	flag := &Flag{
+		Name:      name,
+		Shorthand: shorthand,
+		Style:     ShorthandOnly,
+		Usage:     usage,
+		Value:     value,
+		DefValue:  value.String(),
+	}
+	f.AddFlag(flag)
 	return flag
 }
 
@@ -911,6 +952,16 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 		panic(msg)
 	}
 	f.shorthands[flag.Shorthand] = flag
+
+	if flag.Style == NameAsShorthand { // add the name as shorthand as well
+		used, alreadyThere := f.shorthands[flag.Name]
+		if alreadyThere {
+			msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", flag.Name, f.name, used.Name)
+			fmt.Fprint(f.Output(), msg)
+			panic(msg)
+		}
+		f.shorthands[flag.Name] = flag
+	}
 }
 
 // AddFlagSet adds one FlagSet to another. If a flag is already present in f
@@ -1003,13 +1054,13 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (outArgs [
 	name = split[0]
 	flag, exists := f.formal[f.normalizeFlagName(name)]
 
-	if !exists || (flag != nil && flag.ShorthandOnly) {
+	if !exists || (flag != nil && flag.Style == ShorthandOnly) {
 		switch {
 		case !exists && name == "help":
 			f.usage()
 			err = ErrHelp
 			return
-		case f.ParseErrorsWhitelist.UnknownFlags || (flag != nil && flag.ShorthandOnly):
+		case f.ParseErrorsWhitelist.UnknownFlags || (flag != nil && flag.Style == ShorthandOnly):
 			// --unknown=unknownval arg ...
 			// we do not want to lose arg in this case
 			if len(split) >= 2 {

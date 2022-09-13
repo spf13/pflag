@@ -41,6 +41,11 @@ func (f *FlagSet) Float64Var(p *float64, name string, value float64, usage strin
 	f.Float64VarP(p, name, "", value, usage)
 }
 
+// Float64VarN is like Float64VarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Float64VarN(p *float64, name, shorthand string, value float64, usage string) {
+	f.VarN(newFloat64Value(value, p), name, shorthand, usage)
+}
+
 // Float64VarP is like Float64Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Float64VarP(p *float64, name, shorthand string, value float64, usage string) {
 	f.VarP(newFloat64Value(value, p), name, shorthand, usage)
@@ -57,6 +62,11 @@ func Float64Var(p *float64, name string, value float64, usage string) {
 	CommandLine.Float64Var(p, name, value, usage)
 }
 
+// Float64VarN is like Float64VarP, but adds the name as shorthand (non-posix).
+func Float64VarN(p *float64, name, shorthand string, value float64, usage string) {
+	CommandLine.Float64VarN(p, name, shorthand, value, usage)
+}
+
 // Float64VarP is like Float64Var, but accepts a shorthand letter that can be used after a single dash.
 func Float64VarP(p *float64, name, shorthand string, value float64, usage string) {
 	CommandLine.Float64VarP(p, name, shorthand, value, usage)
@@ -71,6 +81,13 @@ func Float64VarS(p *float64, name, shorthand string, value float64, usage string
 // The return value is the address of a float64 variable that stores the value of the flag.
 func (f *FlagSet) Float64(name string, value float64, usage string) *float64 {
 	return f.Float64P(name, "", value, usage)
+}
+
+// Float64N is like Float64P, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Float64N(name, shorthand string, value float64, usage string) *float64 {
+	p := new(float64)
+	f.Float64VarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // Float64P is like Float64, but accepts a shorthand letter that can be used after a single dash.
@@ -91,6 +108,11 @@ func (f *FlagSet) Float64S(name, shorthand string, value float64, usage string) 
 // The return value is the address of a float64 variable that stores the value of the flag.
 func Float64(name string, value float64, usage string) *float64 {
 	return CommandLine.Float64(name, value, usage)
+}
+
+// Float64N is like Float64P, but adds the name as shorthand (non-posix).
+func Float64N(name, shorthand string, value float64, usage string) *float64 {
+	return CommandLine.Float64N(name, shorthand, value, usage)
 }
 
 // Float64P is like Float64, but accepts a shorthand letter that can be used after a single dash.

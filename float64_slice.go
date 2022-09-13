@@ -123,6 +123,11 @@ func (f *FlagSet) Float64SliceVar(p *[]float64, name string, value []float64, us
 	f.Float64SliceVarP(p, name, "", value, usage)
 }
 
+// Float64SliceVarN is like Float64SliceVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Float64SliceVarN(p *[]float64, name, shorthand string, value []float64, usage string) {
+	f.VarN(newFloat64SliceValue(value, p), name, shorthand, usage)
+}
+
 // Float64SliceVarP is like Float64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Float64SliceVarP(p *[]float64, name, shorthand string, value []float64, usage string) {
 	f.VarP(newFloat64SliceValue(value, p), name, shorthand, usage)
@@ -139,6 +144,11 @@ func Float64SliceVar(p *[]float64, name string, value []float64, usage string) {
 	CommandLine.Float64SliceVar(p, name, value, usage)
 }
 
+// Float64SliceVarN is like Float64SliceVarP, but adds the name as shorthand (non-posix).
+func Float64SliceVarN(p *[]float64, name, shorthand string, value []float64, usage string) {
+	CommandLine.Float64SliceVarN(p, name, shorthand, value, usage)
+}
+
 // Float64SliceVarP is like Float64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Float64SliceVarP(p *[]float64, name, shorthand string, value []float64, usage string) {
 	CommandLine.Float64SliceVarP(p, name, shorthand, value, usage)
@@ -153,6 +163,13 @@ func Float64SliceVarS(p *[]float64, name, shorthand string, value []float64, usa
 // The return value is the address of a []float64 variable that stores the value of the flag.
 func (f *FlagSet) Float64Slice(name string, value []float64, usage string) *[]float64 {
 	return f.Float64SliceP(name, "", value, usage)
+}
+
+// Float64SliceN is like Float64SliceP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Float64SliceN(name, shorthand string, value []float64, usage string) *[]float64 {
+	p := []float64{}
+	f.Float64SliceVarN(&p, name, shorthand, value, usage)
+	return &p
 }
 
 // Float64SliceP is like Float64Slice, but accepts a shorthand letter that can be used after a single dash.
@@ -173,6 +190,11 @@ func (f *FlagSet) Float64SliceS(name, shorthand string, value []float64, usage s
 // The return value is the address of a []float64 variable that stores the value of the flag.
 func Float64Slice(name string, value []float64, usage string) *[]float64 {
 	return CommandLine.Float64Slice(name, value, usage)
+}
+
+// Float64SliceN is like Float64SliceP, but adds the name as shorthand (non-posix).
+func Float64SliceN(name, shorthand string, value []float64, usage string) *[]float64 {
+	return CommandLine.Float64SliceN(name, shorthand, value, usage)
 }
 
 // Float64SliceP is like Float64Slice, but accepts a shorthand letter that can be used after a single dash.

@@ -45,6 +45,11 @@ func (f *FlagSet) UintVar(p *uint, name string, value uint, usage string) {
 	f.UintVarP(p, name, "", value, usage)
 }
 
+// UintVarN is like UintVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) UintVarN(p *uint, name, shorthand string, value uint, usage string) {
+	f.VarN(newUintValue(value, p), name, shorthand, usage)
+}
+
 // UintVarP is like UintVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) UintVarP(p *uint, name, shorthand string, value uint, usage string) {
 	f.VarP(newUintValue(value, p), name, shorthand, usage)
@@ -61,6 +66,11 @@ func UintVar(p *uint, name string, value uint, usage string) {
 	CommandLine.UintVar(p, name, value, usage)
 }
 
+// UintVarN is like UintVarP, but adds the name as shorthand (non-posix).
+func UintVarN(p *uint, name, shorthand string, value uint, usage string) {
+	CommandLine.UintVarN(p, name, shorthand, value, usage)
+}
+
 // UintVarP is like UintVar, but accepts a shorthand letter that can be used after a single dash.
 func UintVarP(p *uint, name, shorthand string, value uint, usage string) {
 	CommandLine.UintVarP(p, name, shorthand, value, usage)
@@ -75,6 +85,13 @@ func UintVarS(p *uint, name, shorthand string, value uint, usage string) {
 // The return value is the address of a uint  variable that stores the value of the flag.
 func (f *FlagSet) Uint(name string, value uint, usage string) *uint {
 	return f.UintP(name, "", value, usage)
+}
+
+// UintN is like UintP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) UintN(name, shorthand string, value uint, usage string) *uint {
+	p := new(uint)
+	f.UintVarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // UintP is like Uint, but accepts a shorthand letter that can be used after a single dash.
@@ -95,6 +112,11 @@ func (f *FlagSet) UintS(name, shorthand string, value uint, usage string) *uint 
 // The return value is the address of a uint  variable that stores the value of the flag.
 func Uint(name string, value uint, usage string) *uint {
 	return CommandLine.Uint(name, value, usage)
+}
+
+// UintN is like UintP, but adds the name as shorthand (non-posix).
+func UintN(name, shorthand string, value uint, usage string) *uint {
+	return CommandLine.UintN(name, shorthand, value, usage)
 }
 
 // UintP is like Uint, but accepts a shorthand letter that can be used after a single dash.

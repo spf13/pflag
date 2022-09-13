@@ -108,6 +108,11 @@ func (f *FlagSet) StringSliceVar(p *[]string, name string, value []string, usage
 	f.StringSliceVarP(p, name, "", value, usage)
 }
 
+// StringSliceVarN like StringSliceVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) StringSliceVarN(p *[]string, name, shorthand string, value []string, usage string) {
+	f.VarN(newStringSliceValue(value, p), name, shorthand, usage)
+}
+
 // StringSliceVarP is like StringSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) StringSliceVarP(p *[]string, name, shorthand string, value []string, usage string) {
 	f.VarP(newStringSliceValue(value, p), name, shorthand, usage)
@@ -132,6 +137,11 @@ func StringSliceVar(p *[]string, name string, value []string, usage string) {
 	CommandLine.StringSliceVar(p, name, value, usage)
 }
 
+// StringSliceVarN like StringSliceVarP, but adds the name as shorthand (non-posix).
+func StringSliceVarN(p *[]string, name, shorthand string, value []string, usage string) {
+	CommandLine.StringSliceVarN(p, name, shorthand, value, usage)
+}
+
 // StringSliceVarP is like StringSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func StringSliceVarP(p *[]string, name, shorthand string, value []string, usage string) {
 	CommandLine.StringSliceVarP(p, name, shorthand, value, usage)
@@ -154,6 +164,13 @@ func StringSliceVarS(p *[]string, name, shorthand string, value []string, usage 
 //	[]string{"v1", "v2", "v3"}
 func (f *FlagSet) StringSlice(name string, value []string, usage string) *[]string {
 	return f.StringSliceP(name, "", value, usage)
+}
+
+// StringSliceN like StringSliceP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) StringSliceN(name, shorthand string, value []string, usage string) *[]string {
+	p := []string{}
+	f.StringSliceVarN(&p, name, shorthand, value, usage)
+	return &p
 }
 
 // StringSliceP is like StringSlice, but accepts a shorthand letter that can be used after a single dash.
@@ -182,6 +199,11 @@ func (f *FlagSet) StringSliceS(name, shorthand string, value []string, usage str
 //	[]string{"v1", "v2", "v3"}
 func StringSlice(name string, value []string, usage string) *[]string {
 	return CommandLine.StringSlice(name, value, usage)
+}
+
+// StringSliceN like StringSliceP, but adds the name as shorthand (non-posix).
+func StringSliceN(name, shorthand string, value []string, usage string) *[]string {
+	return CommandLine.StringSliceN(name, shorthand, value, usage)
 }
 
 // StringSliceP is like StringSlice, but accepts a shorthand letter that can be used after a single dash.

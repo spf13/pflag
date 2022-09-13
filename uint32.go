@@ -45,6 +45,11 @@ func (f *FlagSet) Uint32Var(p *uint32, name string, value uint32, usage string) 
 	f.Uint32VarP(p, name, "", value, usage)
 }
 
+// Uint32VarN is like Uint32VarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Uint32VarN(p *uint32, name, shorthand string, value uint32, usage string) {
+	f.VarN(newUint32Value(value, p), name, shorthand, usage)
+}
+
 // Uint32VarP is like Uint32Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Uint32VarP(p *uint32, name, shorthand string, value uint32, usage string) {
 	f.VarP(newUint32Value(value, p), name, shorthand, usage)
@@ -61,6 +66,11 @@ func Uint32Var(p *uint32, name string, value uint32, usage string) {
 	CommandLine.Uint32Var(p, name, value, usage)
 }
 
+// Uint32VarN is like Uint32VarP, but adds the name as shorthand (non-posix).
+func Uint32VarN(p *uint32, name, shorthand string, value uint32, usage string) {
+	CommandLine.Uint32VarN(p, name, shorthand, value, usage)
+}
+
 // Uint32VarP is like Uint32Var, but accepts a shorthand letter that can be used after a single dash.
 func Uint32VarP(p *uint32, name, shorthand string, value uint32, usage string) {
 	CommandLine.Uint32VarP(p, name, shorthand, value, usage)
@@ -75,6 +85,13 @@ func Uint32VarS(p *uint32, name, shorthand string, value uint32, usage string) {
 // The return value is the address of a uint32  variable that stores the value of the flag.
 func (f *FlagSet) Uint32(name string, value uint32, usage string) *uint32 {
 	return f.Uint32P(name, "", value, usage)
+}
+
+// Uint32N is like Uint32P, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Uint32N(name, shorthand string, value uint32, usage string) *uint32 {
+	p := new(uint32)
+	f.Uint32VarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // Uint32P is like Uint32, but accepts a shorthand letter that can be used after a single dash.
@@ -95,6 +112,11 @@ func (f *FlagSet) Uint32S(name, shorthand string, value uint32, usage string) *u
 // The return value is the address of a uint32  variable that stores the value of the flag.
 func Uint32(name string, value uint32, usage string) *uint32 {
 	return CommandLine.Uint32(name, value, usage)
+}
+
+// Uint32N is like Uint32P, but adds the name as shorthand (non-posix).
+func Uint32N(name, shorthand string, value uint32, usage string) *uint32 {
+	return CommandLine.Uint32N(name, shorthand, value, usage)
 }
 
 // Uint32P is like Uint32, but accepts a shorthand letter that can be used after a single dash.

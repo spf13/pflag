@@ -75,6 +75,11 @@ func (f *FlagSet) StringArrayVar(p *[]string, name string, value []string, usage
 	f.StringArrayVarP(p, name, "", value, usage)
 }
 
+// StringArrayVarN like StringArrayVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) StringArrayVarN(p *[]string, name, shorthand string, value []string, usage string) {
+	f.VarN(newStringArrayValue(value, p), name, shorthand, usage)
+}
+
 // StringArrayVarP is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) StringArrayVarP(p *[]string, name, shorthand string, value []string, usage string) {
 	f.VarP(newStringArrayValue(value, p), name, shorthand, usage)
@@ -92,6 +97,11 @@ func StringArrayVar(p *[]string, name string, value []string, usage string) {
 	CommandLine.StringArrayVar(p, name, value, usage)
 }
 
+// StringArrayVarN like StringArrayVarP, but adds the name as shorthand (non-posix).
+func StringArrayVarN(p *[]string, name, shorthand string, value []string, usage string) {
+	CommandLine.StringArrayVarN(p, name, shorthand, value, usage)
+}
+
 // StringArrayVarP is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash.
 func StringArrayVarP(p *[]string, name, shorthand string, value []string, usage string) {
 	CommandLine.StringArrayVarP(p, name, shorthand, value, usage)
@@ -107,6 +117,13 @@ func StringArrayVarS(p *[]string, name, shorthand string, value []string, usage 
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
 func (f *FlagSet) StringArray(name string, value []string, usage string) *[]string {
 	return f.StringArrayP(name, "", value, usage)
+}
+
+// StringArrayN like StringArrayP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) StringArrayN(name, shorthand string, value []string, usage string) *[]string {
+	p := []string{}
+	f.StringArrayVarN(&p, name, shorthand, value, usage)
+	return &p
 }
 
 // StringArrayP is like StringArray, but accepts a shorthand letter that can be used after a single dash.
@@ -128,6 +145,11 @@ func (f *FlagSet) StringArrayS(name, shorthand string, value []string, usage str
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
 func StringArray(name string, value []string, usage string) *[]string {
 	return CommandLine.StringArray(name, value, usage)
+}
+
+// StringArrayN like StringArrayP, but adds the name as shorthand (non-posix).
+func StringArrayN(name, shorthand string, value []string, usage string) *[]string {
+	return CommandLine.StringArrayN(name, shorthand, value, usage)
 }
 
 // StringArrayP is like StringArray, but accepts a shorthand letter that can be used after a single dash.
