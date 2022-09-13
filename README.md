@@ -19,8 +19,7 @@ pflag.BoolS("help", "h", false, "show help") // -s
 ### Long Shorthand
 
 Support shorthand flags that are more than one character long (e.g. `pkill -<sig>`).
-
-This implicitly disables posix shorthand chaining (e.g. `ls -lha`):
+> This implicitly disables posix shorthand chaining (e.g. `ls -lha`):
 
 ```go
 pflag.BoolS("stop", "STOP", false, "Stop process, unblockable") // -STOP
