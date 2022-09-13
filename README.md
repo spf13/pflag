@@ -13,5 +13,15 @@ Fork of [spf13/pflag](https://github.com/spf13/pflag) aimed to provide support f
 Support shorthand-only flags (e.g. `-h` without `--help`) using `S` suffix for flag functions:
 
 ```go
-pflag.BoolS("help", "h", false, "show help")
+pflag.BoolS("help", "h", false, "show help") // -s
+```
+
+### Long Shorthand
+
+Support shorthand flags that are more than one character long (e.g. `pkill -<sig>`).
+
+This implicitly disables posix shorthand chaining (e.g. `ls -lha`):
+
+```go
+pflag.BoolS("stop", "STOP", false, "Stop process, unblockable") // -STOP
 ```
