@@ -128,6 +128,20 @@ func TestAddFlagSet(t *testing.T) {
 	}
 }
 
+func TestAddFlag(t *testing.T) {
+	flagSet := NewFlagSet("adding-flags", ContinueOnError)
+	flag := &Flag{
+		Name:      "a-flag",
+		Shorthand: "a",
+		Usage:     "the usage",
+	}
+	flagSet.AddFlag(flag)
+
+	if len(flagSet.formal) != 1 {
+		t.Errorf("Unexpected result adding a Flag to a FlagSet %v", flagSet)
+	}
+}
+
 func TestAnnotation(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
 
