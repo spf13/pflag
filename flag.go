@@ -150,10 +150,10 @@ type FlagSet struct {
 
 	name              string
 	parsed            bool
-	actual            map[NormalizedName]*Flag
+	actual            map[NormalizedName]*Flag // the flags after parsing
 	orderedActual     []*Flag
 	sortedActual      []*Flag
-	formal            map[NormalizedName]*Flag
+	formal            map[NormalizedName]*Flag // the flags before parsing
 	orderedFormal     []*Flag
 	sortedFormal      []*Flag
 	shorthands        map[byte]*Flag
