@@ -844,6 +844,15 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 	f.VarPF(value, name, shorthand, usage)
 }
 
+// RemoveFlag will remove the flag from the FlagSet
+func (f *FlagSet) RemoveFlag(name string) {
+	normalizedFlagName := f.normalizeFlagName(name)
+	_, exists := f.formal[normalizedFlagName]
+	if exists {
+		delete(f.formal, normalizedFlagName)
+	}
+}
+
 // AddFlag will add the flag to the FlagSet
 func (f *FlagSet) AddFlag(flag *Flag) {
 	normalizedFlagName := f.normalizeFlagName(flag.Name)

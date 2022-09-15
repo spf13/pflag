@@ -142,6 +142,23 @@ func TestAddFlag(t *testing.T) {
 	}
 }
 
+func TestRemoveFlag(t *testing.T) {
+	flagSet := NewFlagSet("removing-flags", ContinueOnError)
+	flagSet.String("string1", "a", "enter a string1")
+	flagSet.String("string2", "b", "enter a string2")
+
+	flagSet.RemoveFlag("string1")
+
+	if len(flagSet.formal) != 1 {
+		t.Errorf("Flagset %v should only have 1 formal flag now, but has %d.", flagSet, len(flagSet.formal))
+	}
+	flagSet.VisitAll(func(f *Flag) {
+		if f.Name == "string1" {
+			t.Errorf("Flag string1 was not removed from %v formal flags.", flagSet)
+		}
+	})
+}
+
 func TestAnnotation(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
 
