@@ -128,6 +128,37 @@ func TestAddFlagSet(t *testing.T) {
 	}
 }
 
+func TestAddFlag(t *testing.T) {
+	flagSet := NewFlagSet("adding-flags", ContinueOnError)
+	flag := &Flag{
+		Name:      "a-flag",
+		Shorthand: "a",
+		Usage:     "the usage",
+	}
+	flagSet.AddFlag(flag)
+
+	if len(flagSet.formal) != 1 {
+		t.Errorf("Unexpected result adding a Flag to a FlagSet %v", flagSet)
+	}
+}
+
+func TestRemoveFlag(t *testing.T) {
+	flagSet := NewFlagSet("removing-flags", ContinueOnError)
+	flagSet.String("string1", "a", "enter a string1")
+	flagSet.String("string2", "b", "enter a string2")
+
+	flagSet.RemoveFlag("string1")
+
+	if len(flagSet.formal) != 1 {
+		t.Errorf("Flagset %v should only have 1 formal flag now, but has %d.", flagSet, len(flagSet.formal))
+	}
+	flagSet.VisitAll(func(f *Flag) {
+		if f.Name == "string1" {
+			t.Errorf("Flag string1 was not removed from %v formal flags.", flagSet)
+		}
+	})
+}
+
 func TestAnnotation(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
 
@@ -1134,7 +1165,6 @@ func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagInUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1149,7 +1179,6 @@ func TestHiddenFlagInUsage(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1238,8 +1267,8 @@ func TestPrintDefaults(t *testing.T) {
 	fs.PrintDefaults()
 	got := buf.String()
 	if got != defaultOutput {
-		fmt.Println("\n" + got)
-		fmt.Println("\n" + defaultOutput)
+		fmt.Print("\n" + got)
+		fmt.Print("\n" + defaultOutput)
 		t.Errorf("got %q want %q\n", got, defaultOutput)
 	}
 }
