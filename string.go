@@ -37,6 +37,11 @@ func (f *FlagSet) StringVar(p *string, name string, value string, usage string) 
 	f.StringVarP(p, name, "", value, usage)
 }
 
+// StringVarN is like StringVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) StringVarN(p *string, name, shorthand string, value string, usage string) {
+	f.VarN(newStringValue(value, p), name, shorthand, usage)
+}
+
 // StringVarP is like StringVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) StringVarP(p *string, name, shorthand string, value string, usage string) {
 	f.VarP(newStringValue(value, p), name, shorthand, usage)
@@ -53,6 +58,11 @@ func StringVar(p *string, name string, value string, usage string) {
 	CommandLine.StringVar(p, name, value, usage)
 }
 
+// StringVarN is like StringVarP, but adds the name as shorthand (non-posix).
+func StringVarN(p *string, name, shorthand string, value string, usage string) {
+	CommandLine.StringVarN(p, name, shorthand, value, usage)
+}
+
 // StringVarP is like StringVar, but accepts a shorthand letter that can be used after a single dash.
 func StringVarP(p *string, name, shorthand string, value string, usage string) {
 	CommandLine.StringVarP(p, name, shorthand, value, usage)
@@ -67,6 +77,13 @@ func StringVarS(p *string, name, shorthand string, value string, usage string) {
 // The return value is the address of a string variable that stores the value of the flag.
 func (f *FlagSet) String(name string, value string, usage string) *string {
 	return f.StringP(name, "", value, usage)
+}
+
+// StringN is like StringP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) StringN(name, shorthand string, value string, usage string) *string {
+	p := new(string)
+	f.StringVarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // StringP is like String, but accepts a shorthand letter that can be used after a single dash.
@@ -87,6 +104,11 @@ func (f *FlagSet) StringS(name, shorthand string, value string, usage string) *s
 // The return value is the address of a string variable that stores the value of the flag.
 func String(name string, value string, usage string) *string {
 	return CommandLine.String(name, value, usage)
+}
+
+// StringN is like StringP, but adds the name as shorthand (non-posix).
+func StringN(name, shorthand string, value string, usage string) *string {
+	return CommandLine.StringN(name, shorthand, value, usage)
 }
 
 // StringP is like String, but accepts a shorthand letter that can be used after a single dash.

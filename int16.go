@@ -45,6 +45,11 @@ func (f *FlagSet) Int16Var(p *int16, name string, value int16, usage string) {
 	f.Int16VarP(p, name, "", value, usage)
 }
 
+// Int16VarN like Int16VarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Int16VarN(p *int16, name, shorthand string, value int16, usage string) {
+	f.VarN(newInt16Value(value, p), name, shorthand, usage)
+}
+
 // Int16VarP is like Int16Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Int16VarP(p *int16, name, shorthand string, value int16, usage string) {
 	f.VarP(newInt16Value(value, p), name, shorthand, usage)
@@ -61,6 +66,11 @@ func Int16Var(p *int16, name string, value int16, usage string) {
 	CommandLine.Int16Var(p, name, value, usage)
 }
 
+// Int16VarN like Int16VarP, but adds the name as shorthand (non-posix).
+func Int16VarN(p *int16, name, shorthand string, value int16, usage string) {
+	CommandLine.Int16VarN(p, name, shorthand, value, usage)
+}
+
 // Int16VarP is like Int16Var, but accepts a shorthand letter that can be used after a single dash.
 func Int16VarP(p *int16, name, shorthand string, value int16, usage string) {
 	CommandLine.Int16VarP(p, name, shorthand, value, usage)
@@ -75,6 +85,13 @@ func Int16VarS(p *int16, name, shorthand string, value int16, usage string) {
 // The return value is the address of an int16 variable that stores the value of the flag.
 func (f *FlagSet) Int16(name string, value int16, usage string) *int16 {
 	return f.Int16P(name, "", value, usage)
+}
+
+// Int16N like Int16P, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Int16N(name, shorthand string, value int16, usage string) *int16 {
+	p := new(int16)
+	f.Int16VarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // Int16P is like Int16, but accepts a shorthand letter that can be used after a single dash.
@@ -95,6 +112,11 @@ func (f *FlagSet) Int16S(name, shorthand string, value int16, usage string) *int
 // The return value is the address of an int16 variable that stores the value of the flag.
 func Int16(name string, value int16, usage string) *int16 {
 	return CommandLine.Int16(name, value, usage)
+}
+
+// Int16N like Int16P, but adds the name as shorthand (non-posix).
+func Int16N(name, shorthand string, value int16, usage string) *int16 {
+	return CommandLine.Int16N(name, shorthand, value, usage)
 }
 
 // Int16P is like Int16, but accepts a shorthand letter that can be used after a single dash.

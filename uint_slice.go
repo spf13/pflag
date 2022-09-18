@@ -125,6 +125,11 @@ func (f *FlagSet) UintSliceVar(p *[]uint, name string, value []uint, usage strin
 	f.UintSliceVarP(p, name, "", value, usage)
 }
 
+// UintSliceVarN like UintSliceVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) UintSliceVarN(p *[]uint, name, shorthand string, value []uint, usage string) {
+	f.VarN(newUintSliceValue(value, p), name, shorthand, usage)
+}
+
 // UintSliceVarP is like UintSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) UintSliceVarP(p *[]uint, name, shorthand string, value []uint, usage string) {
 	f.VarP(newUintSliceValue(value, p), name, shorthand, usage)
@@ -141,6 +146,11 @@ func UintSliceVar(p *[]uint, name string, value []uint, usage string) {
 	CommandLine.UintSliceVar(p, name, value, usage)
 }
 
+// UintSliceVarN like UintSliceVarP, but adds the name as shorthand (non-posix).
+func UintSliceVarN(p *[]uint, name, shorthand string, value []uint, usage string) {
+	CommandLine.UintSliceVarN(p, name, shorthand, value, usage)
+}
+
 // UintSliceVarP is like the UintSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func UintSliceVarP(p *[]uint, name, shorthand string, value []uint, usage string) {
 	CommandLine.UintSliceVarP(p, name, shorthand, value, usage)
@@ -155,6 +165,13 @@ func UintSliceVarS(p *[]uint, name, shorthand string, value []uint, usage string
 // The return value is the address of a []uint variable that stores the value of the flag.
 func (f *FlagSet) UintSlice(name string, value []uint, usage string) *[]uint {
 	return f.UintSliceP(name, "", value, usage)
+}
+
+// UintSliceN like UintSliceP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) UintSliceN(name, shorthand string, value []uint, usage string) *[]uint {
+	p := []uint{}
+	f.UintSliceVarN(&p, name, shorthand, value, usage)
+	return &p
 }
 
 // UintSliceP is like UintSlice, but accepts a shorthand letter that can be used after a single dash.
@@ -175,6 +192,11 @@ func (f *FlagSet) UintSliceS(name, shorthand string, value []uint, usage string)
 // The return value is the address of a []uint variable that stores the value of the flag.
 func UintSlice(name string, value []uint, usage string) *[]uint {
 	return CommandLine.UintSlice(name, value, usage)
+}
+
+// UintSliceN like UintSliceP, but adds the name as shorthand (non-posix).
+func UintSliceN(name, shorthand string, value []uint, usage string) *[]uint {
+	return CommandLine.UintSliceN(name, shorthand, value, usage)
 }
 
 // UintSliceP is like UintSlice, but accepts a shorthand letter that can be used after a single dash.

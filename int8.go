@@ -45,6 +45,11 @@ func (f *FlagSet) Int8Var(p *int8, name string, value int8, usage string) {
 	f.Int8VarP(p, name, "", value, usage)
 }
 
+// Int8VarN like Int8VarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Int8VarN(p *int8, name, shorthand string, value int8, usage string) {
+	f.VarN(newInt8Value(value, p), name, shorthand, usage)
+}
+
 // Int8VarP is like Int8Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Int8VarP(p *int8, name, shorthand string, value int8, usage string) {
 	f.VarP(newInt8Value(value, p), name, shorthand, usage)
@@ -61,6 +66,11 @@ func Int8Var(p *int8, name string, value int8, usage string) {
 	CommandLine.Int8Var(p, name, value, usage)
 }
 
+// Int8VarN like Int8VarP, but adds the name as shorthand (non-posix).
+func Int8VarN(p *int8, name, shorthand string, value int8, usage string) {
+	CommandLine.Int8VarN(p, name, shorthand, value, usage)
+}
+
 // Int8VarP is like Int8Var, but accepts a shorthand letter that can be used after a single dash.
 func Int8VarP(p *int8, name, shorthand string, value int8, usage string) {
 	CommandLine.Int8VarP(p, name, shorthand, value, usage)
@@ -75,6 +85,13 @@ func Int8VarS(p *int8, name, shorthand string, value int8, usage string) {
 // The return value is the address of an int8 variable that stores the value of the flag.
 func (f *FlagSet) Int8(name string, value int8, usage string) *int8 {
 	return f.Int8P(name, "", value, usage)
+}
+
+// Int8N like Int8P, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Int8N(name, shorthand string, value int8, usage string) *int8 {
+	p := new(int8)
+	f.Int8VarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // Int8P is like Int8, but accepts a shorthand letter that can be used after a single dash.
@@ -95,6 +112,11 @@ func (f *FlagSet) Int8S(name, shorthand string, value int8, usage string) *int8 
 // The return value is the address of an int8 variable that stores the value of the flag.
 func Int8(name string, value int8, usage string) *int8 {
 	return CommandLine.Int8(name, value, usage)
+}
+
+// Int8N like Int8P, but adds the name as shorthand (non-posix).
+func Int8N(name, shorthand string, value int8, usage string) *int8 {
+	return CommandLine.Int8N(name, shorthand, value, usage)
 }
 
 // Int8P is like Int8, but accepts a shorthand letter that can be used after a single dash.

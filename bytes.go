@@ -66,6 +66,11 @@ func (f *FlagSet) BytesHexVar(p *[]byte, name string, value []byte, usage string
 	f.BytesHexVarP(p, name, "", value, usage)
 }
 
+// BytesHexVarN is like BytesHexVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) BytesHexVarN(p *[]byte, name, shorthand string, value []byte, usage string) {
+	f.VarN(newBytesHexValue(value, p), name, shorthand, usage)
+}
+
 // BytesHexVarP is like BytesHexVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) BytesHexVarP(p *[]byte, name, shorthand string, value []byte, usage string) {
 	f.VarP(newBytesHexValue(value, p), name, shorthand, usage)
@@ -82,6 +87,11 @@ func BytesHexVar(p *[]byte, name string, value []byte, usage string) {
 	CommandLine.BytesHexVar(p, name, value, usage)
 }
 
+// BytesHexVarN is like BytesHexVarP, but adds the name as shorthand (non-posix).
+func BytesHexVarN(p *[]byte, name, shorthand string, value []byte, usage string) {
+	CommandLine.BytesHexVarN(p, name, shorthand, value, usage)
+}
+
 // BytesHexVarP is like BytesHexVar, but accepts a shorthand letter that can be used after a single dash.
 func BytesHexVarP(p *[]byte, name, shorthand string, value []byte, usage string) {
 	CommandLine.BytesHexVarP(p, name, shorthand, value, usage)
@@ -96,6 +106,13 @@ func BytesHexVarS(p *[]byte, name, shorthand string, value []byte, usage string)
 // The return value is the address of an []byte variable that stores the value of the flag.
 func (f *FlagSet) BytesHex(name string, value []byte, usage string) *[]byte {
 	return f.BytesHexP(name, "", value, usage)
+}
+
+// BytesHexN is like BytesHexP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) BytesHexN(name, shorthand string, value []byte, usage string) *[]byte {
+	p := new([]byte)
+	f.BytesHexVarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // BytesHexP is like BytesHex, but accepts a shorthand letter that can be used after a single dash.
@@ -116,6 +133,11 @@ func (f *FlagSet) BytesHexS(name, shorthand string, value []byte, usage string) 
 // The return value is the address of an []byte variable that stores the value of the flag.
 func BytesHex(name string, value []byte, usage string) *[]byte {
 	return CommandLine.BytesHexP(name, "", value, usage)
+}
+
+// BytesHexN is like BytesHexP, but adds the name as shorthand (non-posix).
+func BytesHexN(name, shorthand string, value []byte, usage string) *[]byte {
+	return CommandLine.BytesHexN(name, shorthand, value, usage)
 }
 
 // BytesHexP is like BytesHex, but accepts a shorthand letter that can be used after a single dash.
@@ -186,6 +208,11 @@ func (f *FlagSet) BytesBase64Var(p *[]byte, name string, value []byte, usage str
 	f.BytesBase64VarP(p, name, "", value, usage)
 }
 
+// BytesBase64VarN is like BytesBase64VarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) BytesBase64VarN(p *[]byte, name, shorthand string, value []byte, usage string) {
+	f.VarN(newBytesBase64Value(value, p), name, shorthand, usage)
+}
+
 // BytesBase64VarP is like BytesBase64Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) BytesBase64VarP(p *[]byte, name, shorthand string, value []byte, usage string) {
 	f.VarP(newBytesBase64Value(value, p), name, shorthand, usage)
@@ -202,6 +229,11 @@ func BytesBase64Var(p *[]byte, name string, value []byte, usage string) {
 	CommandLine.BytesBase64Var(p, name, value, usage)
 }
 
+// BytesBase64VarN is like BytesBase64VarP, but adds the name as shorthand (non-posix).
+func BytesBase64VarN(p *[]byte, name, shorthand string, value []byte, usage string) {
+	CommandLine.BytesBase64VarN(p, name, shorthand, value, usage)
+}
+
 // BytesBase64VarP is like BytesBase64Var, but accepts a shorthand letter that can be used after a single dash.
 func BytesBase64VarP(p *[]byte, name, shorthand string, value []byte, usage string) {
 	CommandLine.BytesBase64VarP(p, name, shorthand, value, usage)
@@ -216,6 +248,13 @@ func BytesBase64VarS(p *[]byte, name, shorthand string, value []byte, usage stri
 // The return value is the address of an []byte variable that stores the value of the flag.
 func (f *FlagSet) BytesBase64(name string, value []byte, usage string) *[]byte {
 	return f.BytesBase64P(name, "", value, usage)
+}
+
+// BytesBase64N is like BytesBase64P, but adds the name as shorthand (non-posix).
+func (f *FlagSet) BytesBase64N(name, shorthand string, value []byte, usage string) *[]byte {
+	p := new([]byte)
+	f.BytesBase64VarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // BytesBase64P is like BytesBase64, but accepts a shorthand letter that can be used after a single dash.
@@ -236,6 +275,11 @@ func (f *FlagSet) BytesBase64S(name, shorthand string, value []byte, usage strin
 // The return value is the address of an []byte variable that stores the value of the flag.
 func BytesBase64(name string, value []byte, usage string) *[]byte {
 	return CommandLine.BytesBase64P(name, "", value, usage)
+}
+
+// BytesBase64N is like BytesBase64P, but adds the name as shorthand (non-posix).
+func BytesBase64N(name, shorthand string, value []byte, usage string) *[]byte {
+	return CommandLine.BytesBase64N(name, shorthand, value, usage)
 }
 
 // BytesBase64P is like BytesBase64, but accepts a shorthand letter that can be used after a single dash.

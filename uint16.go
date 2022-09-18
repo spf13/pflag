@@ -45,6 +45,11 @@ func (f *FlagSet) Uint16Var(p *uint16, name string, value uint16, usage string) 
 	f.Uint16VarP(p, name, "", value, usage)
 }
 
+// Uint16VarN is like Uint16VarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Uint16VarN(p *uint16, name, shorthand string, value uint16, usage string) {
+	f.VarN(newUint16Value(value, p), name, shorthand, usage)
+}
+
 // Uint16VarP is like Uint16Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Uint16VarP(p *uint16, name, shorthand string, value uint16, usage string) {
 	f.VarP(newUint16Value(value, p), name, shorthand, usage)
@@ -61,6 +66,11 @@ func Uint16Var(p *uint16, name string, value uint16, usage string) {
 	CommandLine.Uint16Var(p, name, value, usage)
 }
 
+// Uint16VarN is like Uint16VarP, but adds the name as shorthand (non-posix).
+func Uint16VarN(p *uint16, name, shorthand string, value uint16, usage string) {
+	CommandLine.Uint16VarN(p, name, shorthand, value, usage)
+}
+
 // Uint16VarP is like Uint16Var, but accepts a shorthand letter that can be used after a single dash.
 func Uint16VarP(p *uint16, name, shorthand string, value uint16, usage string) {
 	CommandLine.Uint16VarP(p, name, shorthand, value, usage)
@@ -75,6 +85,13 @@ func Uint16VarS(p *uint16, name, shorthand string, value uint16, usage string) {
 // The return value is the address of a uint  variable that stores the value of the flag.
 func (f *FlagSet) Uint16(name string, value uint16, usage string) *uint16 {
 	return f.Uint16P(name, "", value, usage)
+}
+
+// Uint16N is like Uint16P, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Uint16N(name, shorthand string, value uint16, usage string) *uint16 {
+	p := new(uint16)
+	f.Uint16VarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // Uint16P is like Uint16, but accepts a shorthand letter that can be used after a single dash.
@@ -95,6 +112,11 @@ func (f *FlagSet) Uint16S(name, shorthand string, value uint16, usage string) *u
 // The return value is the address of a uint  variable that stores the value of the flag.
 func Uint16(name string, value uint16, usage string) *uint16 {
 	return CommandLine.Uint16(name, value, usage)
+}
+
+// Uint16N is like Uint16P, but adds the name as shorthand (non-posix).
+func Uint16N(name, shorthand string, value uint16, usage string) *uint16 {
+	return CommandLine.Uint16N(name, shorthand, value, usage)
 }
 
 // Uint16P is like Uint16, but accepts a shorthand letter that can be used after a single dash.

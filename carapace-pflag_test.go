@@ -41,3 +41,37 @@ func TestLongShorthand(t *testing.T) {
 		t.Errorf("Want: %v", want)
 	}
 }
+
+func TestNonPosix(t *testing.T) {
+	f := NewFlagSet("nonPosix", ContinueOnError)
+	f.StringN("stringa", "sa", "0", "string value")
+	f.StringN("stringx", "sx", "0", "string value")
+	f.Lookup("stringx").NoOptDefVal = "1"
+	args := []string{
+		"-sa", "somearg",
+		"-stringx=something",
+	}
+	want := []string{
+		"stringa", "somearg",
+		"stringx", "something",
+	}
+	got := []string{}
+	store := func(flag *Flag, value string) error {
+		got = append(got, flag.Name)
+		if len(value) > 0 {
+			got = append(got, value)
+		}
+		return nil
+	}
+	if err := f.ParseAll(args, store); err != nil {
+		t.Errorf("expected no error, got %s", err)
+	}
+	if !f.Parsed() {
+		t.Errorf("f.Parse() = false after Parse")
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("f.TestLongShorthand() fail to restore the args")
+		t.Errorf("Got:  %v", got)
+		t.Errorf("Want: %v", want)
+	}
+}

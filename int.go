@@ -41,6 +41,11 @@ func (f *FlagSet) IntVar(p *int, name string, value int, usage string) {
 	f.IntVarP(p, name, "", value, usage)
 }
 
+// IntVarN is like IntVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) IntVarN(p *int, name, shorthand string, value int, usage string) {
+	f.VarN(newIntValue(value, p), name, shorthand, usage)
+}
+
 // IntVarP is like IntVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) IntVarP(p *int, name, shorthand string, value int, usage string) {
 	f.VarP(newIntValue(value, p), name, shorthand, usage)
@@ -57,6 +62,11 @@ func IntVar(p *int, name string, value int, usage string) {
 	CommandLine.IntVar(p, name, value, usage)
 }
 
+// IntVarN is like IntVarP, but adds the name as shorthand (non-posix).
+func IntVarN(p *int, name, shorthand string, value int, usage string) {
+	CommandLine.IntVarN(p, name, shorthand, value, usage)
+}
+
 // IntVarP is like IntVar, but accepts a shorthand letter that can be used after a single dash.
 func IntVarP(p *int, name, shorthand string, value int, usage string) {
 	CommandLine.IntVarP(p, name, shorthand, value, usage)
@@ -71,6 +81,13 @@ func IntVarS(p *int, name, shorthand string, value int, usage string) {
 // The return value is the address of an int variable that stores the value of the flag.
 func (f *FlagSet) Int(name string, value int, usage string) *int {
 	return f.IntP(name, "", value, usage)
+}
+
+// IntN is like IntP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) IntN(name, shorthand string, value int, usage string) *int {
+	p := new(int)
+	f.IntVarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // IntP is like Int, but accepts a shorthand letter that can be used after a single dash.
@@ -91,6 +108,11 @@ func (f *FlagSet) IntS(name, shorthand string, value int, usage string) *int {
 // The return value is the address of an int variable that stores the value of the flag.
 func Int(name string, value int, usage string) *int {
 	return CommandLine.Int(name, value, usage)
+}
+
+// IntN is like IntP, but adds the name as shorthand (non-posix).
+func IntN(name, shorthand string, value int, usage string) *int {
+	return CommandLine.IntN(name, shorthand, value, usage)
 }
 
 // IntP is like Int, but accepts a shorthand letter that can be used after a single dash.

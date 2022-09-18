@@ -50,6 +50,12 @@ func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string) {
 	f.BoolVarP(p, name, "", value, usage)
 }
 
+// BoolVarN is like BoolVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) BoolVarN(p *bool, name, shorthand string, value bool, usage string) {
+	flag := f.VarNF(newBoolValue(value, p), name, shorthand, usage)
+	flag.NoOptDefVal = "true"
+}
+
 // BoolVarP is like BoolVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
 	flag := f.VarPF(newBoolValue(value, p), name, shorthand, usage)
@@ -68,6 +74,11 @@ func BoolVar(p *bool, name string, value bool, usage string) {
 	CommandLine.BoolVar(p, name, value, usage)
 }
 
+// BoolVarN is like BoolVarP, but adds the name as shorthand (non-posix).
+func BoolVarN(p *bool, name, shorthand string, value bool, usage string) {
+	CommandLine.BoolVarN(p, name, shorthand, value, usage)
+}
+
 // BoolVarP is like BoolVar, but accepts a shorthand letter that can be used after a single dash.
 func BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
 	CommandLine.BoolVarP(p, name, shorthand, value, usage)
@@ -82,6 +93,13 @@ func BoolVarS(p *bool, name string, shorthand string, value bool, usage string) 
 // The return value is the address of a bool variable that stores the value of the flag.
 func (f *FlagSet) Bool(name string, value bool, usage string) *bool {
 	return f.BoolP(name, "", value, usage)
+}
+
+// BoolN is like BoolP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) BoolN(name, shorthand string, value bool, usage string) *bool {
+	p := new(bool)
+	f.BoolVarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // BoolP is like Bool, but accepts a shorthand letter that can be used after a single dash.
@@ -102,6 +120,11 @@ func (f *FlagSet) BoolS(name string, shorthand string, value bool, usage string)
 // The return value is the address of a bool variable that stores the value of the flag.
 func Bool(name string, value bool, usage string) *bool {
 	return CommandLine.Bool(name, value, usage)
+}
+
+// BoolN is like BoolP, but adds the name as shorthand (non-posix).
+func BoolN(name, shorthand string, value bool, usage string) *bool {
+	return CommandLine.BoolN(name, shorthand, value, usage)
 }
 
 // BoolP is like Bool, but accepts a shorthand letter that can be used after a single dash.

@@ -114,6 +114,11 @@ func (f *FlagSet) StringToStringVar(p *map[string]string, name string, value map
 	f.StringToStringVarP(p, name, "", value, usage)
 }
 
+// StringToStringVarN is like StringToStringVarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) StringToStringVarN(p *map[string]string, name, shorthand string, value map[string]string, usage string) {
+	f.VarN(newStringToStringValue(value, p), name, shorthand, usage)
+}
+
 // StringToStringVarP is like StringToStringVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) StringToStringVarP(p *map[string]string, name, shorthand string, value map[string]string, usage string) {
 	f.VarP(newStringToStringValue(value, p), name, shorthand, usage)
@@ -131,6 +136,11 @@ func StringToStringVar(p *map[string]string, name string, value map[string]strin
 	CommandLine.StringToStringVar(p, name, value, usage)
 }
 
+// StringToStringVarN is like StringToStringVarP, but adds the name as shorthand (non-posix).
+func StringToStringVarN(p *map[string]string, name, shorthand string, value map[string]string, usage string) {
+	CommandLine.StringToStringVarN(p, name, shorthand, value, usage)
+}
+
 // StringToStringVarP is like StringToStringVar, but accepts a shorthand letter that can be used after a single dash.
 func StringToStringVarP(p *map[string]string, name, shorthand string, value map[string]string, usage string) {
 	CommandLine.StringToStringVarP(p, name, shorthand, value, usage)
@@ -146,6 +156,13 @@ func StringToStringVarS(p *map[string]string, name, shorthand string, value map[
 // The value of each argument will not try to be separated by comma
 func (f *FlagSet) StringToString(name string, value map[string]string, usage string) *map[string]string {
 	return f.StringToStringP(name, "", value, usage)
+}
+
+// StringToStringN is like StringToStringP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) StringToStringN(name, shorthand string, value map[string]string, usage string) *map[string]string {
+	p := map[string]string{}
+	f.StringToStringVarN(&p, name, shorthand, value, usage)
+	return &p
 }
 
 // StringToStringP is like StringToString, but accepts a shorthand letter that can be used after a single dash.
@@ -167,6 +184,11 @@ func (f *FlagSet) StringToStringS(name, shorthand string, value map[string]strin
 // The value of each argument will not try to be separated by comma
 func StringToString(name string, value map[string]string, usage string) *map[string]string {
 	return CommandLine.StringToString(name, value, usage)
+}
+
+// StringToStringN is like StringToStringP, but adds the name as shorthand (non-posix).
+func StringToStringN(name, shorthand string, value map[string]string, usage string) *map[string]string {
+	return CommandLine.StringToStringN(name, shorthand, value, usage)
 }
 
 // StringToStringP is like StringToString, but accepts a shorthand letter that can be used after a single dash.

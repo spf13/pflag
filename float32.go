@@ -45,6 +45,11 @@ func (f *FlagSet) Float32Var(p *float32, name string, value float32, usage strin
 	f.Float32VarP(p, name, "", value, usage)
 }
 
+// Float32VarN is like Float32VarP, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Float32VarN(p *float32, name, shorthand string, value float32, usage string) {
+	f.VarN(newFloat32Value(value, p), name, shorthand, usage)
+}
+
 // Float32VarP is like Float32Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Float32VarP(p *float32, name, shorthand string, value float32, usage string) {
 	f.VarP(newFloat32Value(value, p), name, shorthand, usage)
@@ -61,6 +66,11 @@ func Float32Var(p *float32, name string, value float32, usage string) {
 	CommandLine.Float32Var(p, name, value, usage)
 }
 
+// Float32VarN is like Float32VarP, but adds the name as shorthand (non-posix).
+func Float32VarN(p *float32, name, shorthand string, value float32, usage string) {
+	CommandLine.Float32VarN(p, name, shorthand, value, usage)
+}
+
 // Float32VarP is like Float32Var, but accepts a shorthand letter that can be used after a single dash.
 func Float32VarP(p *float32, name, shorthand string, value float32, usage string) {
 	CommandLine.Float32VarP(p, name, shorthand, value, usage)
@@ -75,6 +85,13 @@ func Float32VarS(p *float32, name, shorthand string, value float32, usage string
 // The return value is the address of a float32 variable that stores the value of the flag.
 func (f *FlagSet) Float32(name string, value float32, usage string) *float32 {
 	return f.Float32P(name, "", value, usage)
+}
+
+// Float32N is like Float32P, but adds the name as shorthand (non-posix).
+func (f *FlagSet) Float32N(name, shorthand string, value float32, usage string) *float32 {
+	p := new(float32)
+	f.Float32VarN(p, name, shorthand, value, usage)
+	return p
 }
 
 // Float32P is like Float32, but accepts a shorthand letter that can be used after a single dash.
@@ -95,6 +112,11 @@ func (f *FlagSet) Float32S(name, shorthand string, value float32, usage string) 
 // The return value is the address of a float32 variable that stores the value of the flag.
 func Float32(name string, value float32, usage string) *float32 {
 	return CommandLine.Float32(name, value, usage)
+}
+
+// Float32N is like Float32P, but adds the name as shorthand (non-posix).
+func Float32N(name, shorthand string, value float32, usage string) *float32 {
+	return CommandLine.Float32N(name, shorthand, value, usage)
 }
 
 // Float32P is like Float32, but accepts a shorthand letter that can be used after a single dash.
