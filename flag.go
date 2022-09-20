@@ -1130,7 +1130,11 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 			outArgs = stripUnknownFlagValue(outArgs)
 			return
 		default:
-			err = f.failf("unknown shorthand flag: %q in -%s", name, shorthands)
+			if f.IsPosix() {
+				err = f.failf("unknown shorthand flag: %q in -%s", name, shorthands) // standard spf13/pflag message for shorthand chain
+			} else {
+				err = f.failf("unknown shorthand flag: -%s", name) // custom rsteube/carapace-pflag message for non-posix shorthand (chain disabled)
+			}
 			return
 		}
 	}
