@@ -536,9 +536,10 @@ func (f *FlagSet) PrintDefaults() {
 // defaultIsZeroValue returns true if the default value for this flag represents
 // a zero value.
 func (f *Flag) defaultIsZeroValue() bool {
-	switch f.Value.(type) {
-	case boolFlag:
+	if bf, ok := f.Value.(boolFlag); ok && bf.IsBoolFlag() {
 		return f.DefValue == "false"
+	}
+	switch f.Value.(type) {
 	case *durationValue:
 		// Beginning in Go 1.7, duration zero values are "0s"
 		return f.DefValue == "0" || f.DefValue == "0s"
