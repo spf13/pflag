@@ -1134,7 +1134,6 @@ func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagInUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1149,7 +1148,6 @@ func TestHiddenFlagInUsage(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1202,6 +1200,8 @@ func (cv *customValue) Set(s string) error {
 
 func (cv *customValue) Type() string { return "custom" }
 
+func (cv *customValue) IsBoolFlag() bool { return false }
+
 func TestPrintDefaults(t *testing.T) {
 	fs := NewFlagSet("print defaults test", ContinueOnError)
 	var buf bytes.Buffer
@@ -1239,7 +1239,7 @@ func TestPrintDefaults(t *testing.T) {
 	got := buf.String()
 	if got != defaultOutput {
 		fmt.Println("\n" + got)
-		fmt.Println("\n" + defaultOutput)
+		fmt.Print("\n" + defaultOutput)
 		t.Errorf("got %q want %q\n", got, defaultOutput)
 	}
 }
