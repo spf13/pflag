@@ -147,6 +147,11 @@ func (f *FlagSet) BoolSliceVarP(p *[]bool, name, shorthand string, value []bool,
 	f.VarP(newBoolSliceValue(value, p), name, shorthand, usage)
 }
 
+// BoolSliceVarPF is like BoolSliceVarP, but returns the created flag.
+func (f *FlagSet) BoolSliceVarPF(p *[]bool, name, shorthand string, value []bool, usage string) *Flag {
+	return f.VarPF(newBoolSliceValue(value, p), name, shorthand, usage)
+}
+
 // BoolSliceVar defines a []bool flag with specified name, default value, and usage string.
 // The argument p points to a []bool variable in which to store the value of the flag.
 func BoolSliceVar(p *[]bool, name string, value []bool, usage string) {
@@ -156,6 +161,11 @@ func BoolSliceVar(p *[]bool, name string, value []bool, usage string) {
 // BoolSliceVarP is like BoolSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func BoolSliceVarP(p *[]bool, name, shorthand string, value []bool, usage string) {
 	CommandLine.VarP(newBoolSliceValue(value, p), name, shorthand, usage)
+}
+
+// BoolSliceVarPF is like BoolSliceVarP, but returns the created flag.
+func BoolSliceVarPF(p *[]bool, name, shorthand string, value []bool, usage string) *Flag {
+	return CommandLine.VarPF(newBoolSliceValue(value, p), name, shorthand, usage)
 }
 
 // BoolSlice defines a []bool flag with specified name, default value, and usage string.

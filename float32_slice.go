@@ -136,6 +136,11 @@ func (f *FlagSet) Float32SliceVarP(p *[]float32, name, shorthand string, value [
 	f.VarP(newFloat32SliceValue(value, p), name, shorthand, usage)
 }
 
+// Float32SliceVarPF is like Float32SliceVarP, but returns the created flag.
+func (f *FlagSet) Float32SliceVarPF(p *[]float32, name, shorthand string, value []float32, usage string) *Flag {
+	return f.VarPF(newFloat32SliceValue(value, p), name, shorthand, usage)
+}
+
 // Float32SliceVar defines a float32[] flag with specified name, default value, and usage string.
 // The argument p points to a float32[] variable in which to store the value of the flag.
 func Float32SliceVar(p *[]float32, name string, value []float32, usage string) {
@@ -145,6 +150,11 @@ func Float32SliceVar(p *[]float32, name string, value []float32, usage string) {
 // Float32SliceVarP is like Float32SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Float32SliceVarP(p *[]float32, name, shorthand string, value []float32, usage string) {
 	CommandLine.VarP(newFloat32SliceValue(value, p), name, shorthand, usage)
+}
+
+// Float32SliceVarPF is like Float32SliceVarP, but returns the created flag.
+func Float32SliceVarPF(p *[]float32, name, shorthand string, value []float32, usage string) *Flag {
+	return CommandLine.VarPF(newFloat32SliceValue(value, p), name, shorthand, usage)
 }
 
 // Float32Slice defines a []float32 flag with specified name, default value, and usage string.

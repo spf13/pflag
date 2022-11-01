@@ -52,8 +52,14 @@ func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string) {
 
 // BoolVarP is like BoolVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
+	f.BoolVarPF(p, name, shorthand, value, usage)
+}
+
+// BoolVarPF is like BoolVarP, but returns the created flag.
+func (f *FlagSet) BoolVarPF(p *bool, name, shorthand string, value bool, usage string) *Flag {
 	flag := f.VarPF(newBoolValue(value, p), name, shorthand, usage)
 	flag.NoOptDefVal = "true"
+	return flag
 }
 
 // BoolVar defines a bool flag with specified name, default value, and usage string.
@@ -66,6 +72,13 @@ func BoolVar(p *bool, name string, value bool, usage string) {
 func BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
 	flag := CommandLine.VarPF(newBoolValue(value, p), name, shorthand, usage)
 	flag.NoOptDefVal = "true"
+}
+
+// BoolVarPF is like BoolVarP, but returns the created flag.
+func BoolVarPF(p *bool, name, shorthand string, value bool, usage string) *Flag {
+	flag := CommandLine.VarPF(newBoolValue(value, p), name, shorthand, usage)
+	flag.NoOptDefVal = "true"
+	return flag
 }
 
 // Bool defines a bool flag with specified name, default value, and usage string.

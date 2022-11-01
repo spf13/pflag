@@ -109,6 +109,11 @@ func (f *FlagSet) IPNetSliceVarP(p *[]net.IPNet, name, shorthand string, value [
 	f.VarP(newIPNetSliceValue(value, p), name, shorthand, usage)
 }
 
+// IPNetSliceVarPF is like IPNetSliceVarP, but returns the created flag.
+func (f *FlagSet) IPNetSliceVarPF(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string) *Flag {
+	return f.VarPF(newIPNetSliceValue(value, p), name, shorthand, usage)
+}
+
 // IPNetSliceVar defines a []net.IPNet flag with specified name, default value, and usage string.
 // The argument p points to a []net.IPNet variable in which to store the value of the flag.
 func IPNetSliceVar(p *[]net.IPNet, name string, value []net.IPNet, usage string) {
@@ -118,6 +123,11 @@ func IPNetSliceVar(p *[]net.IPNet, name string, value []net.IPNet, usage string)
 // IPNetSliceVarP is like IPNetSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func IPNetSliceVarP(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string) {
 	CommandLine.VarP(newIPNetSliceValue(value, p), name, shorthand, usage)
+}
+
+// IPNetSliceVarPF is like IPNetSliceVarP, but returns the created flag.
+func IPNetSliceVarPF(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string) *Flag {
+	return CommandLine.VarPF(newIPNetSliceValue(value, p), name, shorthand, usage)
 }
 
 // IPNetSlice defines a []net.IPNet flag with specified name, default value, and usage string.

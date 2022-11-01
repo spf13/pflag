@@ -120,6 +120,11 @@ func (f *FlagSet) IntSliceVarP(p *[]int, name, shorthand string, value []int, us
 	f.VarP(newIntSliceValue(value, p), name, shorthand, usage)
 }
 
+// IntSliceVarPF is like IntSliceVarP, but returns the created flag.
+func (f *FlagSet) IntSliceVarPF(p *[]int, name, shorthand string, value []int, usage string) *Flag {
+	return f.VarPF(newIntSliceValue(value, p), name, shorthand, usage)
+}
+
 // IntSliceVar defines a int[] flag with specified name, default value, and usage string.
 // The argument p points to a int[] variable in which to store the value of the flag.
 func IntSliceVar(p *[]int, name string, value []int, usage string) {
@@ -129,6 +134,11 @@ func IntSliceVar(p *[]int, name string, value []int, usage string) {
 // IntSliceVarP is like IntSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func IntSliceVarP(p *[]int, name, shorthand string, value []int, usage string) {
 	CommandLine.VarP(newIntSliceValue(value, p), name, shorthand, usage)
+}
+
+// IntSliceVarPF is like IntSliceVarP, but returns the created flag.
+func IntSliceVarPF(p *[]int, name, shorthand string, value []int, usage string) *Flag {
+	return CommandLine.VarPF(newIntSliceValue(value, p), name, shorthand, usage)
 }
 
 // IntSlice defines a []int flag with specified name, default value, and usage string.

@@ -48,6 +48,11 @@ func (f *FlagSet) DurationVarP(p *time.Duration, name, shorthand string, value t
 	f.VarP(newDurationValue(value, p), name, shorthand, usage)
 }
 
+// DurationVarPF is like DurationVarP, but returns the created flag.
+func (f *FlagSet) DurationVarPF(p *time.Duration, name, shorthand string, value time.Duration, usage string) *Flag {
+	return f.VarPF(newDurationValue(value, p), name, shorthand, usage)
+}
+
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
 func DurationVar(p *time.Duration, name string, value time.Duration, usage string) {
@@ -57,6 +62,11 @@ func DurationVar(p *time.Duration, name string, value time.Duration, usage strin
 // DurationVarP is like DurationVar, but accepts a shorthand letter that can be used after a single dash.
 func DurationVarP(p *time.Duration, name, shorthand string, value time.Duration, usage string) {
 	CommandLine.VarP(newDurationValue(value, p), name, shorthand, usage)
+}
+
+// DurationVarPF is like DurationVarP, but returns the created flag.
+func DurationVarPF(p *time.Duration, name, shorthand string, value time.Duration, usage string) *Flag {
+	return CommandLine.VarPF(newDurationValue(value, p), name, shorthand, usage)
 }
 
 // Duration defines a time.Duration flag with specified name, default value, and usage string.

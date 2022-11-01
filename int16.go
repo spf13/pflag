@@ -50,6 +50,11 @@ func (f *FlagSet) Int16VarP(p *int16, name, shorthand string, value int16, usage
 	f.VarP(newInt16Value(value, p), name, shorthand, usage)
 }
 
+// Int16VarPF is like Int16VarP, but returns the created flag.
+func (f *FlagSet) Int16VarPF(p *int16, name, shorthand string, value int16, usage string) *Flag {
+	return f.VarPF(newInt16Value(value, p), name, shorthand, usage)
+}
+
 // Int16Var defines an int16 flag with specified name, default value, and usage string.
 // The argument p points to an int16 variable in which to store the value of the flag.
 func Int16Var(p *int16, name string, value int16, usage string) {
@@ -59,6 +64,11 @@ func Int16Var(p *int16, name string, value int16, usage string) {
 // Int16VarP is like Int16Var, but accepts a shorthand letter that can be used after a single dash.
 func Int16VarP(p *int16, name, shorthand string, value int16, usage string) {
 	CommandLine.VarP(newInt16Value(value, p), name, shorthand, usage)
+}
+
+// Int16VarPF is like Int16VarP, but returns the created flag.
+func Int16VarPF(p *int16, name, shorthand string, value int16, usage string) *Flag {
+	return CommandLine.VarPF(newInt16Value(value, p), name, shorthand, usage)
 }
 
 // Int16 defines an int16 flag with specified name, default value, and usage string.
