@@ -203,6 +203,14 @@ type Flag struct {
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
 	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+	OptargDelimiter     rune
+}
+
+func (f Flag) getOptargDelimiter() string {
+	if f.OptargDelimiter == 0 {
+		return "="
+	}
+	return string(f.OptargDelimiter)
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -248,7 +256,7 @@ func (f *FlagSet) IsPosix() bool {
 			return false
 		}
 	}
-	return true
+	return true // TODO check OptargDelimiters to just be '='
 }
 
 // SetNormalizeFunc allows you to add a function which can translate flag names.
@@ -1042,6 +1050,15 @@ func stripUnknownFlagValue(args []string) []string {
 	return nil
 }
 
+func (f *FlagSet) findLongFlag(s string) (*Flag, bool) {
+	for formalName, flag := range f.formal {
+		if name := strings.SplitN(s, flag.getOptargDelimiter(), 2)[0]; f.normalizeFlagName(name) == formalName {
+			return flag, true
+		}
+	}
+	return nil, false
+}
+
 func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (outArgs []string, err error) {
 	outArgs = args
 	name := s[2:]
@@ -1050,9 +1067,13 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (outArgs [
 		return
 	}
 
-	split := strings.SplitN(name, "=", 2)
-	name = split[0]
-	flag, exists := f.formal[f.normalizeFlagName(name)]
+	flag, exists := f.findLongFlag(name)
+
+	delimiter := "="
+	if exists {
+		delimiter = flag.getOptargDelimiter()
+	}
+	split := strings.SplitN(name, delimiter, 2)
 
 	if !exists || (flag != nil && flag.Style == ShorthandOnly) {
 		switch {
@@ -1098,6 +1119,15 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (outArgs [
 	return
 }
 
+func (f *FlagSet) findShortFlag(s string) (*Flag, bool) {
+	for shorthand, flag := range f.shorthands {
+		if name := strings.SplitN(s, flag.getOptargDelimiter(), 2)[0]; name == shorthand {
+			return flag, true
+		}
+	}
+	return nil, false
+}
+
 func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parseFunc) (outShorts string, outArgs []string, err error) {
 	outArgs = args
 
@@ -1110,10 +1140,13 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 
 	if !f.IsPosix() {
 		outShorts = ""
-		name = strings.SplitN(shorthands, "=", 2)[0]
+		name = shorthands
 	}
 
-	flag, exists := f.shorthands[name]
+	flag, exists := f.findShortFlag(name)
+	if exists {
+		name = flag.Shorthand
+	}
 	if !exists {
 		switch {
 		case name == "h":
@@ -1123,7 +1156,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		case f.ParseErrorsWhitelist.UnknownFlags:
 			// '-f=arg arg ...'
 			// we do not want to lose arg in this case
-			if suffix := strings.TrimPrefix(shorthands, name); strings.HasPrefix(suffix, "=") {
+			if suffix := strings.TrimPrefix(shorthands, name); strings.HasPrefix(suffix, "=") { // use default delimiter for unknown flag
 				outShorts = ""
 				return
 			}
@@ -1141,9 +1174,9 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 
 	var value string
 	if len(shorthands) > 2 &&
-		((shorthands[1] == '=' && f.IsPosix()) || (strings.Contains(shorthands, "=") && !f.IsPosix())) {
+		((shorthands[1] == '=' && f.IsPosix()) || (strings.Contains(shorthands, flag.getOptargDelimiter()) && !f.IsPosix())) {
 		// '-f=arg'
-		value = strings.SplitN(shorthands, "=", 2)[1]
+		value = strings.SplitN(shorthands, flag.getOptargDelimiter(), 2)[1]
 		outShorts = ""
 	} else if flag.NoOptDefVal != "" {
 		// '-f' (arg was optional)
