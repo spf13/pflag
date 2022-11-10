@@ -75,3 +75,41 @@ func TestNonPosix(t *testing.T) {
 		t.Errorf("Want: %v", want)
 	}
 }
+
+func TestOptargDelimiter(t *testing.T) {
+	f := NewFlagSet("optargdelimiter", ContinueOnError)
+	f.StringN("stringa", "a", "0", "string value")
+	f.StringN("stringx", "x", "0", "string value")
+	f.Lookup("stringa").NoOptDefVal = "1"
+	f.Lookup("stringa").OptargDelimiter = '/'
+	f.Lookup("stringx").NoOptDefVal = "2"
+	f.Lookup("stringx").OptargDelimiter = ':'
+
+	args := []string{
+		"-stringa/somearg",
+		"-stringx:something",
+	}
+	want := []string{
+		"stringa", "somearg",
+		"stringx", "something",
+	}
+	got := []string{}
+	store := func(flag *Flag, value string) error {
+		got = append(got, flag.Name)
+		if len(value) > 0 {
+			got = append(got, value)
+		}
+		return nil
+	}
+	if err := f.ParseAll(args, store); err != nil {
+		t.Errorf("expected no error, got %s", err)
+	}
+	if !f.Parsed() {
+		t.Errorf("f.Parse() = false after Parse")
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("f.TestLongShorthand() fail to restore the args")
+		t.Errorf("Got:  %v", got)
+		t.Errorf("Want: %v", want)
+	}
+}
