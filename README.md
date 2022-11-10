@@ -25,3 +25,13 @@ Support shorthand flags that are more than one character long (e.g. `pkill -<sig
 pflag.BoolS("STOP", "STOP", false, "Stop process, unblockable") // -STOP
 pflag.BoolN("help", "h", false, "show help") // -h, -help
 ```
+
+### Custom Optarg Delimiter
+
+Support custom optarg delimiter (e.g. `-agentlib:jdwp`).
+
+```go
+rootCmd.Flags().StringS("agentlib", "agentlib", "", "load native agent library")
+rootCmd.Flag("agentlib").NoOptDefVal = " "
+rootCmd.Flag("agentlib").OptargDelimiter = ':'
+```
