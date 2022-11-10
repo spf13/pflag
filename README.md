@@ -35,3 +35,16 @@ rootCmd.Flags().StringS("agentlib", "agentlib", "", "load native agent library")
 rootCmd.Flag("agentlib").NoOptDefVal = " "
 rootCmd.Flag("agentlib").OptargDelimiter = ':'
 ```
+
+### Nargs
+
+**Experimental** Support for flags consuming multiple arguments.
+Use with `Slice` and `Array` flag types.
+
+```go
+	rootCmd.Flags().StringSlice("nargs-any", []string{}, "Nargs")
+	rootCmd.Flags().StringSlice("nargs-two", []string{}, "Nargs")
+
+	rootCmd.Flag("nargs-any").Nargs = -1 // consumes any argument until one starts with `-`
+	rootCmd.Flag("nargs-two").Nargs = 2 // consumes exactly 2 arguments
+```

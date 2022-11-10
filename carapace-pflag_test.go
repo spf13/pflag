@@ -113,3 +113,52 @@ func TestOptargDelimiter(t *testing.T) {
 		t.Errorf("Want: %v", want)
 	}
 }
+
+func TestNargs(t *testing.T) {
+	f := NewFlagSet("nargs", ContinueOnError)
+	f.StringSlice("stringa", []string{}, "string value")
+	f.StringSlice("stringx", []string{}, "string value")
+	f.Lookup("stringa").Nargs = 2
+	f.Lookup("stringx").Nargs = -1
+
+	args := []string{
+		"--stringa", "one", "two", "three",
+		"--stringx", "four", "five",
+	}
+	want := []string{
+		"stringa", "one,two",
+		"stringx", "four,five",
+	}
+	got := []string{}
+	store := func(flag *Flag, value string) error {
+		got = append(got, flag.Name)
+		if len(value) > 0 {
+			got = append(got, value)
+		}
+		return nil
+	}
+	if err := f.ParseAll(args, store); err != nil {
+		t.Errorf("expected no error, got %s", err)
+	}
+	if !f.Parsed() {
+		t.Errorf("f.Parse() = false after Parse")
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("f.TestLongShorthand() fail to restore the args")
+		t.Errorf("Got:  %v", got)
+		t.Errorf("Want: %v", want)
+	}
+
+	// ensure slice is correctly set
+	f.Parse(args)
+	got, err := f.GetStringSlice("stringa")
+	if err != nil {
+		t.Error(err.Error())
+	}
+	want = []string{"one", "two"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("Got:  %v", got)
+		t.Errorf("Want: %v", want)
+	}
+
+}
