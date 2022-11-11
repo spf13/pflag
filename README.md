@@ -28,7 +28,7 @@ pflag.BoolN("help", "h", false, "show help") // -h, -help
 
 ### Custom Optarg Delimiter
 
-Support custom optarg delimiter (e.g. `-agentlib:jdwp`).
+Support custom optarg delimiter (e.g. `java -agentlib:jdwp`).
 
 ```go
 rootCmd.Flags().StringS("agentlib", "agentlib", "", "load native agent library")
