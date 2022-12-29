@@ -28,7 +28,7 @@ func (s *ipNetSliceValue) Set(val string) error {
 	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
 
 	// read flag arguments with CSV parser
-	ipNetStrSlice, err := readAsCSV(rmQuote.Replace(val))
+	ipNetStrSlice, err := readAsCSV(rmQuote.Replace(val), false)
 	if err != nil && err != io.EOF {
 		return err
 	}
