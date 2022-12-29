@@ -60,7 +60,7 @@ func stringArrayConv(sval string) (interface{}, error) {
 	if len(sval) == 0 {
 		return []string{}, nil
 	}
-	return readAsCSV(sval)
+	return readAsCSV(sval, false)
 }
 
 // GetStringArray return the []string value of a flag with the given name
