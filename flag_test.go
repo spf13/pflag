@@ -1134,7 +1134,6 @@ func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagInUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1149,7 +1148,6 @@ func TestHiddenFlagInUsage(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1238,8 +1236,8 @@ func TestPrintDefaults(t *testing.T) {
 	fs.PrintDefaults()
 	got := buf.String()
 	if got != defaultOutput {
-		fmt.Println("\n" + got)
-		fmt.Println("\n" + defaultOutput)
+		fmt.Print("\n" + got)
+		fmt.Print("\n" + defaultOutput)
 		t.Errorf("got %q want %q\n", got, defaultOutput)
 	}
 }
@@ -1282,4 +1280,33 @@ func TestVisitFlagOrder(t *testing.T) {
 		}
 		i++
 	})
+}
+
+func TestAbbrevFlags(t *testing.T) {
+	f := NewFlagSet("abbrev", ContinueOnError)
+
+	b0 := f.Bool("with-something", false, "bool with something")
+	b1 := f.Bool("with-otherthing", false, "bool with otherthing")
+	b2 := f.Bool("zero-this", false, "zero this thing")
+
+	args := []string{
+		"--with-some",
+		"--with-oth",
+		"--ze",
+	}
+	if err := f.Parse(args); err != nil {
+		t.Fatal(err)
+	}
+	if !f.Parsed() {
+		t.Error("f.Parse() = false after Parse")
+	}
+	if *b0 != true {
+		t.Error("with-something flag should be true, is ", *b0)
+	}
+	if *b1 != true {
+		t.Error("with-otherthing flag should be true, is ", *b1)
+	}
+	if *b2 != true {
+		t.Error("zero-this flag should be true, is ", *b2)
+	}
 }
