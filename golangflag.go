@@ -69,7 +69,8 @@ func PFlagFromGoFlag(goflag *goflag.Flag) *Flag {
 		Value: wrapFlagValue(goflag.Value),
 		// Looks like golang flags don't set DefValue correctly  :-(
 		//DefValue: goflag.DefValue,
-		DefValue: goflag.Value.String(),
+		DefValue:        goflag.Value.String(),
+		OptargDelimiter: '=',
 	}
 	// Ex: if the golang flag was -v, allow both -v and --v to work
 	if len(flag.Name) == 1 {

@@ -206,13 +206,6 @@ type Flag struct {
 	OptargDelimiter     rune
 }
 
-func (f Flag) getOptargDelimiter() string {
-	if f.OptargDelimiter == 0 {
-		return "="
-	}
-	return string(f.OptargDelimiter)
-}
-
 // Value is the interface to the dynamic value stored in a flag.
 // (The default value is represented as a string.)
 type Value interface {
@@ -874,12 +867,13 @@ func (f *FlagSet) Var(value Value, name string, usage string) {
 func (f *FlagSet) VarNF(value Value, name string, shorthand string, usage string) *Flag {
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
-		Name:      name,
-		Shorthand: shorthand,
-		Style:     NameAsShorthand,
-		Usage:     usage,
-		Value:     value,
-		DefValue:  value.String(),
+		Name:            name,
+		Shorthand:       shorthand,
+		Style:           NameAsShorthand,
+		Usage:           usage,
+		Value:           value,
+		DefValue:        value.String(),
+		OptargDelimiter: '=',
 	}
 	f.AddFlag(flag)
 	return flag
@@ -894,11 +888,12 @@ func (f *FlagSet) VarN(value Value, name, shorthand, usage string) {
 func (f *FlagSet) VarPF(value Value, name, shorthand, usage string) *Flag {
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
-		Name:      name,
-		Shorthand: shorthand,
-		Usage:     usage,
-		Value:     value,
-		DefValue:  value.String(),
+		Name:            name,
+		Shorthand:       shorthand,
+		Usage:           usage,
+		Value:           value,
+		DefValue:        value.String(),
+		OptargDelimiter: '=',
 	}
 	f.AddFlag(flag)
 	return flag
@@ -913,12 +908,13 @@ func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 func (f *FlagSet) VarSF(value Value, name string, shorthand string, usage string) *Flag {
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
-		Name:      name,
-		Shorthand: shorthand,
-		Style:     ShorthandOnly,
-		Usage:     usage,
-		Value:     value,
-		DefValue:  value.String(),
+		Name:            name,
+		Shorthand:       shorthand,
+		Style:           ShorthandOnly,
+		Usage:           usage,
+		Value:           value,
+		DefValue:        value.String(),
+		OptargDelimiter: '=',
 	}
 	f.AddFlag(flag)
 	return flag
@@ -1052,7 +1048,7 @@ func stripUnknownFlagValue(args []string) []string {
 
 func (f *FlagSet) findLongFlag(s string) (*Flag, bool) {
 	for formalName, flag := range f.formal {
-		if name := strings.SplitN(s, flag.getOptargDelimiter(), 2)[0]; f.normalizeFlagName(name) == formalName {
+		if name := strings.SplitN(s, string(flag.OptargDelimiter), 2)[0]; f.normalizeFlagName(name) == formalName {
 			return flag, true
 		}
 	}
@@ -1071,7 +1067,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (outArgs [
 
 	delimiter := "="
 	if exists {
-		delimiter = flag.getOptargDelimiter()
+		delimiter = string(flag.OptargDelimiter)
 	}
 	split := strings.SplitN(name, delimiter, 2)
 
@@ -1121,7 +1117,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (outArgs [
 
 func (f *FlagSet) findShortFlag(s string) (*Flag, bool) {
 	for shorthand, flag := range f.shorthands {
-		if name := strings.SplitN(s, flag.getOptargDelimiter(), 2)[0]; name == shorthand {
+		if name := strings.SplitN(s, string(flag.OptargDelimiter), 2)[0]; name == shorthand {
 			return flag, true
 		}
 	}
@@ -1174,9 +1170,9 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 
 	var value string
 	if len(shorthands) > 2 &&
-		((shorthands[1] == '=' && f.IsPosix()) || (strings.Contains(shorthands, flag.getOptargDelimiter()) && !f.IsPosix())) {
+		((shorthands[1] == '=' && f.IsPosix()) || (strings.Contains(shorthands, string(flag.OptargDelimiter)) && !f.IsPosix())) {
 		// '-f=arg'
-		value = strings.SplitN(shorthands, flag.getOptargDelimiter(), 2)[1]
+		value = strings.SplitN(shorthands, string(flag.OptargDelimiter), 2)[1]
 		outShorts = ""
 	} else if flag.NoOptDefVal != "" {
 		// '-f' (arg was optional)
