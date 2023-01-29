@@ -38,7 +38,7 @@ rootCmd.Flag("agentlib").OptargDelimiter = ':'
 
 ### Nargs
 
-**Experimental** Support for flags consuming multiple arguments.
+Support for flags consuming multiple arguments.
 > Use with `Slice` and `Array` flag types.
 
 ```go
