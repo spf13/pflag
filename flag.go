@@ -204,6 +204,7 @@ type Flag struct {
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
 	Annotations         map[string][]string // used by cobra.Command bash autocomple code
 	OptargDelimiter     rune
+	Nargs               int
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -1100,8 +1101,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (outArgs [
 		value = flag.NoOptDefVal
 	} else if len(outArgs) > 0 {
 		// '--flag arg'
-		value = outArgs[0]
-		outArgs = outArgs[1:]
+		value, outArgs = parseNargs(flag, outArgs)
 	} else {
 		// '--flag' (arg was required)
 		err = f.failf("flag needs an argument: %s", s)
@@ -1113,6 +1113,30 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (outArgs [
 		f.failf(err.Error())
 	}
 	return
+}
+
+func parseNargs(flag *Flag, args []string) (value string, outargs []string) {
+	if flag.Nargs == 0 || flag.Nargs == 1 {
+		return args[0], args[1:]
+	}
+	limit := len(args)
+	if flag.Nargs > 1 && flag.Nargs < len(args) {
+		limit = flag.Nargs
+	}
+
+	consumed := make([]string, 0)
+	for i := 0; i < limit; i++ {
+		if flag.Nargs < 0 && strings.HasPrefix(args[i], "-") {
+			break // stop on first (assumed) flag
+		}
+		consumed = append(consumed, args[i])
+	}
+
+	formatted, err := writeAsCSV(consumed)
+	if err != nil {
+		panic(err.Error()) // TODO should never happen
+	}
+	return formatted, args[len(consumed):]
 }
 
 func (f *FlagSet) findShortFlag(s string) (*Flag, bool) {
@@ -1183,8 +1207,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		outShorts = ""
 	} else if len(args) > 0 {
 		// '-f arg'
-		value = args[0]
-		outArgs = args[1:]
+		value, outArgs = parseNargs(flag, args)
 	} else {
 		// '-f' (arg was required)
 		err = f.failf("flag needs an argument: %q in -%s", name, shorthands)
