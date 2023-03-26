@@ -844,11 +844,17 @@ func Args() []string { return CommandLine.args }
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
 func (f *FlagSet) Var(value Value, name string, usage string, validation ...func(value interface{}) error) {
-	f.VarP(value, name, "", usage, validation[0])
+	f.VarP(value, name, "", usage, validation...)
 }
 
 // VarPF is like VarP, but returns the flag created
 func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, validation ...func(value interface{}) error) *Flag {
+	var validationFunc func(value interface{}) error
+
+	if len(validation) > 0 {
+		validationFunc = validation[0]
+	}
+
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
 		Name:       name,
@@ -856,7 +862,7 @@ func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, validation .
 		Usage:      usage,
 		Value:      value,
 		DefValue:   value.String(),
-		Validation: validation[0],
+		Validation: validationFunc,
 	}
 	f.AddFlag(flag)
 	return flag
@@ -864,7 +870,7 @@ func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, validation .
 
 // VarP is like Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) VarP(value Value, name, shorthand, usage string, validation ...func(value interface{}) error) {
-	f.VarPF(value, name, shorthand, usage, validation[0])
+	f.VarPF(value, name, shorthand, usage, validation...)
 }
 
 // AddFlag will add the flag to the FlagSet
