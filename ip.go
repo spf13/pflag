@@ -50,36 +50,36 @@ func (f *FlagSet) GetIP(name string) (net.IP, error) {
 
 // IPVar defines an net.IP flag with specified name, default value, and usage string.
 // The argument p points to an net.IP variable in which to store the value of the flag.
-func (f *FlagSet) IPVar(p *net.IP, name string, value net.IP, usage string, validation ...func(value any) error) {
+func (f *FlagSet) IPVar(p *net.IP, name string, value net.IP, usage string, validation ...func(value interface{}) error) {
 	f.VarP(newIPValue(value, p), name, "", usage, validation...)
 }
 
 // IPVarP is like IPVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IPVarP(p *net.IP, name, shorthand string, value net.IP, usage string, validation ...func(value any) error) {
+func (f *FlagSet) IPVarP(p *net.IP, name, shorthand string, value net.IP, usage string, validation ...func(value interface{}) error) {
 	f.VarP(newIPValue(value, p), name, shorthand, usage, validation...)
 }
 
 // IPVar defines an net.IP flag with specified name, default value, and usage string.
 // The argument p points to an net.IP variable in which to store the value of the flag.
-func IPVar(p *net.IP, name string, value net.IP, usage string, validation ...func(value any) error) {
+func IPVar(p *net.IP, name string, value net.IP, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(newIPValue(value, p), name, "", usage, validation...)
 }
 
 // IPVarP is like IPVar, but accepts a shorthand letter that can be used after a single dash.
-func IPVarP(p *net.IP, name, shorthand string, value net.IP, usage string, validation ...func(value any) error) {
+func IPVarP(p *net.IP, name, shorthand string, value net.IP, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(newIPValue(value, p), name, shorthand, usage, validation...)
 }
 
 // IP defines an net.IP flag with specified name, default value, and usage string.
 // The return value is the address of an net.IP variable that stores the value of the flag.
-func (f *FlagSet) IP(name string, value net.IP, usage string, validation ...func(value any) error) *net.IP {
+func (f *FlagSet) IP(name string, value net.IP, usage string, validation ...func(value interface{}) error) *net.IP {
 	p := new(net.IP)
 	f.IPVarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // IPP is like IP, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IPP(name, shorthand string, value net.IP, usage string, validation ...func(value any) error) *net.IP {
+func (f *FlagSet) IPP(name, shorthand string, value net.IP, usage string, validation ...func(value interface{}) error) *net.IP {
 	p := new(net.IP)
 	f.IPVarP(p, name, shorthand, value, usage, validation...)
 	return p
@@ -87,11 +87,11 @@ func (f *FlagSet) IPP(name, shorthand string, value net.IP, usage string, valida
 
 // IP defines an net.IP flag with specified name, default value, and usage string.
 // The return value is the address of an net.IP variable that stores the value of the flag.
-func IP(name string, value net.IP, usage string, validation ...func(value any) error) *net.IP {
+func IP(name string, value net.IP, usage string, validation ...func(value interface{}) error) *net.IP {
 	return CommandLine.IPP(name, "", value, usage, validation...)
 }
 
 // IPP is like IP, but accepts a shorthand letter that can be used after a single dash.
-func IPP(name, shorthand string, value net.IP, usage string, validation ...func(value any) error) *net.IP {
+func IPP(name, shorthand string, value net.IP, usage string, validation ...func(value interface{}) error) *net.IP {
 	return CommandLine.IPP(name, shorthand, value, usage, validation...)
 }

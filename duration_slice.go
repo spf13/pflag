@@ -119,36 +119,36 @@ func (f *FlagSet) GetDurationSlice(name string) ([]time.Duration, error) {
 
 // DurationSliceVar defines a durationSlice flag with specified name, default value, and usage string.
 // The argument p points to a []time.Duration variable in which to store the value of the flag.
-func (f *FlagSet) DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string, validation ...func(value any) error) {
+func (f *FlagSet) DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string, validation ...func(value interface{}) error) {
 	f.VarP(newDurationSliceValue(value, p), name, "", usage, validation...)
 }
 
 // DurationSliceVarP is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) DurationSliceVarP(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string, validation ...func(value any) error) {
+func (f *FlagSet) DurationSliceVarP(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string, validation ...func(value interface{}) error) {
 	f.VarP(newDurationSliceValue(value, p), name, shorthand, usage, validation...)
 }
 
 // DurationSliceVar defines a duration[] flag with specified name, default value, and usage string.
 // The argument p points to a duration[] variable in which to store the value of the flag.
-func DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string, validation ...func(value any) error) {
+func DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(newDurationSliceValue(value, p), name, "", usage, validation...)
 }
 
 // DurationSliceVarP is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func DurationSliceVarP(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string, validation ...func(value any) error) {
+func DurationSliceVarP(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(newDurationSliceValue(value, p), name, shorthand, usage, validation...)
 }
 
 // DurationSlice defines a []time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a []time.Duration variable that stores the value of the flag.
-func (f *FlagSet) DurationSlice(name string, value []time.Duration, usage string, validation ...func(value any) error) *[]time.Duration {
+func (f *FlagSet) DurationSlice(name string, value []time.Duration, usage string, validation ...func(value interface{}) error) *[]time.Duration {
 	p := []time.Duration{}
 	f.DurationSliceVarP(&p, name, "", value, usage, validation...)
 	return &p
 }
 
 // DurationSliceP is like DurationSlice, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) DurationSliceP(name, shorthand string, value []time.Duration, usage string, validation ...func(value any) error) *[]time.Duration {
+func (f *FlagSet) DurationSliceP(name, shorthand string, value []time.Duration, usage string, validation ...func(value interface{}) error) *[]time.Duration {
 	p := []time.Duration{}
 	f.DurationSliceVarP(&p, name, shorthand, value, usage, validation...)
 	return &p
@@ -156,11 +156,11 @@ func (f *FlagSet) DurationSliceP(name, shorthand string, value []time.Duration, 
 
 // DurationSlice defines a []time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a []time.Duration variable that stores the value of the flag.
-func DurationSlice(name string, value []time.Duration, usage string, validation ...func(value any) error) *[]time.Duration {
+func DurationSlice(name string, value []time.Duration, usage string, validation ...func(value interface{}) error) *[]time.Duration {
 	return CommandLine.DurationSliceP(name, "", value, usage, validation...)
 }
 
 // DurationSliceP is like DurationSlice, but accepts a shorthand letter that can be used after a single dash.
-func DurationSliceP(name, shorthand string, value []time.Duration, usage string, validation ...func(value any) error) *[]time.Duration {
+func DurationSliceP(name, shorthand string, value []time.Duration, usage string, validation ...func(value interface{}) error) *[]time.Duration {
 	return CommandLine.DurationSliceP(name, shorthand, value, usage, validation...)
 }

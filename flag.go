@@ -182,18 +182,18 @@ type FlagSet struct {
 
 // A Flag represents the state of a flag.
 type Flag struct {
-	Name                string                // name as it appears on command line
-	Shorthand           string                // one-letter abbreviated flag
-	Usage               string                // help message
-	Value               Value                 // value as set
-	DefValue            string                // default value (as text); for usage message
-	Changed             bool                  // If the user set the value (or if left to default)
-	NoOptDefVal         string                // default value (as text); if the flag is on the command line without any options
-	Deprecated          string                // If this flag is deprecated, this string is the new or now thing to use
-	Hidden              bool                  // used by cobra.Command to allow flags to be hidden from help/usage text
-	ShorthandDeprecated string                // If the shorthand of this flag is deprecated, this string is the new or now thing to use
-	Annotations         map[string][]string   // used by cobra.Command bash autocomple code
-	Validation          func(value any) error // If you want to add custom validation for the value of the flag
+	Name                string                        // name as it appears on command line
+	Shorthand           string                        // one-letter abbreviated flag
+	Usage               string                        // help message
+	Value               Value                         // value as set
+	DefValue            string                        // default value (as text); for usage message
+	Changed             bool                          // If the user set the value (or if left to default)
+	NoOptDefVal         string                        // default value (as text); if the flag is on the command line without any options
+	Deprecated          string                        // If this flag is deprecated, this string is the new or now thing to use
+	Hidden              bool                          // used by cobra.Command to allow flags to be hidden from help/usage text
+	ShorthandDeprecated string                        // If the shorthand of this flag is deprecated, this string is the new or now thing to use
+	Annotations         map[string][]string           // used by cobra.Command bash autocomple code
+	Validation          func(value interface{}) error // If you want to add custom validation for the value of the flag
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -843,12 +843,12 @@ func Args() []string { return CommandLine.args }
 // caller could create a flag that turns a comma-separated string into a slice
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
-func (f *FlagSet) Var(value Value, name string, usage string, validation ...func(value any) error) {
+func (f *FlagSet) Var(value Value, name string, usage string, validation ...func(value interface{}) error) {
 	f.VarP(value, name, "", usage, validation[0])
 }
 
 // VarPF is like VarP, but returns the flag created
-func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, validation ...func(value any) error) *Flag {
+func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, validation ...func(value interface{}) error) *Flag {
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
 		Name:       name,
@@ -863,7 +863,7 @@ func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, validation .
 }
 
 // VarP is like Var, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) VarP(value Value, name, shorthand, usage string, validation ...func(value any) error) {
+func (f *FlagSet) VarP(value Value, name, shorthand, usage string, validation ...func(value interface{}) error) {
 	f.VarPF(value, name, shorthand, usage, validation[0])
 }
 
@@ -925,12 +925,12 @@ func (f *FlagSet) AddFlagSet(newSet *FlagSet) {
 // caller could create a flag that turns a comma-separated string into a slice
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
-func Var(value Value, name string, usage string, validation ...func(value any) error) {
+func Var(value Value, name string, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(value, name, "", usage, validation[0])
 }
 
 // VarP is like Var, but accepts a shorthand letter that can be used after a single dash.
-func VarP(value Value, name, shorthand, usage string, validation ...func(value any) error) {
+func VarP(value Value, name, shorthand, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(value, name, shorthand, usage, validation[0])
 }
 

@@ -37,36 +37,36 @@ func (f *FlagSet) GetInt(name string) (int, error) {
 
 // IntVar defines an int flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
-func (f *FlagSet) IntVar(p *int, name string, value int, usage string, validation ...func(value any) error) {
+func (f *FlagSet) IntVar(p *int, name string, value int, usage string, validation ...func(value interface{}) error) {
 	f.VarP(newIntValue(value, p), name, "", usage, validation...)
 }
 
 // IntVarP is like IntVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IntVarP(p *int, name, shorthand string, value int, usage string, validation ...func(value any) error) {
+func (f *FlagSet) IntVarP(p *int, name, shorthand string, value int, usage string, validation ...func(value interface{}) error) {
 	f.VarP(newIntValue(value, p), name, shorthand, usage, validation...)
 }
 
 // IntVar defines an int flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
-func IntVar(p *int, name string, value int, usage string, validation ...func(value any) error) {
+func IntVar(p *int, name string, value int, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(newIntValue(value, p), name, "", usage, validation...)
 }
 
 // IntVarP is like IntVar, but accepts a shorthand letter that can be used after a single dash.
-func IntVarP(p *int, name, shorthand string, value int, usage string, validation ...func(value any) error) {
+func IntVarP(p *int, name, shorthand string, value int, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(newIntValue(value, p), name, shorthand, usage, validation...)
 }
 
 // Int defines an int flag with specified name, default value, and usage string.
 // The return value is the address of an int variable that stores the value of the flag.
-func (f *FlagSet) Int(name string, value int, usage string, validation ...func(value any) error) *int {
+func (f *FlagSet) Int(name string, value int, usage string, validation ...func(value interface{}) error) *int {
 	p := new(int)
 	f.IntVarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // IntP is like Int, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IntP(name, shorthand string, value int, usage string, validation ...func(value any) error) *int {
+func (f *FlagSet) IntP(name, shorthand string, value int, usage string, validation ...func(value interface{}) error) *int {
 	p := new(int)
 	f.IntVarP(p, name, shorthand, value, usage, validation...)
 	return p
@@ -74,11 +74,11 @@ func (f *FlagSet) IntP(name, shorthand string, value int, usage string, validati
 
 // Int defines an int flag with specified name, default value, and usage string.
 // The return value is the address of an int variable that stores the value of the flag.
-func Int(name string, value int, usage string, validation ...func(value any) error) *int {
+func Int(name string, value int, usage string, validation ...func(value interface{}) error) *int {
 	return CommandLine.IntP(name, "", value, usage, validation...)
 }
 
 // IntP is like Int, but accepts a shorthand letter that can be used after a single dash.
-func IntP(name, shorthand string, value int, usage string, validation ...func(value any) error) *int {
+func IntP(name, shorthand string, value int, usage string, validation ...func(value interface{}) error) *int {
 	return CommandLine.IntP(name, shorthand, value, usage, validation...)
 }

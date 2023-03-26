@@ -41,36 +41,36 @@ func (f *FlagSet) GetInt8(name string) (int8, error) {
 
 // Int8Var defines an int8 flag with specified name, default value, and usage string.
 // The argument p points to an int8 variable in which to store the value of the flag.
-func (f *FlagSet) Int8Var(p *int8, name string, value int8, usage string, validation ...func(value any) error) {
+func (f *FlagSet) Int8Var(p *int8, name string, value int8, usage string, validation ...func(value interface{}) error) {
 	f.VarP(newInt8Value(value, p), name, "", usage, validation...)
 }
 
 // Int8VarP is like Int8Var, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) Int8VarP(p *int8, name, shorthand string, value int8, usage string, validation ...func(value any) error) {
+func (f *FlagSet) Int8VarP(p *int8, name, shorthand string, value int8, usage string, validation ...func(value interface{}) error) {
 	f.VarP(newInt8Value(value, p), name, shorthand, usage, validation...)
 }
 
 // Int8Var defines an int8 flag with specified name, default value, and usage string.
 // The argument p points to an int8 variable in which to store the value of the flag.
-func Int8Var(p *int8, name string, value int8, usage string, validation ...func(value any) error) {
+func Int8Var(p *int8, name string, value int8, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(newInt8Value(value, p), name, "", usage, validation...)
 }
 
 // Int8VarP is like Int8Var, but accepts a shorthand letter that can be used after a single dash.
-func Int8VarP(p *int8, name, shorthand string, value int8, usage string, validation ...func(value any) error) {
+func Int8VarP(p *int8, name, shorthand string, value int8, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(newInt8Value(value, p), name, shorthand, usage, validation...)
 }
 
 // Int8 defines an int8 flag with specified name, default value, and usage string.
 // The return value is the address of an int8 variable that stores the value of the flag.
-func (f *FlagSet) Int8(name string, value int8, usage string, validation ...func(value any) error) *int8 {
+func (f *FlagSet) Int8(name string, value int8, usage string, validation ...func(value interface{}) error) *int8 {
 	p := new(int8)
 	f.Int8VarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // Int8P is like Int8, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) Int8P(name, shorthand string, value int8, usage string, validation ...func(value any) error) *int8 {
+func (f *FlagSet) Int8P(name, shorthand string, value int8, usage string, validation ...func(value interface{}) error) *int8 {
 	p := new(int8)
 	f.Int8VarP(p, name, shorthand, value, usage, validation...)
 	return p
@@ -78,11 +78,11 @@ func (f *FlagSet) Int8P(name, shorthand string, value int8, usage string, valida
 
 // Int8 defines an int8 flag with specified name, default value, and usage string.
 // The return value is the address of an int8 variable that stores the value of the flag.
-func Int8(name string, value int8, usage string, validation ...func(value any) error) *int8 {
+func Int8(name string, value int8, usage string, validation ...func(value interface{}) error) *int8 {
 	return CommandLine.Int8P(name, "", value, usage, validation...)
 }
 
 // Int8P is like Int8, but accepts a shorthand letter that can be used after a single dash.
-func Int8P(name, shorthand string, value int8, usage string, validation ...func(value any) error) *int8 {
+func Int8P(name, shorthand string, value int8, usage string, validation ...func(value interface{}) error) *int8 {
 	return CommandLine.Int8P(name, shorthand, value, usage, validation...)
 }

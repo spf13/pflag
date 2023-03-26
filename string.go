@@ -33,36 +33,36 @@ func (f *FlagSet) GetString(name string) (string, error) {
 
 // StringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
-func (f *FlagSet) StringVar(p *string, name string, value string, usage string, validation ...func(value any) error) {
+func (f *FlagSet) StringVar(p *string, name string, value string, usage string, validation ...func(value interface{}) error) {
 	f.VarP(newStringValue(value, p), name, "", usage, validation...)
 }
 
 // StringVarP is like StringVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) StringVarP(p *string, name, shorthand string, value string, usage string, validation ...func(value any) error) {
+func (f *FlagSet) StringVarP(p *string, name, shorthand string, value string, usage string, validation ...func(value interface{}) error) {
 	f.VarP(newStringValue(value, p), name, shorthand, usage, validation...)
 }
 
 // StringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
-func StringVar(p *string, name string, value string, usage string, validation ...func(value any) error) {
+func StringVar(p *string, name string, value string, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(newStringValue(value, p), name, "", usage, validation...)
 }
 
 // StringVarP is like StringVar, but accepts a shorthand letter that can be used after a single dash.
-func StringVarP(p *string, name, shorthand string, value string, usage string, validation ...func(value any) error) {
+func StringVarP(p *string, name, shorthand string, value string, usage string, validation ...func(value interface{}) error) {
 	CommandLine.VarP(newStringValue(value, p), name, shorthand, usage, validation...)
 }
 
 // String defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a string variable that stores the value of the flag.
-func (f *FlagSet) String(name string, value string, usage string, validation ...func(value any) error) *string {
+func (f *FlagSet) String(name string, value string, usage string, validation ...func(value interface{}) error) *string {
 	p := new(string)
 	f.StringVarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // StringP is like String, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) StringP(name, shorthand string, value string, usage string, validation ...func(value any) error) *string {
+func (f *FlagSet) StringP(name, shorthand string, value string, usage string, validation ...func(value interface{}) error) *string {
 	p := new(string)
 	f.StringVarP(p, name, shorthand, value, usage, validation...)
 	return p
@@ -70,11 +70,11 @@ func (f *FlagSet) StringP(name, shorthand string, value string, usage string, va
 
 // String defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a string variable that stores the value of the flag.
-func String(name string, value string, usage string, validation ...func(value any) error) *string {
+func String(name string, value string, usage string, validation ...func(value interface{}) error) *string {
 	return CommandLine.StringP(name, "", value, usage, validation...)
 }
 
 // StringP is like String, but accepts a shorthand letter that can be used after a single dash.
-func StringP(name, shorthand string, value string, usage string, validation ...func(value any) error) *string {
+func StringP(name, shorthand string, value string, usage string, validation ...func(value interface{}) error) *string {
 	return CommandLine.StringP(name, shorthand, value, usage, validation...)
 }
