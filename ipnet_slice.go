@@ -100,48 +100,48 @@ func (f *FlagSet) GetIPNetSlice(name string) ([]net.IPNet, error) {
 
 // IPNetSliceVar defines a ipNetSlice flag with specified name, default value, and usage string.
 // The argument p points to a []net.IPNet variable in which to store the value of the flag.
-func (f *FlagSet) IPNetSliceVar(p *[]net.IPNet, name string, value []net.IPNet, usage string) {
-	f.VarP(newIPNetSliceValue(value, p), name, "", usage)
+func (f *FlagSet) IPNetSliceVar(p *[]net.IPNet, name string, value []net.IPNet, usage string, validation ...func(value any) error) {
+	f.VarP(newIPNetSliceValue(value, p), name, "", usage, validation...)
 }
 
 // IPNetSliceVarP is like IPNetSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IPNetSliceVarP(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string) {
-	f.VarP(newIPNetSliceValue(value, p), name, shorthand, usage)
+func (f *FlagSet) IPNetSliceVarP(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string, validation ...func(value any) error) {
+	f.VarP(newIPNetSliceValue(value, p), name, shorthand, usage, validation...)
 }
 
 // IPNetSliceVar defines a []net.IPNet flag with specified name, default value, and usage string.
 // The argument p points to a []net.IPNet variable in which to store the value of the flag.
-func IPNetSliceVar(p *[]net.IPNet, name string, value []net.IPNet, usage string) {
-	CommandLine.VarP(newIPNetSliceValue(value, p), name, "", usage)
+func IPNetSliceVar(p *[]net.IPNet, name string, value []net.IPNet, usage string, validation ...func(value any) error) {
+	CommandLine.VarP(newIPNetSliceValue(value, p), name, "", usage, validation...)
 }
 
 // IPNetSliceVarP is like IPNetSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func IPNetSliceVarP(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string) {
-	CommandLine.VarP(newIPNetSliceValue(value, p), name, shorthand, usage)
+func IPNetSliceVarP(p *[]net.IPNet, name, shorthand string, value []net.IPNet, usage string, validation ...func(value any) error) {
+	CommandLine.VarP(newIPNetSliceValue(value, p), name, shorthand, usage, validation...)
 }
 
 // IPNetSlice defines a []net.IPNet flag with specified name, default value, and usage string.
 // The return value is the address of a []net.IPNet variable that stores the value of that flag.
-func (f *FlagSet) IPNetSlice(name string, value []net.IPNet, usage string) *[]net.IPNet {
+func (f *FlagSet) IPNetSlice(name string, value []net.IPNet, usage string, validation ...func(value any) error) *[]net.IPNet {
 	p := []net.IPNet{}
-	f.IPNetSliceVarP(&p, name, "", value, usage)
+	f.IPNetSliceVarP(&p, name, "", value, usage, validation...)
 	return &p
 }
 
 // IPNetSliceP is like IPNetSlice, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IPNetSliceP(name, shorthand string, value []net.IPNet, usage string) *[]net.IPNet {
+func (f *FlagSet) IPNetSliceP(name, shorthand string, value []net.IPNet, usage string, validation ...func(value any) error) *[]net.IPNet {
 	p := []net.IPNet{}
-	f.IPNetSliceVarP(&p, name, shorthand, value, usage)
+	f.IPNetSliceVarP(&p, name, shorthand, value, usage, validation...)
 	return &p
 }
 
 // IPNetSlice defines a []net.IPNet flag with specified name, default value, and usage string.
 // The return value is the address of a []net.IP variable that stores the value of the flag.
-func IPNetSlice(name string, value []net.IPNet, usage string) *[]net.IPNet {
-	return CommandLine.IPNetSliceP(name, "", value, usage)
+func IPNetSlice(name string, value []net.IPNet, usage string, validation ...func(value any) error) *[]net.IPNet {
+	return CommandLine.IPNetSliceP(name, "", value, usage, validation...)
 }
 
 // IPNetSliceP is like IPNetSlice, but accepts a shorthand letter that can be used after a single dash.
-func IPNetSliceP(name, shorthand string, value []net.IPNet, usage string) *[]net.IPNet {
-	return CommandLine.IPNetSliceP(name, shorthand, value, usage)
+func IPNetSliceP(name, shorthand string, value []net.IPNet, usage string, validation ...func(value any) error) *[]net.IPNet {
+	return CommandLine.IPNetSliceP(name, shorthand, value, usage, validation...)
 }

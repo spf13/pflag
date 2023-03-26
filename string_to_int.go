@@ -99,51 +99,51 @@ func (f *FlagSet) GetStringToInt(name string) (map[string]int, error) {
 // StringToIntVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a map[string]int variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma
-func (f *FlagSet) StringToIntVar(p *map[string]int, name string, value map[string]int, usage string) {
-	f.VarP(newStringToIntValue(value, p), name, "", usage)
+func (f *FlagSet) StringToIntVar(p *map[string]int, name string, value map[string]int, usage string, validation ...func(value any) error) {
+	f.VarP(newStringToIntValue(value, p), name, "", usage, validation...)
 }
 
 // StringToIntVarP is like StringToIntVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) StringToIntVarP(p *map[string]int, name, shorthand string, value map[string]int, usage string) {
-	f.VarP(newStringToIntValue(value, p), name, shorthand, usage)
+func (f *FlagSet) StringToIntVarP(p *map[string]int, name, shorthand string, value map[string]int, usage string, validation ...func(value any) error) {
+	f.VarP(newStringToIntValue(value, p), name, shorthand, usage, validation...)
 }
 
 // StringToIntVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a map[string]int variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma
-func StringToIntVar(p *map[string]int, name string, value map[string]int, usage string) {
-	CommandLine.VarP(newStringToIntValue(value, p), name, "", usage)
+func StringToIntVar(p *map[string]int, name string, value map[string]int, usage string, validation ...func(value any) error) {
+	CommandLine.VarP(newStringToIntValue(value, p), name, "", usage, validation...)
 }
 
 // StringToIntVarP is like StringToIntVar, but accepts a shorthand letter that can be used after a single dash.
-func StringToIntVarP(p *map[string]int, name, shorthand string, value map[string]int, usage string) {
-	CommandLine.VarP(newStringToIntValue(value, p), name, shorthand, usage)
+func StringToIntVarP(p *map[string]int, name, shorthand string, value map[string]int, usage string, validation ...func(value any) error) {
+	CommandLine.VarP(newStringToIntValue(value, p), name, shorthand, usage, validation...)
 }
 
 // StringToInt defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a map[string]int variable that stores the value of the flag.
 // The value of each argument will not try to be separated by comma
-func (f *FlagSet) StringToInt(name string, value map[string]int, usage string) *map[string]int {
+func (f *FlagSet) StringToInt(name string, value map[string]int, usage string, validation ...func(value any) error) *map[string]int {
 	p := map[string]int{}
-	f.StringToIntVarP(&p, name, "", value, usage)
+	f.StringToIntVarP(&p, name, "", value, usage, validation...)
 	return &p
 }
 
 // StringToIntP is like StringToInt, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) StringToIntP(name, shorthand string, value map[string]int, usage string) *map[string]int {
+func (f *FlagSet) StringToIntP(name, shorthand string, value map[string]int, usage string, validation ...func(value any) error) *map[string]int {
 	p := map[string]int{}
-	f.StringToIntVarP(&p, name, shorthand, value, usage)
+	f.StringToIntVarP(&p, name, shorthand, value, usage, validation...)
 	return &p
 }
 
 // StringToInt defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a map[string]int variable that stores the value of the flag.
 // The value of each argument will not try to be separated by comma
-func StringToInt(name string, value map[string]int, usage string) *map[string]int {
-	return CommandLine.StringToIntP(name, "", value, usage)
+func StringToInt(name string, value map[string]int, usage string, validation ...func(value any) error) *map[string]int {
+	return CommandLine.StringToIntP(name, "", value, usage, validation...)
 }
 
 // StringToIntP is like StringToInt, but accepts a shorthand letter that can be used after a single dash.
-func StringToIntP(name, shorthand string, value map[string]int, usage string) *map[string]int {
-	return CommandLine.StringToIntP(name, shorthand, value, usage)
+func StringToIntP(name, shorthand string, value map[string]int, usage string, validation ...func(value any) error) *map[string]int {
+	return CommandLine.StringToIntP(name, shorthand, value, usage, validation...)
 }

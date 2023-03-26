@@ -27,23 +27,32 @@ unaffected.
 Define flags using flag.String(), Bool(), Int(), etc.
 
 This declares an integer flag, -flagname, stored in the pointer ip, with type *int.
+
 	var ip = flag.Int("flagname", 1234, "help message for flagname")
+
 If you like, you can bind the flag to a variable using the Var() functions.
+
 	var flagvar int
 	func init() {
 		flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname")
 	}
+
 Or you can create custom flags that satisfy the Value interface (with
 pointer receivers) and couple them to flag parsing by
+
 	flag.Var(&flagVal, "name", "help message for flagname")
+
 For such flags, the default value is just the initial value of the variable.
 
 After all flags are defined, call
+
 	flag.Parse()
+
 to parse the command line into the defined flags.
 
 Flags may then be used directly. If you're using the flags themselves,
 they are all pointers; if you bind to variables, they're values.
+
 	fmt.Println("ip has value ", *ip)
 	fmt.Println("flagvar has value ", flagvar)
 
@@ -54,22 +63,26 @@ The arguments are indexed from 0 through flag.NArg()-1.
 The pflag package also defines some new functions that are not in flag,
 that give one-letter shorthands for flags. You can use these by appending
 'P' to the name of any function that defines a flag.
+
 	var ip = flag.IntP("flagname", "f", 1234, "help message")
 	var flagvar bool
 	func init() {
 		flag.BoolVarP(&flagvar, "boolname", "b", true, "help message")
 	}
 	flag.VarP(&flagval, "varname", "v", "help message")
+
 Shorthand letters can be used with single dashes on the command line.
 Boolean shorthand flags can be combined with other shorthand flags.
 
 Command line flag syntax:
+
 	--flag    // boolean flags only
 	--flag=x
 
 Unlike the flag package, a single dash before an option means something
 different than a double dash. Single dashes signify a series of shorthand
 letters for flags. All but the last shorthand letter must be boolean flags.
+
 	// boolean flags
 	-f
 	-abc
@@ -169,17 +182,18 @@ type FlagSet struct {
 
 // A Flag represents the state of a flag.
 type Flag struct {
-	Name                string              // name as it appears on command line
-	Shorthand           string              // one-letter abbreviated flag
-	Usage               string              // help message
-	Value               Value               // value as set
-	DefValue            string              // default value (as text); for usage message
-	Changed             bool                // If the user set the value (or if left to default)
-	NoOptDefVal         string              // default value (as text); if the flag is on the command line without any options
-	Deprecated          string              // If this flag is deprecated, this string is the new or now thing to use
-	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
-	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
-	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+	Name                string                // name as it appears on command line
+	Shorthand           string                // one-letter abbreviated flag
+	Usage               string                // help message
+	Value               Value                 // value as set
+	DefValue            string                // default value (as text); for usage message
+	Changed             bool                  // If the user set the value (or if left to default)
+	NoOptDefVal         string                // default value (as text); if the flag is on the command line without any options
+	Deprecated          string                // If this flag is deprecated, this string is the new or now thing to use
+	Hidden              bool                  // used by cobra.Command to allow flags to be hidden from help/usage text
+	ShorthandDeprecated string                // If the shorthand of this flag is deprecated, this string is the new or now thing to use
+	Annotations         map[string][]string   // used by cobra.Command bash autocomple code
+	Validation          func(value any) error // If you want to add custom validation for the value of the flag
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -467,14 +481,22 @@ func (f *FlagSet) Set(name, value string) error {
 		return fmt.Errorf("no such flag -%v", name)
 	}
 
+	var flagName string
+	if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
+		flagName = fmt.Sprintf("-%s, --%s", flag.Shorthand, flag.Name)
+	} else {
+		flagName = fmt.Sprintf("--%s", flag.Name)
+	}
+
+	if flag.Validation != nil {
+		err := flag.Validation(value)
+		if err != nil {
+			return fmt.Errorf("invalid argument %q for %q flag: %v", value, flagName, err)
+		}
+	}
+
 	err := flag.Value.Set(value)
 	if err != nil {
-		var flagName string
-		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			flagName = fmt.Sprintf("-%s, --%s", flag.Shorthand, flag.Name)
-		} else {
-			flagName = fmt.Sprintf("--%s", flag.Name)
-		}
 		return fmt.Errorf("invalid argument %q for %q flag: %v", value, flagName, err)
 	}
 
@@ -821,27 +843,28 @@ func Args() []string { return CommandLine.args }
 // caller could create a flag that turns a comma-separated string into a slice
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
-func (f *FlagSet) Var(value Value, name string, usage string) {
-	f.VarP(value, name, "", usage)
+func (f *FlagSet) Var(value Value, name string, usage string, validation ...func(value any) error) {
+	f.VarP(value, name, "", usage, validation[0])
 }
 
 // VarPF is like VarP, but returns the flag created
-func (f *FlagSet) VarPF(value Value, name, shorthand, usage string) *Flag {
+func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, validation ...func(value any) error) *Flag {
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
-		Name:      name,
-		Shorthand: shorthand,
-		Usage:     usage,
-		Value:     value,
-		DefValue:  value.String(),
+		Name:       name,
+		Shorthand:  shorthand,
+		Usage:      usage,
+		Value:      value,
+		DefValue:   value.String(),
+		Validation: validation[0],
 	}
 	f.AddFlag(flag)
 	return flag
 }
 
 // VarP is like Var, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
-	f.VarPF(value, name, shorthand, usage)
+func (f *FlagSet) VarP(value Value, name, shorthand, usage string, validation ...func(value any) error) {
+	f.VarPF(value, name, shorthand, usage, validation[0])
 }
 
 // AddFlag will add the flag to the FlagSet
@@ -902,13 +925,13 @@ func (f *FlagSet) AddFlagSet(newSet *FlagSet) {
 // caller could create a flag that turns a comma-separated string into a slice
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
-func Var(value Value, name string, usage string) {
-	CommandLine.VarP(value, name, "", usage)
+func Var(value Value, name string, usage string, validation ...func(value any) error) {
+	CommandLine.VarP(value, name, "", usage, validation[0])
 }
 
 // VarP is like Var, but accepts a shorthand letter that can be used after a single dash.
-func VarP(value Value, name, shorthand, usage string) {
-	CommandLine.VarP(value, name, shorthand, usage)
+func VarP(value Value, name, shorthand, usage string, validation ...func(value any) error) {
+	CommandLine.VarP(value, name, shorthand, usage, validation[0])
 }
 
 // failf prints to standard error a formatted error and usage message and
@@ -934,9 +957,9 @@ func (f *FlagSet) usage() {
 	}
 }
 
-//--unknown (args will be empty)
-//--unknown --next-flag ... (args will be --next-flag ...)
-//--unknown arg ... (args will be arg ...)
+// --unknown (args will be empty)
+// --unknown --next-flag ... (args will be --next-flag ...)
+// --unknown arg ... (args will be arg ...)
 func stripUnknownFlagValue(args []string) []string {
 	if len(args) == 0 {
 		//--unknown

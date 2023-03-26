@@ -39,48 +39,48 @@ func (f *FlagSet) GetDuration(name string) (time.Duration, error) {
 
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
-func (f *FlagSet) DurationVar(p *time.Duration, name string, value time.Duration, usage string) {
-	f.VarP(newDurationValue(value, p), name, "", usage)
+func (f *FlagSet) DurationVar(p *time.Duration, name string, value time.Duration, usage string, validation ...func(value any) error) {
+	f.VarP(newDurationValue(value, p), name, "", usage, validation...)
 }
 
 // DurationVarP is like DurationVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) DurationVarP(p *time.Duration, name, shorthand string, value time.Duration, usage string) {
-	f.VarP(newDurationValue(value, p), name, shorthand, usage)
+func (f *FlagSet) DurationVarP(p *time.Duration, name, shorthand string, value time.Duration, usage string, validation ...func(value any) error) {
+	f.VarP(newDurationValue(value, p), name, shorthand, usage, validation...)
 }
 
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
-func DurationVar(p *time.Duration, name string, value time.Duration, usage string) {
-	CommandLine.VarP(newDurationValue(value, p), name, "", usage)
+func DurationVar(p *time.Duration, name string, value time.Duration, usage string, validation ...func(value any) error) {
+	CommandLine.VarP(newDurationValue(value, p), name, "", usage, validation...)
 }
 
 // DurationVarP is like DurationVar, but accepts a shorthand letter that can be used after a single dash.
-func DurationVarP(p *time.Duration, name, shorthand string, value time.Duration, usage string) {
-	CommandLine.VarP(newDurationValue(value, p), name, shorthand, usage)
+func DurationVarP(p *time.Duration, name, shorthand string, value time.Duration, usage string, validation ...func(value any) error) {
+	CommandLine.VarP(newDurationValue(value, p), name, shorthand, usage, validation...)
 }
 
 // Duration defines a time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a time.Duration variable that stores the value of the flag.
-func (f *FlagSet) Duration(name string, value time.Duration, usage string) *time.Duration {
+func (f *FlagSet) Duration(name string, value time.Duration, usage string, validation ...func(value any) error) *time.Duration {
 	p := new(time.Duration)
-	f.DurationVarP(p, name, "", value, usage)
+	f.DurationVarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // DurationP is like Duration, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) DurationP(name, shorthand string, value time.Duration, usage string) *time.Duration {
+func (f *FlagSet) DurationP(name, shorthand string, value time.Duration, usage string, validation ...func(value any) error) *time.Duration {
 	p := new(time.Duration)
-	f.DurationVarP(p, name, shorthand, value, usage)
+	f.DurationVarP(p, name, shorthand, value, usage, validation...)
 	return p
 }
 
 // Duration defines a time.Duration flag with specified name, default value, and usage string.
 // The return value is the address of a time.Duration variable that stores the value of the flag.
-func Duration(name string, value time.Duration, usage string) *time.Duration {
-	return CommandLine.DurationP(name, "", value, usage)
+func Duration(name string, value time.Duration, usage string, validation ...func(value any) error) *time.Duration {
+	return CommandLine.DurationP(name, "", value, usage, validation...)
 }
 
 // DurationP is like Duration, but accepts a shorthand letter that can be used after a single dash.
-func DurationP(name, shorthand string, value time.Duration, usage string) *time.Duration {
-	return CommandLine.DurationP(name, shorthand, value, usage)
+func DurationP(name, shorthand string, value time.Duration, usage string, validation ...func(value any) error) *time.Duration {
+	return CommandLine.DurationP(name, shorthand, value, usage, validation...)
 }

@@ -139,48 +139,48 @@ func (f *FlagSet) GetIPSlice(name string) ([]net.IP, error) {
 
 // IPSliceVar defines a ipSlice flag with specified name, default value, and usage string.
 // The argument p points to a []net.IP variable in which to store the value of the flag.
-func (f *FlagSet) IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string) {
-	f.VarP(newIPSliceValue(value, p), name, "", usage)
+func (f *FlagSet) IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string, validation ...func(value any) error) {
+	f.VarP(newIPSliceValue(value, p), name, "", usage, validation...)
 }
 
 // IPSliceVarP is like IPSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IPSliceVarP(p *[]net.IP, name, shorthand string, value []net.IP, usage string) {
-	f.VarP(newIPSliceValue(value, p), name, shorthand, usage)
+func (f *FlagSet) IPSliceVarP(p *[]net.IP, name, shorthand string, value []net.IP, usage string, validation ...func(value any) error) {
+	f.VarP(newIPSliceValue(value, p), name, shorthand, usage, validation...)
 }
 
 // IPSliceVar defines a []net.IP flag with specified name, default value, and usage string.
 // The argument p points to a []net.IP variable in which to store the value of the flag.
-func IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string) {
-	CommandLine.VarP(newIPSliceValue(value, p), name, "", usage)
+func IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string, validation ...func(value any) error) {
+	CommandLine.VarP(newIPSliceValue(value, p), name, "", usage, validation...)
 }
 
 // IPSliceVarP is like IPSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func IPSliceVarP(p *[]net.IP, name, shorthand string, value []net.IP, usage string) {
-	CommandLine.VarP(newIPSliceValue(value, p), name, shorthand, usage)
+func IPSliceVarP(p *[]net.IP, name, shorthand string, value []net.IP, usage string, validation ...func(value any) error) {
+	CommandLine.VarP(newIPSliceValue(value, p), name, shorthand, usage, validation...)
 }
 
 // IPSlice defines a []net.IP flag with specified name, default value, and usage string.
 // The return value is the address of a []net.IP variable that stores the value of that flag.
-func (f *FlagSet) IPSlice(name string, value []net.IP, usage string) *[]net.IP {
+func (f *FlagSet) IPSlice(name string, value []net.IP, usage string, validation ...func(value any) error) *[]net.IP {
 	p := []net.IP{}
-	f.IPSliceVarP(&p, name, "", value, usage)
+	f.IPSliceVarP(&p, name, "", value, usage, validation...)
 	return &p
 }
 
 // IPSliceP is like IPSlice, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IPSliceP(name, shorthand string, value []net.IP, usage string) *[]net.IP {
+func (f *FlagSet) IPSliceP(name, shorthand string, value []net.IP, usage string, validation ...func(value any) error) *[]net.IP {
 	p := []net.IP{}
-	f.IPSliceVarP(&p, name, shorthand, value, usage)
+	f.IPSliceVarP(&p, name, shorthand, value, usage, validation...)
 	return &p
 }
 
 // IPSlice defines a []net.IP flag with specified name, default value, and usage string.
 // The return value is the address of a []net.IP variable that stores the value of the flag.
-func IPSlice(name string, value []net.IP, usage string) *[]net.IP {
-	return CommandLine.IPSliceP(name, "", value, usage)
+func IPSlice(name string, value []net.IP, usage string, validation ...func(value any) error) *[]net.IP {
+	return CommandLine.IPSliceP(name, "", value, usage, validation...)
 }
 
 // IPSliceP is like IPSlice, but accepts a shorthand letter that can be used after a single dash.
-func IPSliceP(name, shorthand string, value []net.IP, usage string) *[]net.IP {
-	return CommandLine.IPSliceP(name, shorthand, value, usage)
+func IPSliceP(name, shorthand string, value []net.IP, usage string, validation ...func(value any) error) *[]net.IP {
+	return CommandLine.IPSliceP(name, shorthand, value, usage, validation...)
 }
