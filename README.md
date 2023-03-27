@@ -125,6 +125,7 @@ flag set.
 ## Adding custom validation for flags
 
 You can also add custom validation for validating the flag's value. 
+
 It is optional and for this operation, you should define a function and pass it as the last parameter to the flag definition function.
 
 ```go
