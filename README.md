@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/spf13/pflag.svg?branch=master)](https://travis-ci.org/spf13/pflag)
 [![Go Report Card](https://goreportcard.com/badge/github.com/spf13/pflag)](https://goreportcard.com/report/github.com/spf13/pflag)
 [![GoDoc](https://godoc.org/github.com/spf13/pflag?status.svg)](https://godoc.org/github.com/spf13/pflag)
 
@@ -21,11 +22,11 @@ pflag is available using the standard `go get` command.
 
 Install by running:
 
-    go get github.com/erfanmomeniii/pflag
+    go get github.com/spf13/pflag
 
 Run tests by running:
 
-    go test github.com/erfanmomeniii/pflag
+    go test github.com/spf13/pflag
 
 ## Usage
 
@@ -34,7 +35,7 @@ pflag under the name "flag" then all code should continue to function
 with no changes.
 
 ``` go
-import flag "github.com/erfanmomeniii/pflag"
+import flag "github.com/spf13/pflag"
 ```
 
 There is one exception to this: if you directly instantiate the Flag struct
@@ -291,7 +292,7 @@ to support flags defined by third-party dependencies (e.g. `golang/glog`).
 ```go
 import (
 	goflag "flag"
-	flag "github.com/erfanmomeniii/pflag"
+	flag "github.com/spf13/pflag"
 )
 
 var ip *int = flag.Int("flagname", 1234, "help message for flagname")
