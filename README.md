@@ -122,6 +122,24 @@ independent sets of flags, such as to implement subcommands
 in a command-line interface. The methods of FlagSet are
 analogous to the top-level functions for the command-line
 flag set.
+## Adding custom validation for flags
+
+You can also add custom validation for validating the flag's value. 
+It is optional and for this operation, you should define a function and pass it as the last parameter to the flag definition function.
+
+```go
+var flagvar int
+func init() {
+	validation := func(value int)error{
+		if value < 4 {
+			return errors.New("int value should be greater than 4")
+        }
+    }
+	
+    flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname", validation)
+````
+
+In the above example if you pass an integer value greater than 4, it returned an error and the value of the flag doesn't set.
 
 ## Setting no option default values for flags
 
