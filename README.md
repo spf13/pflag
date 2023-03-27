@@ -136,8 +136,8 @@ func init() {
 			return errors.New("int value should be greater than 4")
         }
     }
-	
     flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname", validation)
+}
 ````
 
 In the above example if you pass an integer value greater than 4, it returned an error and the value of the flag doesn't set.
