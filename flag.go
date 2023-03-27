@@ -117,9 +117,11 @@ import (
 	goflag "flag"
 	"fmt"
 	"io"
+	"net"
 	"os"
 	"sort"
 	"strings"
+	"time"
 )
 
 // ErrHelp is the error returned if the flag -help is invoked but no such flag is defined.
@@ -182,18 +184,18 @@ type FlagSet struct {
 
 // A Flag represents the state of a flag.
 type Flag struct {
-	Name                string                        // name as it appears on command line
-	Shorthand           string                        // one-letter abbreviated flag
-	Usage               string                        // help message
-	Value               Value                         // value as set
-	DefValue            string                        // default value (as text); for usage message
-	Changed             bool                          // If the user set the value (or if left to default)
-	NoOptDefVal         string                        // default value (as text); if the flag is on the command line without any options
-	Deprecated          string                        // If this flag is deprecated, this string is the new or now thing to use
-	Hidden              bool                          // used by cobra.Command to allow flags to be hidden from help/usage text
-	ShorthandDeprecated string                        // If the shorthand of this flag is deprecated, this string is the new or now thing to use
-	Annotations         map[string][]string           // used by cobra.Command bash autocomple code
-	Validation          func(value interface{}) error // If you want to add custom validation for the value of the flag
+	Name                string              // name as it appears on command line
+	Shorthand           string              // one-letter abbreviated flag
+	Usage               string              // help message
+	Value               Value               // value as set
+	DefValue            string              // default value (as text); for usage message
+	Changed             bool                // If the user set the value (or if left to default)
+	NoOptDefVal         string              // default value (as text); if the flag is on the command line without any options
+	Deprecated          string              // If this flag is deprecated, this string is the new or now thing to use
+	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
+	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
+	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+	Validation          interface{}         // If you want to add custom validation for the value of the flag
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -489,7 +491,7 @@ func (f *FlagSet) Set(name, value string) error {
 	}
 
 	if flag.Validation != nil {
-		err := flag.Validation(value)
+		err := validate(flag.Validation, value)
 		if err != nil {
 			return fmt.Errorf("invalid argument %q for %q flag: %v", value, flagName, err)
 		}
@@ -843,13 +845,13 @@ func Args() []string { return CommandLine.args }
 // caller could create a flag that turns a comma-separated string into a slice
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
-func (f *FlagSet) Var(value Value, name string, usage string, validation ...func(value interface{}) error) {
+func (f *FlagSet) Var(value Value, name string, usage string, validation ...interface{}) {
 	f.VarP(value, name, "", usage, validation...)
 }
 
 // VarPF is like VarP, but returns the flag created
-func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, validation ...func(value interface{}) error) *Flag {
-	var validationFunc func(value interface{}) error
+func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, validation ...interface{}) *Flag {
+	var validationFunc interface{}
 
 	if len(validation) > 0 {
 		validationFunc = validation[0]
@@ -869,7 +871,7 @@ func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, validation .
 }
 
 // VarP is like Var, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) VarP(value Value, name, shorthand, usage string, validation ...func(value interface{}) error) {
+func (f *FlagSet) VarP(value Value, name, shorthand, usage string, validation ...interface{}) {
 	f.VarPF(value, name, shorthand, usage, validation...)
 }
 
@@ -1272,4 +1274,113 @@ func (f *FlagSet) Init(name string, errorHandling ErrorHandling) {
 	f.name = name
 	f.errorHandling = errorHandling
 	f.argsLenAtDash = -1
+}
+
+func validate(validation interface{}, value string) error {
+	if validation == nil {
+		return nil
+	}
+
+	switch validation.(type) {
+	case func(value bool) error:
+		v, _ := boolConv(value)
+		return validation.(func(value bool) error)(v.(bool))
+	case func(value []bool) error:
+		v, _ := boolSliceConv(value)
+		return validation.(func(value []bool) error)(v.([]bool))
+	case func(value []byte) error:
+		v, _ := bytesHexConv(value)
+		return validation.(func(value []byte) error)(v.([]byte))
+	case func(value time.Duration) error:
+		v, _ := durationConv(value)
+		return validation.(func(value time.Duration) error)(v.(time.Duration))
+	case func(value []time.Duration) error:
+		v, _ := durationSliceConv(value)
+		return validation.(func(value []time.Duration) error)(v.([]time.Duration))
+	case func(value float32) error:
+		v, _ := float32Conv(value)
+		return validation.(func(value float32) error)(v.(float32))
+	case func(value []float32) error:
+		v, _ := float32SliceConv(value)
+		return validation.(func(value []float32) error)(v.([]float32))
+	case func(value float64) error:
+		v, _ := float64Conv(value)
+		return validation.(func(value float64) error)(v.(float64))
+	case func(value []float64) error:
+		v, _ := float64SliceConv(value)
+		return validation.(func(value []float64) error)(v.([]float64))
+	case func(value int) error:
+		v, _ := intConv(value)
+		return validation.(func(value int) error)(v.(int))
+	case func(value []int) error:
+		v, _ := intSliceConv(value)
+		return validation.(func(value []int) error)(v.([]int))
+	case func(value int8) error:
+		v, _ := int8Conv(value)
+		return validation.(func(value int8) error)(v.(int8))
+	case func(value int16) error:
+		v, _ := int16Conv(value)
+		return validation.(func(value int16) error)(v.(int16))
+	case func(value int32) error:
+		v, _ := int32Conv(value)
+		return validation.(func(value int32) error)(v.(int32))
+	case func(value []int32) error:
+		v, _ := int32SliceConv(value)
+		return validation.(func(value []int32) error)(v.([]int32))
+	case func(value int64) error:
+		v, _ := int64Conv(value)
+		return validation.(func(value int64) error)(v.(int64))
+	case func(value []int64) error:
+		v, _ := int64SliceConv(value)
+		return validation.(func(value []int64) error)(v.([]int64))
+	case func(value net.IP) error:
+		v, _ := ipConv(value)
+		return validation.(func(value net.IP) error)(v.(net.IP))
+	case func(value []net.IP) error:
+		v, _ := ipSliceConv(value)
+		return validation.(func(value []net.IP) error)(v.([]net.IP))
+	case func(value net.IPMask) error:
+		v, _ := parseIPv4Mask(value)
+		return validation.(func(value net.IPMask) error)(v.(net.IPMask))
+	case func(value net.IPNet) error:
+		v, _ := ipNetConv(value)
+		return validation.(func(value net.IPNet) error)(v.(net.IPNet))
+	case func(value []net.IPNet) error:
+		v, _ := ipNetSliceConv(value)
+		return validation.(func(value []net.IPNet) error)(v.([]net.IPNet))
+	case func(value string) error:
+		v, _ := stringConv(value)
+		return validation.(func(value string) error)(v.(string))
+	case func(value []string) error:
+		v, _ := stringSliceConv(value)
+		return validation.(func(value []string) error)(v.([]string))
+	case func(value map[string]int) error:
+		v, _ := stringToIntConv(value)
+		return validation.(func(value map[string]int) error)(v.(map[string]int))
+	case func(value map[string]int64) error:
+		v, _ := stringToInt64Conv(value)
+		return validation.(func(value map[string]int64) error)(v.(map[string]int64))
+	case func(value map[string]string) error:
+		v, _ := stringToStringConv(value)
+		return validation.(func(value map[string]string) error)(v.(map[string]string))
+	case func(value uint) error:
+		v, _ := uintConv(value)
+		return validation.(func(value uint) error)(v.(uint))
+	case func(value uint8) error:
+		v, _ := uint8Conv(value)
+		return validation.(func(value uint8) error)(v.(uint8))
+	case func(value uint16) error:
+		v, _ := uint16Conv(value)
+		return validation.(func(value uint16) error)(v.(uint16))
+	case func(value uint32) error:
+		v, _ := uint32Conv(value)
+		return validation.(func(value uint32) error)(v.(uint32))
+	case func(value uint64) error:
+		v, _ := uint64Conv(value)
+		return validation.(func(value uint64) error)(v.(uint64))
+	case func(value []uint) error:
+		v, _ := uintSliceConv(value)
+		return validation.(func(value []uint) error)(v.([]uint))
+	}
+	return nil
 }

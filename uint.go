@@ -41,36 +41,56 @@ func (f *FlagSet) GetUint(name string) (uint, error) {
 
 // UintVar defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint variable in which to store the value of the flag.
-func (f *FlagSet) UintVar(p *uint, name string, value uint, usage string, validation ...func(value interface{}) error) {
-	f.VarP(newUintValue(value, p), name, "", usage, validation...)
+func (f *FlagSet) UintVar(p *uint, name string, value uint, usage string, validation ...func(value uint) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newUintValue(value, p), name, "", usage, validationFunc)
+		return
+	}
+	f.VarP(newUintValue(value, p), name, "", usage)
 }
 
 // UintVarP is like UintVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) UintVarP(p *uint, name, shorthand string, value uint, usage string, validation ...func(value interface{}) error) {
-	f.VarP(newUintValue(value, p), name, shorthand, usage, validation...)
+func (f *FlagSet) UintVarP(p *uint, name, shorthand string, value uint, usage string, validation ...func(value uint) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newUintValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
+	f.VarP(newUintValue(value, p), name, shorthand, usage)
 }
 
 // UintVar defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint  variable in which to store the value of the flag.
-func UintVar(p *uint, name string, value uint, usage string, validation ...func(value interface{}) error) {
-	CommandLine.VarP(newUintValue(value, p), name, "", usage, validation...)
+func UintVar(p *uint, name string, value uint, usage string, validation ...func(value uint) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newUintValue(value, p), name, "", usage, validationFunc)
+		return
+	}
+	CommandLine.VarP(newUintValue(value, p), name, "", usage)
 }
 
 // UintVarP is like UintVar, but accepts a shorthand letter that can be used after a single dash.
-func UintVarP(p *uint, name, shorthand string, value uint, usage string, validation ...func(value interface{}) error) {
-	CommandLine.VarP(newUintValue(value, p), name, shorthand, usage, validation...)
+func UintVarP(p *uint, name, shorthand string, value uint, usage string, validation ...func(value uint) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newUintValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
+	CommandLine.VarP(newUintValue(value, p), name, shorthand, usage)
 }
 
 // Uint defines a uint flag with specified name, default value, and usage string.
 // The return value is the address of a uint  variable that stores the value of the flag.
-func (f *FlagSet) Uint(name string, value uint, usage string, validation ...func(value interface{}) error) *uint {
+func (f *FlagSet) Uint(name string, value uint, usage string, validation ...func(value uint) error) *uint {
 	p := new(uint)
 	f.UintVarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // UintP is like Uint, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) UintP(name, shorthand string, value uint, usage string, validation ...func(value interface{}) error) *uint {
+func (f *FlagSet) UintP(name, shorthand string, value uint, usage string, validation ...func(value uint) error) *uint {
 	p := new(uint)
 	f.UintVarP(p, name, shorthand, value, usage, validation...)
 	return p
@@ -78,11 +98,11 @@ func (f *FlagSet) UintP(name, shorthand string, value uint, usage string, valida
 
 // Uint defines a uint flag with specified name, default value, and usage string.
 // The return value is the address of a uint  variable that stores the value of the flag.
-func Uint(name string, value uint, usage string, validation ...func(value interface{}) error) *uint {
+func Uint(name string, value uint, usage string, validation ...func(value uint) error) *uint {
 	return CommandLine.UintP(name, "", value, usage, validation...)
 }
 
 // UintP is like Uint, but accepts a shorthand letter that can be used after a single dash.
-func UintP(name, shorthand string, value uint, usage string, validation ...func(value interface{}) error) *uint {
+func UintP(name, shorthand string, value uint, usage string, validation ...func(value uint) error) *uint {
 	return CommandLine.UintP(name, shorthand, value, usage, validation...)
 }

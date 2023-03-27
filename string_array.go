@@ -75,38 +75,58 @@ func (f *FlagSet) GetStringArray(name string) ([]string, error) {
 // StringArrayVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
-func (f *FlagSet) StringArrayVar(p *[]string, name string, value []string, usage string, validation ...func(value interface{}) error) {
-	f.VarP(newStringArrayValue(value, p), name, "", usage, validation...)
+func (f *FlagSet) StringArrayVar(p *[]string, name string, value []string, usage string, validation ...func(value []string) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newStringArrayValue(value, p), name, "", usage, validationFunc)
+		return
+	}
+	f.VarP(newStringArrayValue(value, p), name, "", usage)
 }
 
 // StringArrayVarP is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) StringArrayVarP(p *[]string, name, shorthand string, value []string, usage string, validation ...func(value interface{}) error) {
-	f.VarP(newStringArrayValue(value, p), name, shorthand, usage, validation...)
+func (f *FlagSet) StringArrayVarP(p *[]string, name, shorthand string, value []string, usage string, validation ...func(value []string) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newStringArrayValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
+	f.VarP(newStringArrayValue(value, p), name, shorthand, usage)
 }
 
 // StringArrayVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
-func StringArrayVar(p *[]string, name string, value []string, usage string, validation ...func(value interface{}) error) {
-	CommandLine.VarP(newStringArrayValue(value, p), name, "", usage, validation...)
+func StringArrayVar(p *[]string, name string, value []string, usage string, validation ...func(value []string) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newStringArrayValue(value, p), name, "", usage, validationFunc)
+		return
+	}
+	CommandLine.VarP(newStringArrayValue(value, p), name, "", usage)
 }
 
 // StringArrayVarP is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash.
-func StringArrayVarP(p *[]string, name, shorthand string, value []string, usage string, validation ...func(value interface{}) error) {
-	CommandLine.VarP(newStringArrayValue(value, p), name, shorthand, usage, validation...)
+func StringArrayVarP(p *[]string, name, shorthand string, value []string, usage string, validation ...func(value []string) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newStringArrayValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
+	CommandLine.VarP(newStringArrayValue(value, p), name, shorthand, usage)
 }
 
 // StringArray defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a []string variable that stores the value of the flag.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
-func (f *FlagSet) StringArray(name string, value []string, usage string, validation ...func(value interface{}) error) *[]string {
+func (f *FlagSet) StringArray(name string, value []string, usage string, validation ...func(value []string) error) *[]string {
 	p := []string{}
 	f.StringArrayVarP(&p, name, "", value, usage, validation...)
 	return &p
 }
 
 // StringArrayP is like StringArray, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) StringArrayP(name, shorthand string, value []string, usage string, validation ...func(value interface{}) error) *[]string {
+func (f *FlagSet) StringArrayP(name, shorthand string, value []string, usage string, validation ...func(value []string) error) *[]string {
 	p := []string{}
 	f.StringArrayVarP(&p, name, shorthand, value, usage, validation...)
 	return &p
@@ -115,11 +135,11 @@ func (f *FlagSet) StringArrayP(name, shorthand string, value []string, usage str
 // StringArray defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a []string variable that stores the value of the flag.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
-func StringArray(name string, value []string, usage string, validation ...func(value interface{}) error) *[]string {
+func StringArray(name string, value []string, usage string, validation ...func(value []string) error) *[]string {
 	return CommandLine.StringArrayP(name, "", value, usage, validation...)
 }
 
 // StringArrayP is like StringArray, but accepts a shorthand letter that can be used after a single dash.
-func StringArrayP(name, shorthand string, value []string, usage string, validation ...func(value interface{}) error) *[]string {
+func StringArrayP(name, shorthand string, value []string, usage string, validation ...func(value []string) error) *[]string {
 	return CommandLine.StringArrayP(name, shorthand, value, usage, validation...)
 }

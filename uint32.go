@@ -41,36 +41,56 @@ func (f *FlagSet) GetUint32(name string) (uint32, error) {
 
 // Uint32Var defines a uint32 flag with specified name, default value, and usage string.
 // The argument p points to a uint32 variable in which to store the value of the flag.
-func (f *FlagSet) Uint32Var(p *uint32, name string, value uint32, usage string, validation ...func(value interface{}) error) {
-	f.VarP(newUint32Value(value, p), name, "", usage, validation...)
+func (f *FlagSet) Uint32Var(p *uint32, name string, value uint32, usage string, validation ...func(value uint32) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newUint32Value(value, p), name, "", usage, validationFunc)
+		return
+	}
+	f.VarP(newUint32Value(value, p), name, "", usage)
 }
 
 // Uint32VarP is like Uint32Var, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) Uint32VarP(p *uint32, name, shorthand string, value uint32, usage string, validation ...func(value interface{}) error) {
-	f.VarP(newUint32Value(value, p), name, shorthand, usage, validation...)
+func (f *FlagSet) Uint32VarP(p *uint32, name, shorthand string, value uint32, usage string, validation ...func(value uint32) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newUint32Value(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
+	f.VarP(newUint32Value(value, p), name, shorthand, usage)
 }
 
 // Uint32Var defines a uint32 flag with specified name, default value, and usage string.
 // The argument p points to a uint32  variable in which to store the value of the flag.
-func Uint32Var(p *uint32, name string, value uint32, usage string, validation ...func(value interface{}) error) {
-	CommandLine.VarP(newUint32Value(value, p), name, "", usage, validation...)
+func Uint32Var(p *uint32, name string, value uint32, usage string, validation ...func(value uint32) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newUint32Value(value, p), name, "", usage, validationFunc)
+		return
+	}
+	CommandLine.VarP(newUint32Value(value, p), name, "", usage)
 }
 
 // Uint32VarP is like Uint32Var, but accepts a shorthand letter that can be used after a single dash.
-func Uint32VarP(p *uint32, name, shorthand string, value uint32, usage string, validation ...func(value interface{}) error) {
-	CommandLine.VarP(newUint32Value(value, p), name, shorthand, usage, validation...)
+func Uint32VarP(p *uint32, name, shorthand string, value uint32, usage string, validation ...func(value uint32) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newUint32Value(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
+	CommandLine.VarP(newUint32Value(value, p), name, shorthand, usage)
 }
 
 // Uint32 defines a uint32 flag with specified name, default value, and usage string.
 // The return value is the address of a uint32  variable that stores the value of the flag.
-func (f *FlagSet) Uint32(name string, value uint32, usage string, validation ...func(value interface{}) error) *uint32 {
+func (f *FlagSet) Uint32(name string, value uint32, usage string, validation ...func(value uint32) error) *uint32 {
 	p := new(uint32)
 	f.Uint32VarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // Uint32P is like Uint32, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) Uint32P(name, shorthand string, value uint32, usage string, validation ...func(value interface{}) error) *uint32 {
+func (f *FlagSet) Uint32P(name, shorthand string, value uint32, usage string, validation ...func(value uint32) error) *uint32 {
 	p := new(uint32)
 	f.Uint32VarP(p, name, shorthand, value, usage, validation...)
 	return p
@@ -78,11 +98,11 @@ func (f *FlagSet) Uint32P(name, shorthand string, value uint32, usage string, va
 
 // Uint32 defines a uint32 flag with specified name, default value, and usage string.
 // The return value is the address of a uint32  variable that stores the value of the flag.
-func Uint32(name string, value uint32, usage string, validation ...func(value interface{}) error) *uint32 {
+func Uint32(name string, value uint32, usage string, validation ...func(value uint32) error) *uint32 {
 	return CommandLine.Uint32P(name, "", value, usage, validation...)
 }
 
 // Uint32P is like Uint32, but accepts a shorthand letter that can be used after a single dash.
-func Uint32P(name, shorthand string, value uint32, usage string, validation ...func(value interface{}) error) *uint32 {
+func Uint32P(name, shorthand string, value uint32, usage string, validation ...func(value uint32) error) *uint32 {
 	return CommandLine.Uint32P(name, shorthand, value, usage, validation...)
 }

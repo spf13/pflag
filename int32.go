@@ -41,36 +41,56 @@ func (f *FlagSet) GetInt32(name string) (int32, error) {
 
 // Int32Var defines an int32 flag with specified name, default value, and usage string.
 // The argument p points to an int32 variable in which to store the value of the flag.
-func (f *FlagSet) Int32Var(p *int32, name string, value int32, usage string, validation ...func(value interface{}) error) {
-	f.VarP(newInt32Value(value, p), name, "", usage, validation...)
+func (f *FlagSet) Int32Var(p *int32, name string, value int32, usage string, validation ...func(value int32) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newInt32Value(value, p), name, "", usage, validationFunc)
+		return
+	}
+	f.VarP(newInt32Value(value, p), name, "", usage)
 }
 
 // Int32VarP is like Int32Var, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) Int32VarP(p *int32, name, shorthand string, value int32, usage string, validation ...func(value interface{}) error) {
-	f.VarP(newInt32Value(value, p), name, shorthand, usage, validation...)
+func (f *FlagSet) Int32VarP(p *int32, name, shorthand string, value int32, usage string, validation ...func(value int32) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newInt32Value(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
+	f.VarP(newInt32Value(value, p), name, shorthand, usage)
 }
 
 // Int32Var defines an int32 flag with specified name, default value, and usage string.
 // The argument p points to an int32 variable in which to store the value of the flag.
-func Int32Var(p *int32, name string, value int32, usage string, validation ...func(value interface{}) error) {
-	CommandLine.VarP(newInt32Value(value, p), name, "", usage, validation...)
+func Int32Var(p *int32, name string, value int32, usage string, validation ...func(value int32) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newInt32Value(value, p), name, "", usage, validationFunc)
+		return
+	}
+	CommandLine.VarP(newInt32Value(value, p), name, "", usage)
 }
 
 // Int32VarP is like Int32Var, but accepts a shorthand letter that can be used after a single dash.
-func Int32VarP(p *int32, name, shorthand string, value int32, usage string, validation ...func(value interface{}) error) {
-	CommandLine.VarP(newInt32Value(value, p), name, shorthand, usage, validation...)
+func Int32VarP(p *int32, name, shorthand string, value int32, usage string, validation ...func(value int32) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newInt32Value(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
+	CommandLine.VarP(newInt32Value(value, p), name, shorthand, usage)
 }
 
 // Int32 defines an int32 flag with specified name, default value, and usage string.
 // The return value is the address of an int32 variable that stores the value of the flag.
-func (f *FlagSet) Int32(name string, value int32, usage string, validation ...func(value interface{}) error) *int32 {
+func (f *FlagSet) Int32(name string, value int32, usage string, validation ...func(value int32) error) *int32 {
 	p := new(int32)
 	f.Int32VarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // Int32P is like Int32, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) Int32P(name, shorthand string, value int32, usage string, validation ...func(value interface{}) error) *int32 {
+func (f *FlagSet) Int32P(name, shorthand string, value int32, usage string, validation ...func(value int32) error) *int32 {
 	p := new(int32)
 	f.Int32VarP(p, name, shorthand, value, usage, validation...)
 	return p
@@ -78,11 +98,11 @@ func (f *FlagSet) Int32P(name, shorthand string, value int32, usage string, vali
 
 // Int32 defines an int32 flag with specified name, default value, and usage string.
 // The return value is the address of an int32 variable that stores the value of the flag.
-func Int32(name string, value int32, usage string, validation ...func(value interface{}) error) *int32 {
+func Int32(name string, value int32, usage string, validation ...func(value int32) error) *int32 {
 	return CommandLine.Int32P(name, "", value, usage, validation...)
 }
 
 // Int32P is like Int32, but accepts a shorthand letter that can be used after a single dash.
-func Int32P(name, shorthand string, value int32, usage string, validation ...func(value interface{}) error) *int32 {
+func Int32P(name, shorthand string, value int32, usage string, validation ...func(value int32) error) *int32 {
 	return CommandLine.Int32P(name, shorthand, value, usage, validation...)
 }

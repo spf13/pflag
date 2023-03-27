@@ -75,36 +75,56 @@ func (f *FlagSet) GetIPv4Mask(name string) (net.IPMask, error) {
 
 // IPMaskVar defines an net.IPMask flag with specified name, default value, and usage string.
 // The argument p points to an net.IPMask variable in which to store the value of the flag.
-func (f *FlagSet) IPMaskVar(p *net.IPMask, name string, value net.IPMask, usage string, validation ...func(value interface{}) error) {
-	f.VarP(newIPMaskValue(value, p), name, "", usage, validation...)
+func (f *FlagSet) IPMaskVar(p *net.IPMask, name string, value net.IPMask, usage string, validation ...func(value net.IPMask) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newIPMaskValue(value, p), name, "", usage, validationFunc)
+		return
+	}
+	f.VarP(newIPMaskValue(value, p), name, "", usage)
 }
 
 // IPMaskVarP is like IPMaskVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IPMaskVarP(p *net.IPMask, name, shorthand string, value net.IPMask, usage string, validation ...func(value interface{}) error) {
-	f.VarP(newIPMaskValue(value, p), name, shorthand, usage, validation...)
+func (f *FlagSet) IPMaskVarP(p *net.IPMask, name, shorthand string, value net.IPMask, usage string, validation ...func(value net.IPMask) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newIPMaskValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
+	f.VarP(newIPMaskValue(value, p), name, shorthand, usage)
 }
 
 // IPMaskVar defines an net.IPMask flag with specified name, default value, and usage string.
 // The argument p points to an net.IPMask variable in which to store the value of the flag.
-func IPMaskVar(p *net.IPMask, name string, value net.IPMask, usage string, validation ...func(value interface{}) error) {
-	CommandLine.VarP(newIPMaskValue(value, p), name, "", usage, validation...)
+func IPMaskVar(p *net.IPMask, name string, value net.IPMask, usage string, validation ...func(value net.IPMask) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newIPMaskValue(value, p), name, "", usage, validationFunc)
+		return
+	}
+	CommandLine.VarP(newIPMaskValue(value, p), name, "", usage)
 }
 
 // IPMaskVarP is like IPMaskVar, but accepts a shorthand letter that can be used after a single dash.
-func IPMaskVarP(p *net.IPMask, name, shorthand string, value net.IPMask, usage string, validation ...func(value interface{}) error) {
-	CommandLine.VarP(newIPMaskValue(value, p), name, shorthand, usage, validation...)
+func IPMaskVarP(p *net.IPMask, name, shorthand string, value net.IPMask, usage string, validation ...func(value net.IPMask) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newIPMaskValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
+	CommandLine.VarP(newIPMaskValue(value, p), name, shorthand, usage)
 }
 
 // IPMask defines an net.IPMask flag with specified name, default value, and usage string.
 // The return value is the address of an net.IPMask variable that stores the value of the flag.
-func (f *FlagSet) IPMask(name string, value net.IPMask, usage string, validation ...func(value interface{}) error) *net.IPMask {
+func (f *FlagSet) IPMask(name string, value net.IPMask, usage string, validation ...func(value net.IPMask) error) *net.IPMask {
 	p := new(net.IPMask)
 	f.IPMaskVarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // IPMaskP is like IPMask, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IPMaskP(name, shorthand string, value net.IPMask, usage string, validation ...func(value interface{}) error) *net.IPMask {
+func (f *FlagSet) IPMaskP(name, shorthand string, value net.IPMask, usage string, validation ...func(value net.IPMask) error) *net.IPMask {
 	p := new(net.IPMask)
 	f.IPMaskVarP(p, name, shorthand, value, usage, validation...)
 	return p
@@ -112,11 +132,11 @@ func (f *FlagSet) IPMaskP(name, shorthand string, value net.IPMask, usage string
 
 // IPMask defines an net.IPMask flag with specified name, default value, and usage string.
 // The return value is the address of an net.IPMask variable that stores the value of the flag.
-func IPMask(name string, value net.IPMask, usage string, validation ...func(value interface{}) error) *net.IPMask {
+func IPMask(name string, value net.IPMask, usage string, validation ...func(value net.IPMask) error) *net.IPMask {
 	return CommandLine.IPMaskP(name, "", value, usage, validation...)
 }
 
 // IPMaskP is like IP, but accepts a shorthand letter that can be used after a single dash.
-func IPMaskP(name, shorthand string, value net.IPMask, usage string, validation ...func(value interface{}) error) *net.IPMask {
+func IPMaskP(name, shorthand string, value net.IPMask, usage string, validation ...func(value net.IPMask) error) *net.IPMask {
 	return CommandLine.IPMaskP(name, shorthand, value, usage, validation...)
 }
