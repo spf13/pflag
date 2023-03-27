@@ -131,12 +131,12 @@ It is optional and for this operation, you should define a function and pass it 
 ```go
 var flagvar int
 func init() {
-	validation := func(value int)error{
+	validation := func(value int) error {
 		if value < 4 {
 			return errors.New("int value should be greater than 4")
-        }
-    }
-    flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname", validation)
+        	}
+	}
+	flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname", validation)
 }
 ````
 
