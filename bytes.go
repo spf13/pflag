@@ -62,50 +62,70 @@ func (f *FlagSet) GetBytesHex(name string) ([]byte, error) {
 
 // BytesHexVar defines an []byte flag with specified name, default value, and usage string.
 // The argument p points to an []byte variable in which to store the value of the flag.
-func (f *FlagSet) BytesHexVar(p *[]byte, name string, value []byte, usage string) {
+func (f *FlagSet) BytesHexVar(p *[]byte, name string, value []byte, usage string, validation ...func(value []byte) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newBytesHexValue(value, p), name, "", usage, validationFunc)
+		return
+	}
 	f.VarP(newBytesHexValue(value, p), name, "", usage)
 }
 
 // BytesHexVarP is like BytesHexVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) BytesHexVarP(p *[]byte, name, shorthand string, value []byte, usage string) {
+func (f *FlagSet) BytesHexVarP(p *[]byte, name, shorthand string, value []byte, usage string, validation ...func(value []byte) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newBytesHexValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
 	f.VarP(newBytesHexValue(value, p), name, shorthand, usage)
 }
 
 // BytesHexVar defines an []byte flag with specified name, default value, and usage string.
 // The argument p points to an []byte variable in which to store the value of the flag.
-func BytesHexVar(p *[]byte, name string, value []byte, usage string) {
+func BytesHexVar(p *[]byte, name string, value []byte, usage string, validation ...func(value []byte) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newBytesHexValue(value, p), name, "", usage, validationFunc)
+		return
+	}
 	CommandLine.VarP(newBytesHexValue(value, p), name, "", usage)
 }
 
 // BytesHexVarP is like BytesHexVar, but accepts a shorthand letter that can be used after a single dash.
-func BytesHexVarP(p *[]byte, name, shorthand string, value []byte, usage string) {
+func BytesHexVarP(p *[]byte, name, shorthand string, value []byte, usage string, validation ...func(value []byte) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newBytesHexValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
 	CommandLine.VarP(newBytesHexValue(value, p), name, shorthand, usage)
 }
 
 // BytesHex defines an []byte flag with specified name, default value, and usage string.
 // The return value is the address of an []byte variable that stores the value of the flag.
-func (f *FlagSet) BytesHex(name string, value []byte, usage string) *[]byte {
+func (f *FlagSet) BytesHex(name string, value []byte, usage string, validation ...func(value []byte) error) *[]byte {
 	p := new([]byte)
-	f.BytesHexVarP(p, name, "", value, usage)
+	f.BytesHexVarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // BytesHexP is like BytesHex, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) BytesHexP(name, shorthand string, value []byte, usage string) *[]byte {
+func (f *FlagSet) BytesHexP(name, shorthand string, value []byte, usage string, validation ...func(value []byte) error) *[]byte {
 	p := new([]byte)
-	f.BytesHexVarP(p, name, shorthand, value, usage)
+	f.BytesHexVarP(p, name, shorthand, value, usage, validation...)
 	return p
 }
 
 // BytesHex defines an []byte flag with specified name, default value, and usage string.
 // The return value is the address of an []byte variable that stores the value of the flag.
-func BytesHex(name string, value []byte, usage string) *[]byte {
-	return CommandLine.BytesHexP(name, "", value, usage)
+func BytesHex(name string, value []byte, usage string, validation ...func(value []byte) error) *[]byte {
+	return CommandLine.BytesHexP(name, "", value, usage, validation...)
 }
 
 // BytesHexP is like BytesHex, but accepts a shorthand letter that can be used after a single dash.
-func BytesHexP(name, shorthand string, value []byte, usage string) *[]byte {
-	return CommandLine.BytesHexP(name, shorthand, value, usage)
+func BytesHexP(name, shorthand string, value []byte, usage string, validation ...func(value []byte) error) *[]byte {
+	return CommandLine.BytesHexP(name, shorthand, value, usage, validation...)
 }
 
 // BytesBase64 adapts []byte for use as a flag. Value of flag is Base64 encoded
@@ -162,48 +182,64 @@ func (f *FlagSet) GetBytesBase64(name string) ([]byte, error) {
 
 // BytesBase64Var defines an []byte flag with specified name, default value, and usage string.
 // The argument p points to an []byte variable in which to store the value of the flag.
-func (f *FlagSet) BytesBase64Var(p *[]byte, name string, value []byte, usage string) {
+func (f *FlagSet) BytesBase64Var(p *[]byte, name string, value []byte, usage string, validation ...func(value []byte) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0]).(func(value interface{}) error)
+		f.VarP(newBytesBase64Value(value, p), name, "", usage, validationFunc)
+	}
 	f.VarP(newBytesBase64Value(value, p), name, "", usage)
 }
 
 // BytesBase64VarP is like BytesBase64Var, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) BytesBase64VarP(p *[]byte, name, shorthand string, value []byte, usage string) {
+func (f *FlagSet) BytesBase64VarP(p *[]byte, name, shorthand string, value []byte, usage string, validation ...func(value []byte) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0]).(func(value interface{}) error)
+		f.VarP(newBytesBase64Value(value, p), name, shorthand, usage, validationFunc)
+	}
 	f.VarP(newBytesBase64Value(value, p), name, shorthand, usage)
 }
 
 // BytesBase64Var defines an []byte flag with specified name, default value, and usage string.
 // The argument p points to an []byte variable in which to store the value of the flag.
-func BytesBase64Var(p *[]byte, name string, value []byte, usage string) {
+func BytesBase64Var(p *[]byte, name string, value []byte, usage string, validation ...func(value []byte) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0]).(func(value interface{}) error)
+		CommandLine.VarP(newBytesBase64Value(value, p), name, "", usage, validationFunc)
+	}
 	CommandLine.VarP(newBytesBase64Value(value, p), name, "", usage)
 }
 
 // BytesBase64VarP is like BytesBase64Var, but accepts a shorthand letter that can be used after a single dash.
-func BytesBase64VarP(p *[]byte, name, shorthand string, value []byte, usage string) {
+func BytesBase64VarP(p *[]byte, name, shorthand string, value []byte, usage string, validation ...func(value []byte) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0]).(func(value interface{}) error)
+		CommandLine.VarP(newBytesBase64Value(value, p), name, shorthand, usage, validationFunc)
+	}
 	CommandLine.VarP(newBytesBase64Value(value, p), name, shorthand, usage)
 }
 
 // BytesBase64 defines an []byte flag with specified name, default value, and usage string.
 // The return value is the address of an []byte variable that stores the value of the flag.
-func (f *FlagSet) BytesBase64(name string, value []byte, usage string) *[]byte {
+func (f *FlagSet) BytesBase64(name string, value []byte, usage string, validation ...func(value []byte) error) *[]byte {
 	p := new([]byte)
-	f.BytesBase64VarP(p, name, "", value, usage)
+	f.BytesBase64VarP(p, name, "", value, usage, validation...)
 	return p
 }
 
 // BytesBase64P is like BytesBase64, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) BytesBase64P(name, shorthand string, value []byte, usage string) *[]byte {
+func (f *FlagSet) BytesBase64P(name, shorthand string, value []byte, usage string, validation ...func(value []byte) error) *[]byte {
 	p := new([]byte)
-	f.BytesBase64VarP(p, name, shorthand, value, usage)
+	f.BytesBase64VarP(p, name, shorthand, value, usage, validation...)
 	return p
 }
 
 // BytesBase64 defines an []byte flag with specified name, default value, and usage string.
 // The return value is the address of an []byte variable that stores the value of the flag.
-func BytesBase64(name string, value []byte, usage string) *[]byte {
-	return CommandLine.BytesBase64P(name, "", value, usage)
+func BytesBase64(name string, value []byte, usage string, validation ...func(value []byte) error) *[]byte {
+	return CommandLine.BytesBase64P(name, "", value, usage, validation...)
 }
 
 // BytesBase64P is like BytesBase64, but accepts a shorthand letter that can be used after a single dash.
-func BytesBase64P(name, shorthand string, value []byte, usage string) *[]byte {
-	return CommandLine.BytesBase64P(name, shorthand, value, usage)
+func BytesBase64P(name, shorthand string, value []byte, usage string, validation ...func(value []byte) error) *[]byte {
+	return CommandLine.BytesBase64P(name, shorthand, value, usage, validation...)
 }

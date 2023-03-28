@@ -138,48 +138,68 @@ func (f *FlagSet) GetBoolSlice(name string) ([]bool, error) {
 
 // BoolSliceVar defines a boolSlice flag with specified name, default value, and usage string.
 // The argument p points to a []bool variable in which to store the value of the flag.
-func (f *FlagSet) BoolSliceVar(p *[]bool, name string, value []bool, usage string) {
+func (f *FlagSet) BoolSliceVar(p *[]bool, name string, value []bool, usage string, validation ...func(value []bool) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newBoolSliceValue(value, p), name, "", usage, validationFunc)
+		return
+	}
 	f.VarP(newBoolSliceValue(value, p), name, "", usage)
 }
 
 // BoolSliceVarP is like BoolSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) BoolSliceVarP(p *[]bool, name, shorthand string, value []bool, usage string) {
+func (f *FlagSet) BoolSliceVarP(p *[]bool, name, shorthand string, value []bool, usage string, validation ...func(value []bool) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newBoolSliceValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
 	f.VarP(newBoolSliceValue(value, p), name, shorthand, usage)
 }
 
 // BoolSliceVar defines a []bool flag with specified name, default value, and usage string.
 // The argument p points to a []bool variable in which to store the value of the flag.
-func BoolSliceVar(p *[]bool, name string, value []bool, usage string) {
+func BoolSliceVar(p *[]bool, name string, value []bool, usage string, validation ...func(value []bool) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newBoolSliceValue(value, p), name, "", usage, validationFunc)
+		return
+	}
 	CommandLine.VarP(newBoolSliceValue(value, p), name, "", usage)
 }
 
 // BoolSliceVarP is like BoolSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func BoolSliceVarP(p *[]bool, name, shorthand string, value []bool, usage string) {
+func BoolSliceVarP(p *[]bool, name, shorthand string, value []bool, usage string, validation ...func(value []bool) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newBoolSliceValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
 	CommandLine.VarP(newBoolSliceValue(value, p), name, shorthand, usage)
 }
 
 // BoolSlice defines a []bool flag with specified name, default value, and usage string.
 // The return value is the address of a []bool variable that stores the value of the flag.
-func (f *FlagSet) BoolSlice(name string, value []bool, usage string) *[]bool {
+func (f *FlagSet) BoolSlice(name string, value []bool, usage string, validation ...func(value []bool) error) *[]bool {
 	p := []bool{}
-	f.BoolSliceVarP(&p, name, "", value, usage)
+	f.BoolSliceVarP(&p, name, "", value, usage, validation...)
 	return &p
 }
 
 // BoolSliceP is like BoolSlice, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) BoolSliceP(name, shorthand string, value []bool, usage string) *[]bool {
+func (f *FlagSet) BoolSliceP(name, shorthand string, value []bool, usage string, validation ...func(value []bool) error) *[]bool {
 	p := []bool{}
-	f.BoolSliceVarP(&p, name, shorthand, value, usage)
+	f.BoolSliceVarP(&p, name, shorthand, value, usage, validation...)
 	return &p
 }
 
 // BoolSlice defines a []bool flag with specified name, default value, and usage string.
 // The return value is the address of a []bool variable that stores the value of the flag.
-func BoolSlice(name string, value []bool, usage string) *[]bool {
-	return CommandLine.BoolSliceP(name, "", value, usage)
+func BoolSlice(name string, value []bool, usage string, validation ...func(value []bool) error) *[]bool {
+	return CommandLine.BoolSliceP(name, "", value, usage, validation...)
 }
 
 // BoolSliceP is like BoolSlice, but accepts a shorthand letter that can be used after a single dash.
-func BoolSliceP(name, shorthand string, value []bool, usage string) *[]bool {
-	return CommandLine.BoolSliceP(name, shorthand, value, usage)
+func BoolSliceP(name, shorthand string, value []bool, usage string, validation ...func(value []bool) error) *[]bool {
+	return CommandLine.BoolSliceP(name, shorthand, value, usage, validation...)
 }

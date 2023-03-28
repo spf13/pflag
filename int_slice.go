@@ -111,48 +111,68 @@ func (f *FlagSet) GetIntSlice(name string) ([]int, error) {
 
 // IntSliceVar defines a intSlice flag with specified name, default value, and usage string.
 // The argument p points to a []int variable in which to store the value of the flag.
-func (f *FlagSet) IntSliceVar(p *[]int, name string, value []int, usage string) {
+func (f *FlagSet) IntSliceVar(p *[]int, name string, value []int, usage string, validation ...func(value []int) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newIntSliceValue(value, p), name, "", usage, validationFunc)
+		return
+	}
 	f.VarP(newIntSliceValue(value, p), name, "", usage)
 }
 
 // IntSliceVarP is like IntSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IntSliceVarP(p *[]int, name, shorthand string, value []int, usage string) {
+func (f *FlagSet) IntSliceVarP(p *[]int, name, shorthand string, value []int, usage string, validation ...func(value []int) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newIntSliceValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
 	f.VarP(newIntSliceValue(value, p), name, shorthand, usage)
 }
 
 // IntSliceVar defines a int[] flag with specified name, default value, and usage string.
 // The argument p points to a int[] variable in which to store the value of the flag.
-func IntSliceVar(p *[]int, name string, value []int, usage string) {
+func IntSliceVar(p *[]int, name string, value []int, usage string, validation ...func(value []int) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newIntSliceValue(value, p), name, "", usage, validationFunc)
+		return
+	}
 	CommandLine.VarP(newIntSliceValue(value, p), name, "", usage)
 }
 
 // IntSliceVarP is like IntSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func IntSliceVarP(p *[]int, name, shorthand string, value []int, usage string) {
+func IntSliceVarP(p *[]int, name, shorthand string, value []int, usage string, validation ...func(value []int) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newIntSliceValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
 	CommandLine.VarP(newIntSliceValue(value, p), name, shorthand, usage)
 }
 
 // IntSlice defines a []int flag with specified name, default value, and usage string.
 // The return value is the address of a []int variable that stores the value of the flag.
-func (f *FlagSet) IntSlice(name string, value []int, usage string) *[]int {
+func (f *FlagSet) IntSlice(name string, value []int, usage string, validation ...func(value []int) error) *[]int {
 	p := []int{}
-	f.IntSliceVarP(&p, name, "", value, usage)
+	f.IntSliceVarP(&p, name, "", value, usage, validation...)
 	return &p
 }
 
 // IntSliceP is like IntSlice, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) IntSliceP(name, shorthand string, value []int, usage string) *[]int {
+func (f *FlagSet) IntSliceP(name, shorthand string, value []int, usage string, validation ...func(value []int) error) *[]int {
 	p := []int{}
-	f.IntSliceVarP(&p, name, shorthand, value, usage)
+	f.IntSliceVarP(&p, name, shorthand, value, usage, validation...)
 	return &p
 }
 
 // IntSlice defines a []int flag with specified name, default value, and usage string.
 // The return value is the address of a []int variable that stores the value of the flag.
-func IntSlice(name string, value []int, usage string) *[]int {
-	return CommandLine.IntSliceP(name, "", value, usage)
+func IntSlice(name string, value []int, usage string, validation ...func(value []int) error) *[]int {
+	return CommandLine.IntSliceP(name, "", value, usage, validation...)
 }
 
 // IntSliceP is like IntSlice, but accepts a shorthand letter that can be used after a single dash.
-func IntSliceP(name, shorthand string, value []int, usage string) *[]int {
-	return CommandLine.IntSliceP(name, shorthand, value, usage)
+func IntSliceP(name, shorthand string, value []int, usage string, validation ...func(value []int) error) *[]int {
+	return CommandLine.IntSliceP(name, shorthand, value, usage, validation...)
 }

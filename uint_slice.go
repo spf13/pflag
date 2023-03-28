@@ -121,48 +121,68 @@ func (f *FlagSet) GetUintSlice(name string) ([]uint, error) {
 
 // UintSliceVar defines a uintSlice flag with specified name, default value, and usage string.
 // The argument p points to a []uint variable in which to store the value of the flag.
-func (f *FlagSet) UintSliceVar(p *[]uint, name string, value []uint, usage string) {
+func (f *FlagSet) UintSliceVar(p *[]uint, name string, value []uint, usage string, validation ...func(value []uint) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newUintSliceValue(value, p), name, "", usage, validationFunc)
+		return
+	}
 	f.VarP(newUintSliceValue(value, p), name, "", usage)
 }
 
 // UintSliceVarP is like UintSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) UintSliceVarP(p *[]uint, name, shorthand string, value []uint, usage string) {
+func (f *FlagSet) UintSliceVarP(p *[]uint, name, shorthand string, value []uint, usage string, validation ...func(value []uint) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		f.VarP(newUintSliceValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
 	f.VarP(newUintSliceValue(value, p), name, shorthand, usage)
 }
 
 // UintSliceVar defines a uint[] flag with specified name, default value, and usage string.
 // The argument p points to a uint[] variable in which to store the value of the flag.
-func UintSliceVar(p *[]uint, name string, value []uint, usage string) {
+func UintSliceVar(p *[]uint, name string, value []uint, usage string, validation ...func(value []uint) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newUintSliceValue(value, p), name, "", usage, validationFunc)
+		return
+	}
 	CommandLine.VarP(newUintSliceValue(value, p), name, "", usage)
 }
 
 // UintSliceVarP is like the UintSliceVar, but accepts a shorthand letter that can be used after a single dash.
-func UintSliceVarP(p *[]uint, name, shorthand string, value []uint, usage string) {
+func UintSliceVarP(p *[]uint, name, shorthand string, value []uint, usage string, validation ...func(value []uint) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		CommandLine.VarP(newUintSliceValue(value, p), name, shorthand, usage, validationFunc)
+		return
+	}
 	CommandLine.VarP(newUintSliceValue(value, p), name, shorthand, usage)
 }
 
 // UintSlice defines a []uint flag with specified name, default value, and usage string.
 // The return value is the address of a []uint variable that stores the value of the flag.
-func (f *FlagSet) UintSlice(name string, value []uint, usage string) *[]uint {
+func (f *FlagSet) UintSlice(name string, value []uint, usage string, validation ...func(value []uint) error) *[]uint {
 	p := []uint{}
-	f.UintSliceVarP(&p, name, "", value, usage)
+	f.UintSliceVarP(&p, name, "", value, usage, validation...)
 	return &p
 }
 
 // UintSliceP is like UintSlice, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) UintSliceP(name, shorthand string, value []uint, usage string) *[]uint {
+func (f *FlagSet) UintSliceP(name, shorthand string, value []uint, usage string, validation ...func(value []uint) error) *[]uint {
 	p := []uint{}
-	f.UintSliceVarP(&p, name, shorthand, value, usage)
+	f.UintSliceVarP(&p, name, shorthand, value, usage, validation...)
 	return &p
 }
 
 // UintSlice defines a []uint flag with specified name, default value, and usage string.
 // The return value is the address of a []uint variable that stores the value of the flag.
-func UintSlice(name string, value []uint, usage string) *[]uint {
-	return CommandLine.UintSliceP(name, "", value, usage)
+func UintSlice(name string, value []uint, usage string, validation ...func(value []uint) error) *[]uint {
+	return CommandLine.UintSliceP(name, "", value, usage, validation...)
 }
 
 // UintSliceP is like UintSlice, but accepts a shorthand letter that can be used after a single dash.
-func UintSliceP(name, shorthand string, value []uint, usage string) *[]uint {
-	return CommandLine.UintSliceP(name, shorthand, value, usage)
+func UintSliceP(name, shorthand string, value []uint, usage string, validation ...func(value []uint) error) *[]uint {
+	return CommandLine.UintSliceP(name, shorthand, value, usage, validation...)
 }

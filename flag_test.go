@@ -6,6 +6,7 @@ package pflag
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -404,6 +405,73 @@ func testParseAll(f *FlagSet, t *testing.T) {
 	}
 }
 
+func testParseFlagWithValidation(f *FlagSet, t *testing.T) {
+	if f.Parsed() {
+		t.Error("f.Parse() = true before Parse")
+	}
+
+	boolValidationFunc := func(value bool) error {
+		if value {
+			return errors.New("validation failed")
+		}
+		return nil
+	}
+
+	intValidationFunc := func(value int) error {
+		if value > 10 || value < 0 {
+			return errors.New("validation failed")
+		}
+		return nil
+	}
+
+	stringValidationFunc := func(value string) error {
+		if len(value) < 4 {
+			return errors.New("validation failed")
+		}
+		return nil
+	}
+
+	uintValidationFunc := func(value uint) error {
+		if value < 4 {
+			return errors.New("validation failed")
+		}
+		return nil
+	}
+
+	boolFlag1 := f.Bool("bool", false, "bool value", boolValidationFunc)
+	intFlag := f.Int("int", 0, "int value", intValidationFunc)
+	stringFlag := f.String("string", "0", "string value", stringValidationFunc)
+	uintFlag := f.Uint("uint", 10, "uint value", uintValidationFunc)
+	args := []string{
+		"--bool=true",
+		"--int11=",
+		"--string=hello",
+		"--uint=3",
+	}
+
+	f.Parse(args)
+
+	if !f.Parsed() {
+		t.Error("f.Parse() = false after Parse")
+	}
+
+	if *boolFlag1 != false {
+		t.Error("bool flag should be true, is ", *boolFlag1)
+	}
+
+	if *intFlag != 0 {
+		t.Error("int flag should be 0, is ", *intFlag)
+	}
+
+	if *stringFlag != "0" {
+		t.Error("string flag should be 0, is ", *stringFlag)
+	}
+
+	if *uintFlag != 10 {
+		t.Error("uint flag should be 10, is ", *stringFlag)
+	}
+}
+
 func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 	if f.Parsed() {
 		t.Error("f.Parse() = true before Parse")
@@ -584,6 +652,11 @@ func TestParse(t *testing.T) {
 func TestParseAll(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
 	testParseAll(GetCommandLine(), t)
+}
+
+func TestParseFlagWithValidation(t *testing.T) {
+	ResetForTesting(func() { t.Error("bad parse") })
+	testParseFlagWithValidation(GetCommandLine(), t)
 }
 
 func TestIgnoreUnknownFlags(t *testing.T) {
@@ -1134,7 +1207,6 @@ func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagInUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1149,7 +1221,6 @@ func TestHiddenFlagInUsage(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1239,7 +1310,7 @@ func TestPrintDefaults(t *testing.T) {
 	got := buf.String()
 	if got != defaultOutput {
 		fmt.Println("\n" + got)
-		fmt.Println("\n" + defaultOutput)
+		//	fmt.Println("\n" + defaultOutput)
 		t.Errorf("got %q want %q\n", got, defaultOutput)
 	}
 }

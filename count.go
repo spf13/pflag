@@ -47,50 +47,56 @@ func (f *FlagSet) GetCount(name string) (int, error) {
 // CountVar defines a count flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
 // A count flag will add 1 to its value every time it is found on the command line
-func (f *FlagSet) CountVar(p *int, name string, usage string) {
-	f.CountVarP(p, name, "", usage)
+func (f *FlagSet) CountVar(p *int, name string, usage string, validation ...func(value int) error) {
+	f.CountVarP(p, name, "", usage, validation...)
 }
 
 // CountVarP is like CountVar only take a shorthand for the flag name.
-func (f *FlagSet) CountVarP(p *int, name, shorthand string, usage string) {
+func (f *FlagSet) CountVarP(p *int, name, shorthand string, usage string, validation ...func(value int) error) {
+	if len(validation) > 0 {
+		validationFunc := interface{}(validation[0])
+		flag := f.VarPF(newCountValue(0, p), name, shorthand, usage, validationFunc)
+		flag.NoOptDefVal = "+1"
+		return
+	}
 	flag := f.VarPF(newCountValue(0, p), name, shorthand, usage)
 	flag.NoOptDefVal = "+1"
 }
 
 // CountVar like CountVar only the flag is placed on the CommandLine instead of a given flag set
-func CountVar(p *int, name string, usage string) {
-	CommandLine.CountVar(p, name, usage)
+func CountVar(p *int, name string, usage string, validation ...func(value int) error) {
+	CommandLine.CountVar(p, name, usage, validation...)
 }
 
 // CountVarP is like CountVar only take a shorthand for the flag name.
-func CountVarP(p *int, name, shorthand string, usage string) {
-	CommandLine.CountVarP(p, name, shorthand, usage)
+func CountVarP(p *int, name, shorthand string, usage string, validation ...func(value int) error) {
+	CommandLine.CountVarP(p, name, shorthand, usage, validation...)
 }
 
 // Count defines a count flag with specified name, default value, and usage string.
 // The return value is the address of an int variable that stores the value of the flag.
 // A count flag will add 1 to its value every time it is found on the command line
-func (f *FlagSet) Count(name string, usage string) *int {
+func (f *FlagSet) Count(name string, usage string, validation ...func(value int) error) *int {
 	p := new(int)
-	f.CountVarP(p, name, "", usage)
+	f.CountVarP(p, name, "", usage, validation...)
 	return p
 }
 
 // CountP is like Count only takes a shorthand for the flag name.
-func (f *FlagSet) CountP(name, shorthand string, usage string) *int {
+func (f *FlagSet) CountP(name, shorthand string, usage string, validation ...func(value int) error) *int {
 	p := new(int)
-	f.CountVarP(p, name, shorthand, usage)
+	f.CountVarP(p, name, shorthand, usage, validation...)
 	return p
 }
 
 // Count defines a count flag with specified name, default value, and usage string.
 // The return value is the address of an int variable that stores the value of the flag.
 // A count flag will add 1 to its value evey time it is found on the command line
-func Count(name string, usage string) *int {
-	return CommandLine.CountP(name, "", usage)
+func Count(name string, usage string, validation ...func(value int) error) *int {
+	return CommandLine.CountP(name, "", usage, validation...)
 }
 
 // CountP is like Count only takes a shorthand for the flag name.
-func CountP(name, shorthand string, usage string) *int {
-	return CommandLine.CountP(name, shorthand, usage)
+func CountP(name, shorthand string, usage string, validation ...func(value int) error) *int {
+	return CommandLine.CountP(name, shorthand, usage, validation...)
 }
