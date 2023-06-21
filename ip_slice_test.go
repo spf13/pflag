@@ -165,7 +165,6 @@ func TestIPSAsSliceValue(t *testing.T) {
 }
 
 func TestIPSBadQuoting(t *testing.T) {
-
 	tests := []struct {
 		Want    []net.IP
 		FlagArg []string
@@ -222,7 +221,8 @@ func TestIPSBadQuoting(t *testing.T) {
 			},
 			FlagArg: []string{
 				`"2e5e:66b2:6441:848:5b74:76ea:574c:3a7b,        2e5e:66b2:6441:848:5b74:76ea:574c:3a7b,2e5e:66b2:6441:848:5b74:76ea:574c:3a7b     "`,
-				" 2e5e:66b2:6441:848:5b74:76ea:574c:3a7b"},
+				" 2e5e:66b2:6441:848:5b74:76ea:574c:3a7b",
+			},
 		},
 	}
 
