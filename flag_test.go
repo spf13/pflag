@@ -571,7 +571,7 @@ func TestShorthandLookup(t *testing.T) {
 	defer func() {
 		recover()
 	}()
-	flag = f.ShorthandLookup("ab")
+	f.ShorthandLookup("ab")
 	// should NEVER get here. lookup should panic. defer'd func should recover it.
 	t.Errorf("f.ShorthandLookup(\"ab\") did not panic")
 }
