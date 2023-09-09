@@ -120,6 +120,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"text/tabwriter"
 )
 
 // ErrHelp is the error returned if the flag -help is invoked but no such flag is defined.
@@ -578,6 +579,39 @@ func (f *Flag) defaultIsZeroValue() bool {
 	}
 }
 
+// lineWriter is a simple io.Writer implementation backed by a string slice.
+// Unsurprisingly, it's most useful when one wants to consume the data written
+// as lines -- strings.Join(lw.Lines(), "\n") will return the data written.
+type lineWriter struct {
+	lines []string
+	buf   bytes.Buffer
+}
+
+func (lw *lineWriter) Write(p []byte) (int, error) {
+	n := len(p)
+	for i := bytes.IndexByte(p, '\n'); i != -1; {
+		lw.buf.Write(p[:i])
+		lw.lines = append(lw.lines, lw.buf.String())
+		lw.buf.Reset()
+		if i == len(p)-1 { // last character
+			return n, nil
+		}
+		p = p[i+1:]
+		i = bytes.IndexByte(p, '\n')
+	}
+	lw.buf.Write(p)
+	return n, nil
+}
+
+func (lw *lineWriter) Lines() []string {
+	if len(lw.lines) == 0 && lw.buf.Len() == 0 {
+		return nil
+	}
+	return append(lw.lines, lw.buf.String())
+}
+
+var _ io.Writer = (*lineWriter)(nil)
+
 // UnquoteUsage extracts a back-quoted name from the usage
 // string for a flag and returns it and the un-quoted usage.
 // Given "a `name` to show" it returns ("name", "a name to show").
@@ -695,74 +729,90 @@ func wrap(i, w int, s string) string {
 // for all flags in the FlagSet. Wrapped to `cols` columns (0 for no
 // wrapping)
 func (f *FlagSet) FlagUsagesWrapped(cols int) string {
-	buf := new(bytes.Buffer)
+	var (
+		lw = lineWriter{lines: make([]string, 0, len(f.formal))}
+		// Use tabwriter to align flag names, types and usages.
+		// Columns are separated by tabs and rows by newlines; tabwriter.Escape
+		// can be used to escape tabs / newlines within a cell.
+		tw = tabwriter.NewWriter(&lw, 0, 0, 0, ' ', tabwriter.StripEscape)
+	)
 
-	lines := make([]string, 0, len(f.formal))
-
-	maxlen := 0
 	f.VisitAll(func(flag *Flag) {
 		if flag.Hidden {
 			return
 		}
 
-		line := ""
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			line = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
+			fmt.Fprintf(tw, "  -%s, --%s", flag.Shorthand, flag.Name)
 		} else {
-			line = fmt.Sprintf("      --%s", flag.Name)
+			fmt.Fprintf(tw, "      --%s", flag.Name)
 		}
+		fmt.Fprint(tw, "\t")
 
 		varname, usage := UnquoteUsage(flag)
 		if varname != "" {
-			line += " " + varname
+			varname = " " + varname
 		}
+		fmt.Fprint(tw, varname)
+		tw.Write([]byte{tabwriter.Escape})
 		if flag.NoOptDefVal != "" {
 			switch flag.Value.Type() {
 			case "string":
-				line += fmt.Sprintf("[=\"%s\"]", flag.NoOptDefVal)
+				fmt.Fprintf(tw, "[=\"%s\"]", flag.NoOptDefVal)
 			case "bool":
 				if flag.NoOptDefVal != "true" {
-					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+					fmt.Fprintf(tw, "[=%s]", flag.NoOptDefVal)
 				}
 			case "count":
 				if flag.NoOptDefVal != "+1" {
-					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+					fmt.Fprintf(tw, "[=%s]", flag.NoOptDefVal)
 				}
 			default:
-				line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+				fmt.Fprintf(tw, "[=%s]", flag.NoOptDefVal)
 			}
 		}
+		tw.Write([]byte{tabwriter.Escape, '\t', tabwriter.Escape})
 
-		// This special character will be replaced with spacing once the
-		// correct alignment is calculated
-		line += "\x00"
-		if len(line) > maxlen {
-			maxlen = len(line)
-		}
-
-		line += usage
+		// '\x00' tracks where usage starts (so we can wrap it as needed).
+		fmt.Fprintf(tw, "  \x00%s", usage)
 		if !flag.defaultIsZeroValue() {
 			if flag.Value.Type() == "string" {
-				line += fmt.Sprintf(" (default %q)", flag.DefValue)
+				fmt.Fprintf(tw, " (default %q)", flag.DefValue)
 			} else {
-				line += fmt.Sprintf(" (default %s)", flag.DefValue)
+				fmt.Fprintf(tw, " (default %s)", flag.DefValue)
 			}
 		}
 		if len(flag.Deprecated) != 0 {
-			line += fmt.Sprintf(" (DEPRECATED: %s)", flag.Deprecated)
+			fmt.Fprintf(tw, " (DEPRECATED: %s)", flag.Deprecated)
 		}
-
-		lines = append(lines, line)
+		tw.Write([]byte{tabwriter.Escape, '\n'})
 	})
 
-	for _, line := range lines {
-		sidx := strings.Index(line, "\x00")
-		spacing := strings.Repeat(" ", maxlen-sidx)
-		// maxlen + 2 comes from + 1 for the \x00 and + 1 for the (deliberate) off-by-one in maxlen-sidx
-		fmt.Fprintln(buf, line[:sidx], spacing, wrap(maxlen+2, cols, line[sidx+1:]))
+	tw.Flush()
+	lines := lw.Lines()
+	if len(lines) == 0 {
+		return ""
 	}
-
-	return buf.String()
+	var (
+		// Usage should start at the same index for all the lines since
+		// tabwriter already aligns it for us, so just check the first line.
+		// Note: there's a small exception, see below.
+		i = strings.IndexByte(lines[0], '\x00')
+		b strings.Builder
+	)
+	// Skip the empty line at the end.
+	for _, line := range lines[:len(lines)-1] {
+		// Some flags could have multiline usage, which would end up as separate
+		// lines -- they however wouldn't have '\x00', so we indent them with
+		// the same number of spaces as the first line and then wrap them.
+		// wrap indents by i+1 to account for the space introduced by Fprintln.
+		if strings.IndexByte(line, '\x00') == -1 {
+			fmt.Fprintln(&b, strings.Repeat(" ", i), wrap(i+1, cols, line))
+		} else {
+			fmt.Fprintln(&b, line[:i], wrap(i+1, cols, line[i+1:]))
+		}
+	}
+	return b.String()
 }
 
 // FlagUsages returns a string containing the usage information for all flags in

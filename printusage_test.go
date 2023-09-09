@@ -56,7 +56,7 @@ const expectedOutput2 = `      --long-form                    Some description
   -o, --other-very-long-arg string   Some very long description having
                                      break the limit (default
                                      "long-default-value")
-  -l, --some-very-long-arg string    Some very long description having
+  -l, --some-very-long-arg  string   Some very long description having
                                      break the limit (default "test")
       --some-very-long-arg2 string   Some very long description
                                      with line break
@@ -69,6 +69,6 @@ func TestPrintUsage_2(t *testing.T) {
 	f := setUpPFlagSet2(&buf)
 	res := f.FlagUsagesWrapped(80)
 	if res != expectedOutput2 {
-		t.Errorf("Expected \n%q \nActual \n%q", expectedOutput2, res)
+		t.Errorf("Expected \n%s \nActual \n%s", expectedOutput2, res)
 	}
 }
