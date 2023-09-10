@@ -27,23 +27,32 @@ unaffected.
 Define flags using flag.String(), Bool(), Int(), etc.
 
 This declares an integer flag, -flagname, stored in the pointer ip, with type *int.
+
 	var ip = flag.Int("flagname", 1234, "help message for flagname")
+
 If you like, you can bind the flag to a variable using the Var() functions.
+
 	var flagvar int
 	func init() {
 		flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname")
 	}
+
 Or you can create custom flags that satisfy the Value interface (with
 pointer receivers) and couple them to flag parsing by
+
 	flag.Var(&flagVal, "name", "help message for flagname")
+
 For such flags, the default value is just the initial value of the variable.
 
 After all flags are defined, call
+
 	flag.Parse()
+
 to parse the command line into the defined flags.
 
 Flags may then be used directly. If you're using the flags themselves,
 they are all pointers; if you bind to variables, they're values.
+
 	fmt.Println("ip has value ", *ip)
 	fmt.Println("flagvar has value ", flagvar)
 
@@ -54,22 +63,26 @@ The arguments are indexed from 0 through flag.NArg()-1.
 The pflag package also defines some new functions that are not in flag,
 that give one-letter shorthands for flags. You can use these by appending
 'P' to the name of any function that defines a flag.
+
 	var ip = flag.IntP("flagname", "f", 1234, "help message")
 	var flagvar bool
 	func init() {
 		flag.BoolVarP(&flagvar, "boolname", "b", true, "help message")
 	}
 	flag.VarP(&flagval, "varname", "v", "help message")
+
 Shorthand letters can be used with single dashes on the command line.
 Boolean shorthand flags can be combined with other shorthand flags.
 
 Command line flag syntax:
+
 	--flag    // boolean flags only
 	--flag=x
 
 Unlike the flag package, a single dash before an option means something
 different than a double dash. Single dashes signify a series of shorthand
 letters for flags. All but the last shorthand letter must be boolean flags.
+
 	// boolean flags
 	-f
 	-abc
@@ -107,6 +120,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	"text/tabwriter"
 )
 
 // ErrHelp is the error returned if the flag -help is invoked but no such flag is defined.
@@ -365,7 +379,7 @@ func (f *FlagSet) ShorthandLookup(name string) *Flag {
 	}
 	if len(name) > 1 {
 		msg := fmt.Sprintf("can not look up shorthand which is more than one ASCII character: %q", name)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	c := name[0]
@@ -565,6 +579,39 @@ func (f *Flag) defaultIsZeroValue() bool {
 	}
 }
 
+// lineWriter is a simple io.Writer implementation backed by a string slice.
+// Unsurprisingly, it's most useful when one wants to consume the data written
+// as lines -- strings.Join(lw.Lines(), "\n") will return the data written.
+type lineWriter struct {
+	lines []string
+	buf   bytes.Buffer
+}
+
+func (lw *lineWriter) Write(p []byte) (int, error) {
+	n := len(p)
+	for i := bytes.IndexByte(p, '\n'); i != -1; {
+		lw.buf.Write(p[:i])
+		lw.lines = append(lw.lines, lw.buf.String())
+		lw.buf.Reset()
+		if i == len(p)-1 { // last character
+			return n, nil
+		}
+		p = p[i+1:]
+		i = bytes.IndexByte(p, '\n')
+	}
+	lw.buf.Write(p)
+	return n, nil
+}
+
+func (lw *lineWriter) Lines() []string {
+	if len(lw.lines) == 0 && lw.buf.Len() == 0 {
+		return nil
+	}
+	return append(lw.lines, lw.buf.String())
+}
+
+var _ io.Writer = (*lineWriter)(nil)
+
 // UnquoteUsage extracts a back-quoted name from the usage
 // string for a flag and returns it and the un-quoted usage.
 // Given "a `name` to show" it returns ("name", "a name to show").
@@ -682,74 +729,90 @@ func wrap(i, w int, s string) string {
 // for all flags in the FlagSet. Wrapped to `cols` columns (0 for no
 // wrapping)
 func (f *FlagSet) FlagUsagesWrapped(cols int) string {
-	buf := new(bytes.Buffer)
+	var (
+		lw = lineWriter{lines: make([]string, 0, len(f.formal))}
+		// Use tabwriter to align flag names, types and usages.
+		// Columns are separated by tabs and rows by newlines; tabwriter.Escape
+		// can be used to escape tabs / newlines within a cell.
+		tw = tabwriter.NewWriter(&lw, 0, 0, 0, ' ', tabwriter.StripEscape)
+	)
 
-	lines := make([]string, 0, len(f.formal))
-
-	maxlen := 0
 	f.VisitAll(func(flag *Flag) {
 		if flag.Hidden {
 			return
 		}
 
-		line := ""
 		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
-			line = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
+			fmt.Fprintf(tw, "  -%s, --%s", flag.Shorthand, flag.Name)
 		} else {
-			line = fmt.Sprintf("      --%s", flag.Name)
+			fmt.Fprintf(tw, "      --%s", flag.Name)
 		}
+		fmt.Fprint(tw, "\t")
 
 		varname, usage := UnquoteUsage(flag)
 		if varname != "" {
-			line += " " + varname
+			varname = " " + varname
 		}
+		fmt.Fprint(tw, varname)
+		tw.Write([]byte{tabwriter.Escape})
 		if flag.NoOptDefVal != "" {
 			switch flag.Value.Type() {
 			case "string":
-				line += fmt.Sprintf("[=\"%s\"]", flag.NoOptDefVal)
+				fmt.Fprintf(tw, "[=\"%s\"]", flag.NoOptDefVal)
 			case "bool":
 				if flag.NoOptDefVal != "true" {
-					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+					fmt.Fprintf(tw, "[=%s]", flag.NoOptDefVal)
 				}
 			case "count":
 				if flag.NoOptDefVal != "+1" {
-					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+					fmt.Fprintf(tw, "[=%s]", flag.NoOptDefVal)
 				}
 			default:
-				line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+				fmt.Fprintf(tw, "[=%s]", flag.NoOptDefVal)
 			}
 		}
+		tw.Write([]byte{tabwriter.Escape, '\t', tabwriter.Escape})
 
-		// This special character will be replaced with spacing once the
-		// correct alignment is calculated
-		line += "\x00"
-		if len(line) > maxlen {
-			maxlen = len(line)
-		}
-
-		line += usage
+		// '\x00' tracks where usage starts (so we can wrap it as needed).
+		fmt.Fprintf(tw, "  \x00%s", usage)
 		if !flag.defaultIsZeroValue() {
 			if flag.Value.Type() == "string" {
-				line += fmt.Sprintf(" (default %q)", flag.DefValue)
+				fmt.Fprintf(tw, " (default %q)", flag.DefValue)
 			} else {
-				line += fmt.Sprintf(" (default %s)", flag.DefValue)
+				fmt.Fprintf(tw, " (default %s)", flag.DefValue)
 			}
 		}
 		if len(flag.Deprecated) != 0 {
-			line += fmt.Sprintf(" (DEPRECATED: %s)", flag.Deprecated)
+			fmt.Fprintf(tw, " (DEPRECATED: %s)", flag.Deprecated)
 		}
-
-		lines = append(lines, line)
+		tw.Write([]byte{tabwriter.Escape, '\n'})
 	})
 
-	for _, line := range lines {
-		sidx := strings.Index(line, "\x00")
-		spacing := strings.Repeat(" ", maxlen-sidx)
-		// maxlen + 2 comes from + 1 for the \x00 and + 1 for the (deliberate) off-by-one in maxlen-sidx
-		fmt.Fprintln(buf, line[:sidx], spacing, wrap(maxlen+2, cols, line[sidx+1:]))
+	tw.Flush()
+	lines := lw.Lines()
+	if len(lines) == 0 {
+		return ""
 	}
-
-	return buf.String()
+	var (
+		// Usage should start at the same index for all the lines since
+		// tabwriter already aligns it for us, so just check the first line.
+		// Note: there's a small exception, see below.
+		i = strings.IndexByte(lines[0], '\x00')
+		b strings.Builder
+	)
+	// Skip the empty line at the end.
+	for _, line := range lines[:len(lines)-1] {
+		// Some flags could have multiline usage, which would end up as separate
+		// lines -- they however wouldn't have '\x00', so we indent them with
+		// the same number of spaces as the first line and then wrap them.
+		// wrap indents by i+1 to account for the space introduced by Fprintln.
+		if strings.IndexByte(line, '\x00') == -1 {
+			fmt.Fprintln(&b, strings.Repeat(" ", i), wrap(i+1, cols, line))
+		} else {
+			fmt.Fprintln(&b, line[:i], wrap(i+1, cols, line[i+1:]))
+		}
+	}
+	return b.String()
 }
 
 // FlagUsages returns a string containing the usage information for all flags in
@@ -867,7 +930,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	}
 	if len(flag.Shorthand) > 1 {
 		msg := fmt.Sprintf("%q shorthand is more than one ASCII character", flag.Shorthand)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	if f.shorthands == nil {
@@ -877,7 +940,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	used, alreadyThere := f.shorthands[c]
 	if alreadyThere {
 		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	f.shorthands[c] = flag
@@ -934,9 +997,9 @@ func (f *FlagSet) usage() {
 	}
 }
 
-//--unknown (args will be empty)
-//--unknown --next-flag ... (args will be --next-flag ...)
-//--unknown arg ... (args will be arg ...)
+// --unknown (args will be empty)
+// --unknown --next-flag ... (args will be --next-flag ...)
+// --unknown arg ... (args will be arg ...)
 func stripUnknownFlagValue(args []string) []string {
 	if len(args) == 0 {
 		//--unknown
@@ -1135,7 +1198,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 	}
 	f.parsed = true
 
-	if len(arguments) < 0 {
+	if len(arguments) == 0 {
 		return nil
 	}
 

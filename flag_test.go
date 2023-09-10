@@ -571,7 +571,7 @@ func TestShorthandLookup(t *testing.T) {
 	defer func() {
 		recover()
 	}()
-	flag = f.ShorthandLookup("ab")
+	f.ShorthandLookup("ab")
 	// should NEVER get here. lookup should panic. defer'd func should recover it.
 	t.Errorf("f.ShorthandLookup(\"ab\") did not panic")
 }
@@ -1134,7 +1134,6 @@ func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagInUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1149,7 +1148,6 @@ func TestHiddenFlagInUsage(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1166,27 +1164,27 @@ func TestHiddenFlagUsage(t *testing.T) {
 	}
 }
 
-const defaultOutput = `      --A                         for bootstrapping, allow 'any' type
-      --Alongflagname             disable bounds checking
-  -C, --CCC                       a boolean defaulting to true (default true)
-      --D path                    set relative path for local imports
-  -E, --EEE num[=1234]            a num with NoOptDefVal (default 4321)
-      --F number                  a non-zero number (default 2.7)
-      --G float                   a float that defaults to zero
-      --IP ip                     IP address with no default
-      --IPMask ipMask             Netmask address with no default
-      --IPNet ipNet               IP network with no default
-      --Ints ints                 int slice with zero default
-      --N int                     a non-zero int (default 27)
-      --ND1 string[="bar"]        a string with NoOptDefVal (default "foo")
-      --ND2 num[=4321]            a num with NoOptDefVal (default 1234)
-      --StringArray stringArray   string array with zero default
-      --StringSlice strings       string slice with zero default
-      --Z int                     an int that defaults to zero
-      --custom custom             custom Value implementation
-      --customP custom            a VarP with default (default 10)
-      --maxT timeout              set timeout for dial
-  -v, --verbose count             verbosity
+const defaultOutput = `      --A                              for bootstrapping, allow 'any' type
+      --Alongflagname                  disable bounds checking
+  -C, --CCC                            a boolean defaulting to true (default true)
+      --D             path             set relative path for local imports
+  -E, --EEE           num[=1234]       a num with NoOptDefVal (default 4321)
+      --F             number           a non-zero number (default 2.7)
+      --G             float            a float that defaults to zero
+      --IP            ip               IP address with no default
+      --IPMask        ipMask           Netmask address with no default
+      --IPNet         ipNet            IP network with no default
+      --Ints          ints             int slice with zero default
+      --N             int              a non-zero int (default 27)
+      --ND1           string[="bar"]   a string with NoOptDefVal (default "foo")
+      --ND2           num[=4321]       a num with NoOptDefVal (default 1234)
+      --StringArray   stringArray      string array with zero default
+      --StringSlice   strings          string slice with zero default
+      --Z             int              an int that defaults to zero
+      --custom        custom           custom Value implementation
+      --customP       custom           a VarP with default (default 10)
+      --maxT          timeout          set timeout for dial
+  -v, --verbose       count            verbosity
 `
 
 // Custom value that satisfies the Value interface.
