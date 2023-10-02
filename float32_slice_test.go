@@ -9,200 +9,172 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func setUpF32SFlagSet(f32sp *[]float32) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.Float32SliceVar(f32sp, "f32s", []float32{}, "Command separated list!")
-	return f
-}
+func TestFloat32Slice(t *testing.T) {
+	t.Parallel()
 
-func setUpF32SFlagSetWithDefault(f32sp *[]float32) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.Float32SliceVar(f32sp, "f32s", []float32{0.0, 1.0}, "Command separated list!")
-	return f
-}
-
-func TestEmptyF32S(t *testing.T) {
-	var f32s []float32
-	f := setUpF32SFlagSet(&f32s)
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	newFlag := func(f32sp *[]float32) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.Float32SliceVar(f32sp, "f32s", []float32{}, "Command separated list!")
+		return f
 	}
 
-	getF32S, err := f.GetFloat32Slice("f32s")
-	if err != nil {
-		t.Fatal("got an error from GetFloat32Slice():", err)
-	}
-	if len(getF32S) != 0 {
-		t.Fatalf("got f32s %v with len=%d but expected length=0", getF32S, len(getF32S))
-	}
-}
+	t.Run("with empty slice", func(t *testing.T) {
+		f32s := make([]float32, 0)
+		f := newFlag(&f32s)
 
-func TestF32S(t *testing.T) {
-	var f32s []float32
-	f := setUpF32SFlagSet(&f32s)
+		require.NoError(t, f.Parse([]string{}))
 
-	vals := []string{"1.0", "2.0", "4.0", "3.0"}
-	arg := fmt.Sprintf("--f32s=%s", strings.Join(vals, ","))
-	erp := f.Parse([]string{arg})
-	if erp != nil {
-		t.Fatal("expected no error; got", erp)
-	}
+		getF32S, err := f.GetFloat32Slice("f32s")
+		require.NoErrorf(t, err,
+			"got an error from GetFloat32Slice(): %v", err,
+		)
+		require.Empty(t, getF32S)
+	})
 
-	for i, v := range f32s {
-		d64, err := strconv.ParseFloat(vals[i], 32)
-		if err != nil {
-			t.Fatalf("got error: %v", err)
+	t.Run("with values", func(t *testing.T) {
+		vals := []string{"1.0", "2.0", "4.0", "3.0"}
+		f32s := make([]float32, 0, len(vals))
+		f := newFlag(&f32s)
+
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf("--f32s=%s", strings.Join(vals, ",")),
+		}))
+
+		for i, v := range f32s {
+			d64, err := strconv.ParseFloat(vals[i], 32)
+			require.NoError(t, err)
+
+			d := float32(d64)
+			require.Equalf(t, v, d,
+				"expected f32s[%d] to be %s but got: %f", i, vals[i], v,
+			)
 		}
 
-		d := float32(d64)
-		if d != v {
-			t.Fatalf("expected f32s[%d] to be %s but got: %f", i, vals[i], v)
-		}
-	}
+		getF32S, erf := f.GetFloat32Slice("f32s")
+		require.NoError(t, erf)
 
-	getF32S, erf := f.GetFloat32Slice("f32s")
-	if erf != nil {
-		t.Fatalf("got error: %v", erf)
-	}
+		for i, v := range getF32S {
+			d64, err := strconv.ParseFloat(vals[i], 32)
+			require.NoError(t, err)
 
-	for i, v := range getF32S {
-		d64, err := strconv.ParseFloat(vals[i], 32)
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-
-		d := float32(d64)
-		if d != v {
-			t.Fatalf("expected f32s[%d] to be %s but got: %f from GetFloat32Slice", i, vals[i], v)
-		}
-	}
-}
-
-func TestF32SDefault(t *testing.T) {
-	var f32s []float32
-	f := setUpF32SFlagSetWithDefault(&f32s)
-
-	vals := []string{"0.0", "1.0"}
-
-	erp := f.Parse([]string{})
-	if erp != nil {
-		t.Fatal("expected no error; got", erp)
-	}
-
-	for i, v := range f32s {
-		d64, err := strconv.ParseFloat(vals[i], 32)
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-
-		d := float32(d64)
-		if d != v {
-			t.Fatalf("expected f32s[%d] to be %f but got: %f", i, d, v)
-		}
-	}
-
-	getF32S, erf := f.GetFloat32Slice("f32s")
-	if erf != nil {
-		t.Fatal("got an error from GetFloat32Slice():", erf)
-	}
-
-	for i, v := range getF32S {
-		d64, err := strconv.ParseFloat(vals[i], 32)
-		if err != nil {
-			t.Fatal("got an error from GetFloat32Slice():", err)
-		}
-
-		d := float32(d64)
-		if d != v {
-			t.Fatalf("expected f32s[%d] to be %f from GetFloat32Slice but got: %f", i, d, v)
-		}
-	}
-}
-
-func TestF32SWithDefault(t *testing.T) {
-	var f32s []float32
-	f := setUpF32SFlagSetWithDefault(&f32s)
-
-	vals := []string{"1.0", "2.0"}
-	arg := fmt.Sprintf("--f32s=%s", strings.Join(vals, ","))
-	erp := f.Parse([]string{arg})
-	if erp != nil {
-		t.Fatal("expected no error; got", erp)
-	}
-
-	for i, v := range f32s {
-		d64, err := strconv.ParseFloat(vals[i], 32)
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-
-		d := float32(d64)
-		if d != v {
-			t.Fatalf("expected f32s[%d] to be %f but got: %f", i, d, v)
-		}
-	}
-
-	getF32S, erf := f.GetFloat32Slice("f32s")
-	if erf != nil {
-		t.Fatal("got an error from GetFloat32Slice():", erf)
-	}
-
-	for i, v := range getF32S {
-		d64, err := strconv.ParseFloat(vals[i], 32)
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-
-		d := float32(d64)
-		if d != v {
-			t.Fatalf("expected f32s[%d] to be %f from GetFloat32Slice but got: %f", i, d, v)
-		}
-	}
-}
-
-func TestF32SAsSliceValue(t *testing.T) {
-	var f32s []float32
-	f := setUpF32SFlagSet(&f32s)
-
-	in := []string{"1.0", "2.0"}
-	argfmt := "--f32s=%s"
-	arg1 := fmt.Sprintf(argfmt, in[0])
-	arg2 := fmt.Sprintf(argfmt, in[1])
-	err := f.Parse([]string{arg1, arg2})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-
-	f.VisitAll(func(f *Flag) {
-		if val, ok := f.Value.(SliceValue); ok {
-			_ = val.Replace([]string{"3.1"})
+			d := float32(d64)
+			require.Equalf(t, v, d,
+				"expected f32s[%d] to be %s but got: %f from GetFloat32Slice", i, vals[i], v,
+			)
 		}
 	})
-	if len(f32s) != 1 || f32s[0] != 3.1 {
-		t.Fatalf("Expected ss to be overwritten with '3.1', but got: %v", f32s)
-	}
-}
 
-func TestF32SCalledTwice(t *testing.T) {
-	var f32s []float32
-	f := setUpF32SFlagSet(&f32s)
-
-	in := []string{"1.0,2.0", "3.0"}
-	expected := []float32{1.0, 2.0, 3.0}
-	argfmt := "--f32s=%s"
-	arg1 := fmt.Sprintf(argfmt, in[0])
-	arg2 := fmt.Sprintf(argfmt, in[1])
-	err := f.Parse([]string{arg1, arg2})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	newFlagWithDefault := func(f32sp *[]float32) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.Float32SliceVar(f32sp, "f32s", []float32{0.0, 1.0}, "Command separated list!")
+		return f
 	}
 
-	for i, v := range f32s {
-		if expected[i] != v {
-			t.Fatalf("expected f32s[%d] to be %f but got: %f", i, expected[i], v)
+	t.Run("with defaults (1)", func(t *testing.T) {
+		vals := []string{"0.0", "1.0"}
+		f32s := make([]float32, 0, len(vals))
+		f := newFlagWithDefault(&f32s)
+
+		require.NoError(t, f.Parse([]string{}))
+
+		for i, v := range f32s {
+			d64, err := strconv.ParseFloat(vals[i], 32)
+			require.NoError(t, err)
+
+			d := float32(d64)
+			require.Equalf(t, v, d,
+				"expected f32s[%d] to be %f but got: %f", i, d, v,
+			)
 		}
-	}
+
+		getF32S, erf := f.GetFloat32Slice("f32s")
+		require.NoErrorf(t, erf,
+			"got an error from GetFloat32Slice(): %v", erf,
+		)
+
+		for i, v := range getF32S {
+			d64, err := strconv.ParseFloat(vals[i], 32)
+			require.NoErrorf(t, err,
+				"got an error from GetFloat32Slice(): %v", err,
+			)
+
+			require.Equalf(t, v, float32(d64),
+				"expected f32s[%d] to be %f from GetFloat32Slice but got: %f", i, float32(d64), v,
+			)
+		}
+	})
+
+	t.Run("with defaults (2)", func(t *testing.T) {
+		vals := []string{"1.0", "2.0"}
+		f32s := make([]float32, 0, len(vals))
+		f := newFlagWithDefault(&f32s)
+
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf("--f32s=%s", strings.Join(vals, ",")),
+		}))
+
+		for i, v := range f32s {
+			d64, err := strconv.ParseFloat(vals[i], 32)
+			require.NoError(t, err)
+
+			require.Equalf(t, v, float32(d64),
+				"expected f32s[%d] to be %f but got: %f", i, float32(d64), v,
+			)
+		}
+
+		getF32S, erf := f.GetFloat32Slice("f32s")
+		require.NoErrorf(t, erf,
+			"got an error from GetFloat32Slice(): %v", erf,
+		)
+
+		for i, v := range getF32S {
+			d64, err := strconv.ParseFloat(vals[i], 32)
+			require.NoError(t, err)
+
+			require.Equalf(t, v, float32(d64),
+				"expected f32s[%d] to be %f from GetFloat32Slice but got: %f", i, float32(d64), v,
+			)
+		}
+	})
+
+	t.Run("called twice", func(t *testing.T) {
+		const argfmt = "--f32s=%s"
+		in := []string{"1.0,2.0", "3.0"}
+		f32s := make([]float32, 0, len(in))
+		f := newFlag(&f32s)
+
+		expected := []float32{1.0, 2.0, 3.0}
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf(argfmt, in[0]),
+			fmt.Sprintf(argfmt, in[1]),
+		}))
+
+		require.Equal(t, expected, f32s)
+	})
+
+	t.Run("as slice value", func(t *testing.T) {
+		const argfmt = "--f32s=%s"
+		in := []string{"1.0", "2.0"}
+		f32s := make([]float32, 0, len(in))
+		f := newFlag(&f32s)
+
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf(argfmt, in[0]),
+			fmt.Sprintf(argfmt, in[1]),
+		}))
+
+		f.VisitAll(func(f *Flag) {
+			if val, ok := f.Value.(SliceValue); ok {
+				require.NoError(t, val.Replace([]string{"3.1"}))
+			}
+		})
+
+		require.Equalf(t, []float32{3.1}, f32s,
+			"expected ss to be overwritten with '3.1', but got: %v", f32s,
+		)
+	})
 }

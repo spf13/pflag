@@ -11,12 +11,14 @@ import (
 	"io/ioutil"
 	"net"
 	"os"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (
@@ -45,20 +47,23 @@ func init() {
 	testOptionalInt = Int("test_optional_int", 0, "optional int value")
 }
 
-func boolString(s string) string {
-	if s == "0" {
-		return "false"
+func TestVisit(t *testing.T) {
+	boolString := func(s string) string {
+		if s == "0" {
+			return "false"
+		}
+		return "true"
 	}
-	return "true"
-}
 
-func TestEverything(t *testing.T) {
-	m := make(map[string]*Flag)
-	desired := "0"
-	visitor := func(f *Flag) {
-		if len(f.Name) > 5 && f.Name[0:5] == "test_" {
+	visitor := func(desired string, m map[string]*Flag) func(*Flag) {
+		return func(f *Flag) {
+			if len(f.Name) <= 5 || f.Name[0:5] != "test_" {
+				return
+			}
+
 			m[f.Name] = f
 			ok := false
+
 			switch {
 			case f.Value.String() == desired:
 				ok = true
@@ -67,61 +72,77 @@ func TestEverything(t *testing.T) {
 			case f.Name == "test_duration" && f.Value.String() == desired+"s":
 				ok = true
 			}
-			if !ok {
-				t.Error("Visit: bad value", f.Value.String(), "for", f.Name)
-			}
+			require.Truef(t, ok,
+				"visit: bad value", f.Value.String(), "for", f.Name,
+			)
 		}
 	}
-	VisitAll(visitor)
-	if len(m) != 9 {
-		t.Error("VisitAll misses some flags")
+
+	printMap := func(m map[string]*Flag) {
 		for k, v := range m {
 			t.Log(k, *v)
 		}
 	}
-	m = make(map[string]*Flag)
-	Visit(visitor)
-	if len(m) != 0 {
-		t.Errorf("Visit sees unset flags")
-		for k, v := range m {
-			t.Log(k, *v)
+
+	t.Run("with VisitAll", func(t *testing.T) {
+		const desired = "0"
+		m := make(map[string]*Flag)
+
+		VisitAll(visitor(desired, m))
+		if !assert.Lenf(t, m, 9, "VisitAll misses some flags") {
+			printMap(m)
 		}
-	}
-	// Now set all flags
-	_ = Set("test_bool", "true")
-	_ = Set("test_int", "1")
-	_ = Set("test_int64", "1")
-	_ = Set("test_uint", "1")
-	_ = Set("test_uint64", "1")
-	_ = Set("test_string", "1")
-	_ = Set("test_float64", "1")
-	_ = Set("test_duration", "1s")
-	_ = Set("test_optional_int", "1")
-	desired = "1"
-	Visit(visitor)
-	if len(m) != 9 {
-		t.Error("Visit fails after set")
-		for k, v := range m {
-			t.Log(k, *v)
+	})
+
+	t.Run("with Visit", func(t *testing.T) {
+		const desired = "0"
+		m := make(map[string]*Flag)
+
+		Visit(visitor(desired, m))
+		if !assert.Lenf(t, m, 0, "Visit sees unset flags") {
+			printMap(m)
 		}
-	}
-	// Now test they're visited in sort order.
-	var flagNames []string
-	Visit(func(f *Flag) { flagNames = append(flagNames, f.Name) })
-	if !sort.StringsAreSorted(flagNames) {
-		t.Errorf("flag names not sorted: %v", flagNames)
-	}
+	})
+
+	t.Run("with all flags set", func(t *testing.T) {
+		const desired = "1"
+		m := make(map[string]*Flag)
+
+		require.NoError(t, Set("test_bool", "true"))
+		require.NoError(t, Set("test_int", "1"))
+		require.NoError(t, Set("test_int64", "1"))
+		require.NoError(t, Set("test_uint", "1"))
+		require.NoError(t, Set("test_uint64", "1"))
+		require.NoError(t, Set("test_string", "1"))
+		require.NoError(t, Set("test_float64", "1"))
+		require.NoError(t, Set("test_duration", "1s"))
+		require.NoError(t, Set("test_optional_int", "1"))
+
+		Visit(visitor(desired, m))
+		if !assert.Lenf(t, m, 9, "Visit fails after set") {
+			printMap(m)
+		}
+	})
+
+	t.Run("visit in sorted order", func(t *testing.T) {
+		var flagNames []string
+		Visit(func(f *Flag) { flagNames = append(flagNames, f.Name) })
+		require.Truef(t, sort.StringsAreSorted(flagNames),
+			"flag names not sorted: %v", flagNames,
+		)
+	})
 }
 
 func TestUsage(t *testing.T) {
 	called := false
 	ResetForTesting(func() { called = true })
-	if GetCommandLine().Parse([]string{"--x"}) == nil {
-		t.Error("parse did not fail for unknown flag")
-	}
-	if called {
-		t.Error("did call Usage while using ContinueOnError")
-	}
+
+	require.NotNilf(t, GetCommandLine().Parse([]string{"--x"}),
+		"parse did not fail for unknown flag",
+	)
+	require.Falsef(t, called,
+		"did call Usage while using ContinueOnError",
+	)
 }
 
 func TestAddFlagSet(t *testing.T) {
@@ -136,56 +157,59 @@ func TestAddFlagSet(t *testing.T) {
 
 	oldSet.AddFlagSet(newSet)
 
-	if len(oldSet.formal) != 3 {
-		t.Errorf("Unexpected result adding a FlagSet to a FlagSet %v", oldSet)
-	}
+	require.Lenf(t, oldSet.formal, 3,
+		"unexpected result adding a FlagSet to a FlagSet %v", oldSet,
+	)
 }
 
 func TestAnnotation(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
 
-	if err := f.SetAnnotation("missing-flag", "key", nil); err == nil {
-		t.Errorf("Expected error setting annotation on non-existent flag")
-	}
+	require.Errorf(t, f.SetAnnotation("missing-flag", "key", nil),
+		"expected error setting annotation on non-existent flag",
+	)
 
 	f.StringP("stringa", "a", "", "string value")
-	if err := f.SetAnnotation("stringa", "key", nil); err != nil {
-		t.Errorf("Unexpected error setting new nil annotation: %v", err)
-	}
-	if annotation := f.Lookup("stringa").Annotations["key"]; annotation != nil {
-		t.Errorf("Unexpected annotation: %v", annotation)
-	}
+	require.NoErrorf(t, f.SetAnnotation("stringa", "key", nil),
+		"unexpected error setting new nil annotation",
+	)
+	require.Nil(t, f.Lookup("stringa").Annotations["key"],
+		"unexpected annotation",
+	)
 
 	f.StringP("stringb", "b", "", "string2 value")
-	if err := f.SetAnnotation("stringb", "key", []string{"value1"}); err != nil {
-		t.Errorf("Unexpected error setting new annotation: %v", err)
-	}
-	if annotation := f.Lookup("stringb").Annotations["key"]; !reflect.DeepEqual(annotation, []string{"value1"}) {
-		t.Errorf("Unexpected annotation: %v", annotation)
-	}
+	require.NoErrorf(t, f.SetAnnotation("stringb", "key", []string{"value1"}),
+		"unexpected error setting new annotation",
+	)
 
-	if err := f.SetAnnotation("stringb", "key", []string{"value2"}); err != nil {
-		t.Errorf("Unexpected error updating annotation: %v", err)
-	}
-	if annotation := f.Lookup("stringb").Annotations["key"]; !reflect.DeepEqual(annotation, []string{"value2"}) {
-		t.Errorf("Unexpected annotation: %v", annotation)
-	}
+	annotation := f.Lookup("stringb").Annotations["key"]
+	require.EqualValuesf(t, []string{"value1"}, annotation,
+		"unexpected annotation: %v", annotation,
+	)
+
+	require.NoErrorf(t, f.SetAnnotation("stringb", "key", []string{"value2"}),
+		"unexpected error updating annotation",
+	)
+	annotation = f.Lookup("stringb").Annotations["key"]
+	require.EqualValuesf(t, []string{"value2"}, annotation,
+		"unexpected annotation: %v", annotation,
+	)
 }
 
 func TestName(t *testing.T) {
-	flagSetName := "bob"
+	const flagSetName = "bob"
 	f := NewFlagSet(flagSetName, ContinueOnError)
 
 	givenName := f.Name()
-	if givenName != flagSetName {
-		t.Errorf("Unexpected result when retrieving a FlagSet's name: expected %s, but found %s", flagSetName, givenName)
-	}
+	require.Equalf(t, flagSetName, givenName,
+		"unexpected result when retrieving a FlagSet's name: expected %s, but found %s",
+		flagSetName, givenName,
+	)
 }
 
 func testParse(f *FlagSet, t *testing.T) {
-	if f.Parsed() {
-		t.Error("f.Parse() = true before Parse")
-	}
+	require.Falsef(t, f.Parsed(), "f.Parse() = true before Parse")
+
 	boolFlag := f.Bool("bool", false, "bool value")
 	bool2Flag := f.Bool("bool2", false, "bool2 value")
 	bool3Flag := f.Bool("bool3", false, "bool3 value")
@@ -206,168 +230,237 @@ func testParse(f *FlagSet, t *testing.T) {
 	maskFlag := f.IPMask("mask", ParseIPv4Mask("0.0.0.0"), "mask value")
 	durationFlag := f.Duration("duration", 5*time.Second, "time.Duration value")
 	optionalIntNoValueFlag := f.Int("optional-int-no-value", 0, "int value")
+
 	f.Lookup("optional-int-no-value").NoOptDefVal = "9"
 	optionalIntWithValueFlag := f.Int("optional-int-with-value", 0, "int value")
 	f.Lookup("optional-int-no-value").NoOptDefVal = "9"
-	extra := "one-extra-argument"
-	args := []string{
-		"--bool",
-		"--bool2=true",
-		"--bool3=false",
-		"--int=22",
-		"--int8=-8",
-		"--int16=-16",
-		"--int32=-32",
-		"--int64=0x23",
-		"--uint", "24",
-		"--uint8=8",
-		"--uint16=16",
-		"--uint32=32",
-		"--uint64=25",
-		"--string=hello",
-		"--float32=-172e12",
-		"--float64=2718e28",
-		"--ip=10.11.12.13",
-		"--mask=255.255.255.0",
-		"--duration=2m",
-		"--optional-int-no-value",
-		"--optional-int-with-value=42",
-		extra,
-	}
-	if err := f.Parse(args); err != nil {
-		t.Fatal(err)
-	}
-	if !f.Parsed() {
-		t.Error("f.Parse() = false after Parse")
-	}
-	if *boolFlag != true {
-		t.Error("bool flag should be true, is ", *boolFlag)
-	}
-	if v, err := f.GetBool("bool"); err != nil || v != *boolFlag {
-		t.Error("GetBool does not work.")
-	}
-	if *bool2Flag != true {
-		t.Error("bool2 flag should be true, is ", *bool2Flag)
-	}
-	if *bool3Flag != false {
-		t.Error("bool3 flag should be false, is ", *bool2Flag)
-	}
-	if *intFlag != 22 {
-		t.Error("int flag should be 22, is ", *intFlag)
-	}
-	if v, err := f.GetInt("int"); err != nil || v != *intFlag {
-		t.Error("GetInt does not work.")
-	}
-	if *int8Flag != -8 {
-		t.Error("int8 flag should be 0x23, is ", *int8Flag)
-	}
-	if *int16Flag != -16 {
-		t.Error("int16 flag should be -16, is ", *int16Flag)
-	}
-	if v, err := f.GetInt8("int8"); err != nil || v != *int8Flag {
-		t.Error("GetInt8 does not work.")
-	}
-	if v, err := f.GetInt16("int16"); err != nil || v != *int16Flag {
-		t.Error("GetInt16 does not work.")
-	}
-	if *int32Flag != -32 {
-		t.Error("int32 flag should be 0x23, is ", *int32Flag)
-	}
-	if v, err := f.GetInt32("int32"); err != nil || v != *int32Flag {
-		t.Error("GetInt32 does not work.")
-	}
-	if *int64Flag != 0x23 {
-		t.Error("int64 flag should be 0x23, is ", *int64Flag)
-	}
-	if v, err := f.GetInt64("int64"); err != nil || v != *int64Flag {
-		t.Error("GetInt64 does not work.")
-	}
-	if *uintFlag != 24 {
-		t.Error("uint flag should be 24, is ", *uintFlag)
-	}
-	if v, err := f.GetUint("uint"); err != nil || v != *uintFlag {
-		t.Error("GetUint does not work.")
-	}
-	if *uint8Flag != 8 {
-		t.Error("uint8 flag should be 8, is ", *uint8Flag)
-	}
-	if v, err := f.GetUint8("uint8"); err != nil || v != *uint8Flag {
-		t.Error("GetUint8 does not work.")
-	}
-	if *uint16Flag != 16 {
-		t.Error("uint16 flag should be 16, is ", *uint16Flag)
-	}
-	if v, err := f.GetUint16("uint16"); err != nil || v != *uint16Flag {
-		t.Error("GetUint16 does not work.")
-	}
-	if *uint32Flag != 32 {
-		t.Error("uint32 flag should be 32, is ", *uint32Flag)
-	}
-	if v, err := f.GetUint32("uint32"); err != nil || v != *uint32Flag {
-		t.Error("GetUint32 does not work.")
-	}
-	if *uint64Flag != 25 {
-		t.Error("uint64 flag should be 25, is ", *uint64Flag)
-	}
-	if v, err := f.GetUint64("uint64"); err != nil || v != *uint64Flag {
-		t.Error("GetUint64 does not work.")
-	}
-	if *stringFlag != "hello" {
-		t.Error("string flag should be `hello`, is ", *stringFlag)
-	}
-	if v, err := f.GetString("string"); err != nil || v != *stringFlag {
-		t.Error("GetString does not work.")
-	}
-	if *float32Flag != -172e12 {
-		t.Error("float32 flag should be -172e12, is ", *float32Flag)
-	}
-	if v, err := f.GetFloat32("float32"); err != nil || v != *float32Flag {
-		t.Errorf("GetFloat32 returned %v but float32Flag was %v", v, *float32Flag)
-	}
-	if *float64Flag != 2718e28 {
-		t.Error("float64 flag should be 2718e28, is ", *float64Flag)
-	}
-	if v, err := f.GetFloat64("float64"); err != nil || v != *float64Flag {
-		t.Errorf("GetFloat64 returned %v but float64Flag was %v", v, *float64Flag)
-	}
-	if !ipFlag.Equal(net.ParseIP("10.11.12.13")) {
-		t.Error("ip flag should be 10.11.12.13, is ", *ipFlag)
-	}
-	if v, err := f.GetIP("ip"); err != nil || !v.Equal(*ipFlag) {
-		t.Errorf("GetIP returned %v but ipFlag was %v", v, *ipFlag)
-	}
-	if maskFlag.String() != ParseIPv4Mask("255.255.255.0").String() {
-		t.Error("mask flag should be 255.255.255.0, is ", maskFlag.String())
-	}
-	if v, err := f.GetIPv4Mask("mask"); err != nil || v.String() != maskFlag.String() {
-		t.Errorf("GetIP returned %v maskFlag was %v error was %v", v, *maskFlag, err)
-	}
-	if *durationFlag != 2*time.Minute {
-		t.Error("duration flag should be 2m, is ", *durationFlag)
-	}
-	if v, err := f.GetDuration("duration"); err != nil || v != *durationFlag {
-		t.Error("GetDuration does not work.")
-	}
-	if _, err := f.GetInt("duration"); err == nil {
-		t.Error("GetInt parsed a time.Duration?!?!")
-	}
-	if *optionalIntNoValueFlag != 9 {
-		t.Error("optional int flag should be the default value, is ", *optionalIntNoValueFlag)
-	}
-	if *optionalIntWithValueFlag != 42 {
-		t.Error("optional int flag should be 42, is ", *optionalIntWithValueFlag)
-	}
-	if len(f.Args()) != 1 {
-		t.Error("expected one argument, got", len(f.Args()))
-	} else if f.Args()[0] != extra {
-		t.Errorf("expected argument %q got %q", extra, f.Args()[0])
-	}
+
+	const extra = "one-extra-argument"
+
+	t.Run("parse args", func(t *testing.T) {
+		args := []string{
+			"--bool",
+			"--bool2=true",
+			"--bool3=false",
+			"--int=22",
+			"--int8=-8",
+			"--int16=-16",
+			"--int32=-32",
+			"--int64=0x23",
+			"--uint", "24",
+			"--uint8=8",
+			"--uint16=16",
+			"--uint32=32",
+			"--uint64=25",
+			"--string=hello",
+			"--float32=-172e12",
+			"--float64=2718e28",
+			"--ip=10.11.12.13",
+			"--mask=255.255.255.0",
+			"--duration=2m",
+			"--optional-int-no-value",
+			"--optional-int-with-value=42",
+			extra,
+		}
+		require.NoError(t, f.Parse(args))
+		require.Truef(t, f.Parsed(), "f.Parse() = false after Parse")
+	})
+
+	t.Run("with bool flags", func(t *testing.T) {
+		require.Truef(t, *boolFlag,
+			"bool flag should be true, is ", *boolFlag,
+		)
+
+		v, err := f.GetBool("bool")
+		require.NoError(t, err)
+		require.Equalf(t, *boolFlag, v, "GetBool does not work")
+		require.Truef(t, *bool2Flag,
+			"bool2 flag should be true, is ", *bool2Flag,
+		)
+		require.Falsef(t, *bool3Flag,
+			"bool3 flag should be false, is ", *bool2Flag,
+		)
+	})
+
+	t.Run("with integer flags", func(t *testing.T) {
+		t.Run("int", func(t *testing.T) {
+			require.Equalf(t, 22, *intFlag,
+				"int flag should be 22, is ", *intFlag,
+			)
+			v, err := f.GetInt("int")
+			require.NoError(t, err)
+			require.Equalf(t, *intFlag, v, "GetInt does not work")
+		})
+
+		t.Run("int8", func(t *testing.T) {
+			require.Equalf(t, int8(-8), *int8Flag,
+				"int8 flag should be 0x23, is ", *int8Flag,
+			)
+			v, err := f.GetInt8("int8")
+			require.NoError(t, err)
+			require.Equalf(t, *int8Flag, v, "GetInt8 does not work")
+		})
+
+		t.Run("int16", func(t *testing.T) {
+			require.Equalf(t, int16(-16), *int16Flag,
+				"int16 flag should be -16, is ", *int16Flag,
+			)
+			v, err := f.GetInt16("int16")
+			require.NoError(t, err)
+			require.Equalf(t, *int16Flag, v, "GetInt16 does not work")
+		})
+
+		t.Run("int32", func(t *testing.T) {
+			require.Equalf(t, int32(-32), *int32Flag,
+				"int32 flag should be 0x23, is ", *int32Flag,
+			)
+			v, err := f.GetInt32("int32")
+			require.NoError(t, err)
+			require.Equalf(t, *int32Flag, v, "GetInt32 does not work")
+		})
+
+		t.Run("int64", func(t *testing.T) {
+			require.Equalf(t, int64(0x23), *int64Flag,
+				"int64 flag should be 0x23, is ", *int64Flag,
+			)
+			v, err := f.GetInt64("int64")
+			require.NoError(t, err)
+			require.Equalf(t, *int64Flag, v, "GetInt64 does not work")
+		})
+
+		t.Run("uint", func(t *testing.T) {
+			require.Equalf(t, uint(24), *uintFlag,
+				"uint flag should be 24, is ", *uintFlag,
+			)
+			v, err := f.GetUint("uint")
+			require.NoError(t, err)
+			require.Equalf(t, *uintFlag, v, "GetUint does not work")
+		})
+
+		t.Run("uint8", func(t *testing.T) {
+			require.Equalf(t, uint8(8), *uint8Flag,
+				"uint8 flag should be 8, is ", *uint8Flag,
+			)
+			v, err := f.GetUint8("uint8")
+			require.NoError(t, err)
+			require.Equalf(t, *uint8Flag, v, "GetUint8 does not work")
+		})
+
+		t.Run("uint16", func(t *testing.T) {
+			require.Equalf(t, uint16(16), *uint16Flag,
+				"uint16 flag should be 16, is ", *uint16Flag,
+			)
+			v, err := f.GetUint16("uint16")
+			require.NoError(t, err)
+			require.Equalf(t, *uint16Flag, v, "GetUint16 does not work")
+		})
+
+		t.Run("uint32", func(t *testing.T) {
+			require.Equalf(t, uint32(32), *uint32Flag,
+				"uint32 flag should be 32, is ", *uint32Flag,
+			)
+			v, err := f.GetUint32("uint32")
+			require.NoError(t, err)
+			require.Equalf(t, *uint32Flag, v, "GetUint32 does not work")
+		})
+
+		t.Run("uint64", func(t *testing.T) {
+			require.Equalf(t, uint64(25), *uint64Flag,
+				"uint64 flag should be 25, is ", *uint64Flag,
+			)
+			v, err := f.GetUint64("uint64")
+			require.NoError(t, err)
+			require.Equalf(t, *uint64Flag, v, "GetUint64 does not work")
+		})
+	})
+
+	t.Run("with string flags", func(t *testing.T) {
+		require.Equalf(t, "hello", *stringFlag,
+			"string flag should be `hello`, is ", *stringFlag,
+		)
+		v, err := f.GetString("string")
+		require.NoError(t, err)
+		require.Equalf(t, *stringFlag, v, "GetString does not work")
+	})
+
+	t.Run("with float flags", func(t *testing.T) {
+		t.Run("float32", func(t *testing.T) {
+			require.Equalf(t, float32(-172e12), *float32Flag,
+				"float32 flag should be -172e12, is ", *float32Flag,
+			)
+			v, err := f.GetFloat32("float32")
+			require.NoError(t, err)
+			require.Equalf(t, *float32Flag, v, "GetFloat32 returned %v but float32Flag was %v", v, *float32Flag)
+		})
+
+		t.Run("float64", func(t *testing.T) {
+			require.Equalf(t, 2718e28, *float64Flag,
+				"float64 flag should be 2718e28, is ", *float64Flag,
+			)
+			v, err := f.GetFloat64("float64")
+			require.NoError(t, err)
+			require.Equalf(t, *float64Flag, v, "GetFloat64 returned %v but float64Flag was %v", v, *float64Flag)
+		})
+	})
+
+	t.Run("with IP address flags", func(t *testing.T) {
+		t.Run("IP", func(t *testing.T) {
+			require.True(t, ipFlag.Equal(net.ParseIP("10.11.12.13")),
+				"ip flag should be 10.11.12.13, is ", *ipFlag,
+			)
+			v, err := f.GetIP("ip")
+			require.NoError(t, err)
+			require.True(t, v.Equal(*ipFlag),
+				"GetIP returned %v but ipFlag was %v", v, *ipFlag,
+			)
+		})
+
+		t.Run("IPv4Mask", func(t *testing.T) {
+			require.Equal(t, ParseIPv4Mask("255.255.255.0").String(), maskFlag.String(),
+				"mask flag should be 255.255.255.0, is ", maskFlag.String(),
+			)
+			v, err := f.GetIPv4Mask("mask")
+			require.NoError(t, err)
+			require.Equal(t, maskFlag.String(), v.String(),
+				"GetIP returned %v maskFlag was %v", v, *maskFlag,
+			)
+		})
+	})
+
+	t.Run("with duration flags", func(t *testing.T) {
+		require.Equalf(t, 2*time.Minute, *durationFlag,
+			"duration flag should be 2m, is ", *durationFlag,
+		)
+		v, err := f.GetDuration("duration")
+		require.NoError(t, err)
+		require.Equalf(t, *durationFlag, v, "GetDuration does not work")
+
+		_, err = f.GetInt("duration")
+		require.Errorf(t, err, "unexpectedly, GetInt parsed a time.Duration")
+	})
+
+	t.Run("flags with no-value defaults", func(t *testing.T) {
+		require.Equalf(t, 9, *optionalIntNoValueFlag,
+			"optional int flag should be the default value, is ", *optionalIntNoValueFlag,
+		)
+		require.Equalf(t, 42, *optionalIntWithValueFlag,
+			"optional int flag should be 42, is ", *optionalIntWithValueFlag,
+		)
+	})
+
+	t.Run("with non-flag argument", func(t *testing.T) {
+		require.Lenf(t, f.Args(), 1,
+			"expected one argument, got", len(f.Args()),
+		)
+		require.Equalf(t, extra, f.Args()[0],
+			"expected argument %q got %q", extra, f.Args()[0],
+		)
+	})
 }
 
 func testParseAll(f *FlagSet, t *testing.T) {
-	if f.Parsed() {
-		t.Error("f.Parse() = true before Parse")
-	}
+	require.Falsef(t, f.Parsed(), "f.Parse() = true before Parse")
+
 	f.BoolP("boola", "a", false, "bool value")
 	f.BoolP("boolb", "b", false, "bool2 value")
 	f.BoolP("boolc", "c", false, "bool3 value")
@@ -377,6 +470,7 @@ func testParseAll(f *FlagSet, t *testing.T) {
 	f.StringP("stringx", "x", "0", "string value")
 	f.StringP("stringy", "y", "0", "string value")
 	f.Lookup("stringx").NoOptDefVal = "1"
+
 	args := []string{
 		"-ab",
 		"-cs=xx",
@@ -386,6 +480,7 @@ func testParseAll(f *FlagSet, t *testing.T) {
 		"-y",
 		"ee",
 	}
+
 	want := []string{
 		"boola", "true",
 		"boolb", "true",
@@ -396,7 +491,8 @@ func testParseAll(f *FlagSet, t *testing.T) {
 		"stringx", "1",
 		"stringy", "ee",
 	}
-	got := []string{}
+	got := make([]string, 0, len(want))
+
 	store := func(flag *Flag, value string) error {
 		got = append(got, flag.Name)
 		if len(value) > 0 {
@@ -404,23 +500,17 @@ func testParseAll(f *FlagSet, t *testing.T) {
 		}
 		return nil
 	}
-	if err := f.ParseAll(args, store); err != nil {
-		t.Errorf("expected no error, got %s", err)
-	}
-	if !f.Parsed() {
-		t.Errorf("f.Parse() = false after Parse")
-	}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("f.ParseAll() fail to restore the args")
-		t.Errorf("Got:  %v", got)
-		t.Errorf("Want: %v", want)
-	}
+
+	require.NoError(t, f.ParseAll(args, store))
+	require.Truef(t, f.Parsed(), "f.Parse() = false after Parse")
+	require.Equalf(t, want, got,
+		"f.ParseAll() fail to restore the args. Got: %v, Want: %v",
+		got, want,
+	)
 }
 
 func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
-	if f.Parsed() {
-		t.Error("f.Parse() = true before Parse")
-	}
+	require.Falsef(t, f.Parsed(), "f.Parse() = true before Parse")
 	f.ParseErrorsWhitelist.UnknownFlags = true
 
 	f.BoolP("boola", "a", false, "bool value")
@@ -433,7 +523,9 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 	f.StringP("stringx", "x", "0", "string value")
 	f.StringP("stringy", "y", "0", "string value")
 	f.StringP("stringo", "o", "0", "string value")
+
 	f.Lookup("stringx").NoOptDefVal = "1"
+
 	args := []string{
 		"-ab",
 		"-cs=xx",
@@ -460,6 +552,7 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		"--unknown10",
 		"--unknown11",
 	}
+
 	want := []string{
 		"boola", "true",
 		"boolb", "true",
@@ -472,7 +565,8 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		"stringo", "ovalue",
 		"boole", "true",
 	}
-	got := []string{}
+	got := make([]string, 0, len(want))
+
 	store := func(flag *Flag, value string) error {
 		got = append(got, flag.Name)
 		if len(value) > 0 {
@@ -480,32 +574,29 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		}
 		return nil
 	}
-	if err := f.ParseAll(args, store); err != nil {
-		t.Errorf("expected no error, got %s", err)
-	}
-	if !f.Parsed() {
-		t.Errorf("f.Parse() = false after Parse")
-	}
-	if !reflect.DeepEqual(got, want) {
-		t.Errorf("f.ParseAll() fail to restore the args")
-		t.Errorf("Got:  %v", got)
-		t.Errorf("Want: %v", want)
-	}
+
+	require.NoError(t, f.ParseAll(args, store))
+	require.Truef(t, f.Parsed(), "f.Parse() = false after Parse")
+	require.Equalf(t, want, got,
+		"f.ParseAll() fail to restore the args. Got: %v, Want: %v",
+		got, want,
+	)
 }
 
 func TestShorthand(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
-	if f.Parsed() {
-		t.Error("f.Parse() = true before Parse")
-	}
+	require.Falsef(t, f.Parsed(), "f.Parse() = true before Parse")
+
 	boolaFlag := f.BoolP("boola", "a", false, "bool value")
 	boolbFlag := f.BoolP("boolb", "b", false, "bool2 value")
 	boolcFlag := f.BoolP("boolc", "c", false, "bool3 value")
 	booldFlag := f.BoolP("boold", "d", false, "bool4 value")
 	stringaFlag := f.StringP("stringa", "s", "0", "string value")
 	stringzFlag := f.StringP("stringz", "z", "0", "string value")
-	extra := "interspersed-argument"
-	notaflag := "--i-look-like-a-flag"
+
+	const extra = "interspersed-argument"
+	const notaflag = "--i-look-like-a-flag"
+
 	args := []string{
 		"-ab",
 		extra,
@@ -516,86 +607,60 @@ func TestShorthand(t *testing.T) {
 		"--",
 		notaflag,
 	}
+
 	f.SetOutput(ioutil.Discard)
-	if err := f.Parse(args); err != nil {
-		t.Error("expected no error, got ", err)
-	}
-	if !f.Parsed() {
-		t.Error("f.Parse() = false after Parse")
-	}
-	if *boolaFlag != true {
-		t.Error("boola flag should be true, is ", *boolaFlag)
-	}
-	if *boolbFlag != true {
-		t.Error("boolb flag should be true, is ", *boolbFlag)
-	}
-	if *boolcFlag != true {
-		t.Error("boolc flag should be true, is ", *boolcFlag)
-	}
-	if *booldFlag != true {
-		t.Error("boold flag should be true, is ", *booldFlag)
-	}
-	if *stringaFlag != "hello" {
-		t.Error("stringa flag should be `hello`, is ", *stringaFlag)
-	}
-	if *stringzFlag != "something" {
-		t.Error("stringz flag should be `something`, is ", *stringzFlag)
-	}
+	require.NoError(t, f.Parse(args))
+	require.Truef(t, f.Parsed(), "f.Parse() = false after Parse")
 
-	switch {
-	case len(f.Args()) != 2:
-		t.Error("expected one argument, got", len(f.Args()))
-	case f.Args()[0] != extra:
-		t.Errorf("expected argument %q got %q", extra, f.Args()[0])
-	case f.Args()[1] != notaflag:
-		t.Errorf("expected argument %q got %q", notaflag, f.Args()[1])
-	}
+	require.Truef(t, *boolaFlag, "boola flag should be true, is ", *boolaFlag)
+	require.Truef(t, *boolbFlag, "boolb flag should be true, is ", *boolbFlag)
+	require.Truef(t, *boolcFlag, "boolc flag should be true, is ", *boolcFlag)
+	require.Truef(t, *booldFlag, "boold flag should be true, is ", *booldFlag)
+	require.Equalf(t, "hello", *stringaFlag, "stringa flag should be `hello`, is ", *stringaFlag)
+	require.Equalf(t, "something", *stringzFlag, "stringz flag should be `something`, is ", *stringzFlag)
 
-	if f.ArgsLenAtDash() != 1 {
-		t.Errorf("expected argsLenAtDash %d got %d", f.ArgsLenAtDash(), 1)
-	}
+	require.Len(t, f.Args(), 2, "expected one argument, got", len(f.Args()))
+	require.Equalf(t, extra, f.Args()[0], "expected argument %q got %q", extra, f.Args()[0])
+	require.Equalf(t, notaflag, f.Args()[1], "expected argument %q got %q", notaflag, f.Args()[1])
+	require.Equal(t, 1, f.ArgsLenAtDash(), "expected argsLenAtDash %d got %d", f.ArgsLenAtDash(), 1)
 }
 
 func TestShorthandLookup(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
-	if f.Parsed() {
-		t.Error("f.Parse() = true before Parse")
-	}
+	require.Falsef(t, f.Parsed(), "f.Parse() = true before Parse")
+
 	f.BoolP("boola", "a", false, "bool value")
 	f.BoolP("boolb", "b", false, "bool2 value")
+
 	args := []string{
 		"-ab",
 	}
+
 	f.SetOutput(ioutil.Discard)
-	if err := f.Parse(args); err != nil {
-		t.Error("expected no error, got ", err)
-	}
-	if !f.Parsed() {
-		t.Error("f.Parse() = false after Parse")
-	}
+	require.NoError(t, f.Parse(args))
+	require.Truef(t, f.Parsed(), "f.Parse() = false after Parse")
+
 	flag := f.ShorthandLookup("a")
-	if flag == nil {
-		t.Errorf("f.ShorthandLookup(\"a\") returned nil")
-		return // required
-	}
-	if flag.Name != "boola" {
-		t.Errorf("f.ShorthandLookup(\"a\") found %q instead of \"boola\"", flag.Name)
-	}
-	flag = f.ShorthandLookup("")
-	if flag != nil {
-		t.Errorf("f.ShorthandLookup(\"\") did not return nil")
-	}
-	defer func() {
-		_ = recover()
-	}()
-	_ = f.ShorthandLookup("ab")
-	// should NEVER get here. lookup should panic. defer'd func should recover it.
-	t.Errorf("f.ShorthandLookup(\"ab\") did not panic")
+	require.NotNil(t, flag, "f.ShorthandLookup(\"a\") returned nil")
+
+	require.Equalf(t, "boola", flag.Name,
+		"f.ShorthandLookup(\"a\") found %q instead of \"boola\"", flag.Name,
+	)
+	require.Nil(t, f.ShorthandLookup(""),
+		"f.ShorthandLookup(\"\") did not return nil",
+	)
+	require.Panicsf(t, func() { _ = f.ShorthandLookup("ab") },
+		"f.ShorthandLookup(\"ab\") did not panic",
+	)
 }
 
 func TestParse(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
 	testParse(GetCommandLine(), t)
+}
+
+func TestFlagSetParse(t *testing.T) {
+	testParse(NewFlagSet("test", ContinueOnError), t)
 }
 
 func TestParseAll(t *testing.T) {
@@ -608,39 +673,26 @@ func TestIgnoreUnknownFlags(t *testing.T) {
 	testParseWithUnknownFlags(GetCommandLine(), t)
 }
 
-func TestFlagSetParse(t *testing.T) {
-	testParse(NewFlagSet("test", ContinueOnError), t)
-}
-
 func TestChangedHelper(t *testing.T) {
 	f := NewFlagSet("changedtest", ContinueOnError)
+
 	f.Bool("changed", false, "changed bool")
 	f.Bool("settrue", true, "true to true")
 	f.Bool("setfalse", false, "false to false")
 	f.Bool("unchanged", false, "unchanged bool")
 
 	args := []string{"--changed", "--settrue", "--setfalse=false"}
-	if err := f.Parse(args); err != nil {
-		t.Error("f.Parse() = false after Parse")
-	}
-	if !f.Changed("changed") {
-		t.Errorf("--changed wasn't changed!")
-	}
-	if !f.Changed("settrue") {
-		t.Errorf("--settrue wasn't changed!")
-	}
-	if !f.Changed("setfalse") {
-		t.Errorf("--setfalse wasn't changed!")
-	}
-	if f.Changed("unchanged") {
-		t.Errorf("--unchanged was changed!")
-	}
-	if f.Changed("invalid") {
-		t.Errorf("--invalid was changed!")
-	}
-	if f.ArgsLenAtDash() != -1 {
-		t.Errorf("Expected argsLenAtDash: %d but got %d", -1, f.ArgsLenAtDash())
-	}
+
+	require.NoError(t, f.Parse(args))
+	require.Truef(t, f.Changed("changed"), "--changed wasn't changed!")
+	require.Truef(t, f.Changed("settrue"), "--settrue wasn't changed!")
+	require.Truef(t, f.Changed("setfalse"), "--setfalse wasn't changed!")
+	require.Falsef(t, f.Changed("unchanged"), "--unchanged was changed!")
+	require.Falsef(t, f.Changed("invalid"), "--invalid was changed!")
+
+	require.Equalf(t, -1, f.ArgsLenAtDash(),
+		"expected argsLenAtDash: %d but got %d", -1, f.ArgsLenAtDash(),
+	)
 }
 
 func replaceSeparators(name string, from []string, to string) string { //nolint: unparam
@@ -662,52 +714,49 @@ func wordSepNormalizeFunc(_ *FlagSet, name string) NormalizedName {
 
 func testWordSepNormalizedNames(args []string, t *testing.T) {
 	f := NewFlagSet("normalized", ContinueOnError)
-	if f.Parsed() {
-		t.Error("f.Parse() = true before Parse")
-	}
+	require.Falsef(t, f.Parsed(), "f.Parse() = true before Parse")
+
 	withDashFlag := f.Bool("with-dash-flag", false, "bool value")
 	// Set this after some flags have been added and before others.
 	f.SetNormalizeFunc(wordSepNormalizeFunc)
 	withUnderFlag := f.Bool("with_under_flag", false, "bool value")
 	withBothFlag := f.Bool("with-both_flag", false, "bool value")
-	if err := f.Parse(args); err != nil {
-		t.Fatal(err)
-	}
-	if !f.Parsed() {
-		t.Error("f.Parse() = false after Parse")
-	}
-	if *withDashFlag != true {
-		t.Error("withDashFlag flag should be true, is ", *withDashFlag)
-	}
-	if *withUnderFlag != true {
-		t.Error("withUnderFlag flag should be true, is ", *withUnderFlag)
-	}
-	if *withBothFlag != true {
-		t.Error("withBothFlag flag should be true, is ", *withBothFlag)
-	}
+
+	require.NoError(t, f.Parse(args))
+	require.Truef(t, f.Parsed(), "f.Parse() = false after Parse")
+
+	require.Truef(t, *withDashFlag, "withDashFlag flag should be true, is ", *withDashFlag)
+	require.Truef(t, *withUnderFlag, "withUnderFlag flag should be true, is ", *withUnderFlag)
+	require.Truef(t, *withBothFlag, "withBothFlag flag should be true, is ", *withBothFlag)
 }
 
 func TestWordSepNormalizedNames(t *testing.T) {
-	args := []string{
-		"--with-dash-flag",
-		"--with-under-flag",
-		"--with-both-flag",
-	}
-	testWordSepNormalizedNames(args, t)
+	t.Run("with dashes", func(t *testing.T) {
+		args := []string{
+			"--with-dash-flag",
+			"--with-under-flag",
+			"--with-both-flag",
+		}
+		testWordSepNormalizedNames(args, t)
+	})
 
-	args = []string{
-		"--with_dash_flag",
-		"--with_under_flag",
-		"--with_both_flag",
-	}
-	testWordSepNormalizedNames(args, t)
+	t.Run("with underscores", func(t *testing.T) {
+		args := []string{
+			"--with_dash_flag",
+			"--with_under_flag",
+			"--with_both_flag",
+		}
+		testWordSepNormalizedNames(args, t)
+	})
 
-	args = []string{
-		"--with-dash_flag",
-		"--with-under_flag",
-		"--with-both_flag",
-	}
-	testWordSepNormalizedNames(args, t)
+	t.Run("with dash and underscores", func(t *testing.T) {
+		args := []string{
+			"--with-dash_flag",
+			"--with-under_flag",
+			"--with-both_flag",
+		}
+		testWordSepNormalizedNames(args, t)
+	})
 }
 
 func aliasAndWordSepFlagNames(_ *FlagSet, name string) NormalizedName {
@@ -726,62 +775,57 @@ func aliasAndWordSepFlagNames(_ *FlagSet, name string) NormalizedName {
 
 func TestCustomNormalizedNames(t *testing.T) {
 	f := NewFlagSet("normalized", ContinueOnError)
-	if f.Parsed() {
-		t.Error("f.Parse() = true before Parse")
-	}
+	require.Falsef(t, f.Parsed(), "f.Parse() = true before Parse")
 
 	validFlag := f.Bool("valid-flag", false, "bool value")
 	f.SetNormalizeFunc(aliasAndWordSepFlagNames)
 	someOtherFlag := f.Bool("some-other-flag", false, "bool value")
 
 	args := []string{"--old_valid_flag", "--some-other_flag"}
-	if err := f.Parse(args); err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, f.Parse(args))
 
-	if *validFlag != true {
-		t.Errorf("validFlag is %v even though we set the alias --old_valid_falg", *validFlag)
-	}
-	if *someOtherFlag != true {
-		t.Error("someOtherFlag should be true, is ", *someOtherFlag)
-	}
+	require.Truef(t, *validFlag, "validFlag is %v even though we set the alias --old_valid_flag", *validFlag)
+	require.Truef(t, *someOtherFlag, "someOtherFlag should be true, is ", *someOtherFlag)
 }
 
-// Every flag we add, the name (displayed also in usage) should normalized
+// Every flag we add, the name (displayed also in usage) should be normalized
 func TestNormalizationFuncShouldChangeFlagName(t *testing.T) {
-	// Test normalization after addition
-	f := NewFlagSet("normalized", ContinueOnError)
+	t.Run("with normalization after addition", func(t *testing.T) {
+		f := NewFlagSet("normalized", ContinueOnError)
 
-	f.Bool("valid_flag", false, "bool value")
-	if f.Lookup("valid_flag").Name != "valid_flag" {
-		t.Error("The new flag should have the name 'valid_flag' instead of ", f.Lookup("valid_flag").Name)
-	}
+		f.Bool("valid_flag", false, "bool value")
+		require.Equalf(t, "valid_flag", f.Lookup("valid_flag").Name,
+			"the new flag should have the name 'valid_flag' instead of ", f.Lookup("valid_flag").Name,
+		)
 
-	f.SetNormalizeFunc(wordSepNormalizeFunc)
-	if f.Lookup("valid_flag").Name != "valid.flag" {
-		t.Error("The new flag should have the name 'valid.flag' instead of ", f.Lookup("valid_flag").Name)
-	}
+		f.SetNormalizeFunc(wordSepNormalizeFunc)
+		require.Equalf(t, "valid.flag", f.Lookup("valid_flag").Name,
+			"the new flag should have the name 'valid.flag' instead of ", f.Lookup("valid_flag").Name,
+		)
+	})
 
-	// Test normalization before addition
-	f = NewFlagSet("normalized", ContinueOnError)
-	f.SetNormalizeFunc(wordSepNormalizeFunc)
+	t.Run("with normalization before addition", func(t *testing.T) {
+		f := NewFlagSet("normalized", ContinueOnError)
+		f.SetNormalizeFunc(wordSepNormalizeFunc)
 
-	f.Bool("valid_flag", false, "bool value")
-	if f.Lookup("valid_flag").Name != "valid.flag" {
-		t.Error("The new flag should have the name 'valid.flag' instead of ", f.Lookup("valid_flag").Name)
-	}
+		f.Bool("valid_flag", false, "bool value")
+		require.Equalf(t, "valid.flag", f.Lookup("valid_flag").Name,
+			"the new flag should have the name 'valid.flag' instead of ", f.Lookup("valid_flag").Name,
+		)
+	})
 }
 
 // Related to https://github.com/spf13/cobra/issues/521.
 func TestNormalizationSharedFlags(t *testing.T) {
 	f := NewFlagSet("set f", ContinueOnError)
 	g := NewFlagSet("set g", ContinueOnError)
+
+	const testName = "valid_flag"
 	nfunc := wordSepNormalizeFunc
-	testName := "valid_flag"
 	normName := nfunc(nil, testName)
-	if testName == string(normName) {
-		t.Error("TestNormalizationSharedFlags meaningless: the original and normalized flag names are identical:", testName)
-	}
+	require.NotEqualf(t, string(normName), testName,
+		"TestNormalizationSharedFlags meaningless: the original and normalized flag names are identical:", testName,
+	)
 
 	f.Bool(testName, false, "bool value")
 	g.AddFlagSet(f)
@@ -789,51 +833,60 @@ func TestNormalizationSharedFlags(t *testing.T) {
 	f.SetNormalizeFunc(nfunc)
 	g.SetNormalizeFunc(nfunc)
 
-	if len(f.formal) != 1 {
-		t.Error("Normalizing flags should not result in duplications in the flag set:", f.formal)
-	}
-	if f.orderedFormal[0].Name != string(normName) {
-		t.Error("Flag name not normalized")
-	}
+	require.Lenf(t, f.formal, 1,
+		"normalizing flags should not result in duplications in the flag set:", f.formal,
+	)
+	require.Equalf(t, string(normName), f.orderedFormal[0].Name,
+		"flag name not normalized",
+	)
+
 	for k := range f.formal {
-		if k != "valid.flag" {
-			t.Errorf("The key in the flag map should have been normalized: wanted \"%s\", got \"%s\" instead", normName, k)
-		}
+		require.Equalf(t, "valid.flag", string(k),
+			"the key in the flag map should have been normalized: wanted \"%s\", got \"%s\" instead", normName, k,
+		)
 	}
 
-	if !reflect.DeepEqual(f.formal, g.formal) || !reflect.DeepEqual(f.orderedFormal, g.orderedFormal) {
-		t.Error("Two flag sets sharing the same flags should stay consistent after being normalized. Original set:", f.formal, "Duplicate set:", g.formal)
-	}
+	require.Equalf(t, g.formal, f.formal,
+		"two flag sets sharing the same flags should stay consistent after being normalized. Original set:",
+		f.formal, "Duplicate set:", g.formal,
+	)
+	require.Equalf(t, g.orderedFormal, f.orderedFormal,
+		"two ordered flag sets sharing the same flags should stay consistent after being normalized. Original set:",
+		f.formal, "Duplicate set:", g.formal,
+	)
 }
 
 func TestNormalizationSetFlags(t *testing.T) {
 	f := NewFlagSet("normalized", ContinueOnError)
 	nfunc := wordSepNormalizeFunc
-	testName := "valid_flag"
+	const testName = "valid_flag"
 	normName := nfunc(nil, testName)
-	if testName == string(normName) {
-		t.Error("TestNormalizationSetFlags meaningless: the original and normalized flag names are identical:", testName)
-	}
+
+	require.NotEqualf(t, string(normName), testName,
+		"TestNormalizationSetFlags meaningless: the original and normalized flag names are identical:", testName,
+	)
 
 	f.Bool(testName, false, "bool value")
-	_ = f.Set(testName, "true")
+	require.NoError(t, f.Set(testName, "true"))
 	f.SetNormalizeFunc(nfunc)
 
-	if len(f.formal) != 1 {
-		t.Error("Normalizing flags should not result in duplications in the flag set:", f.formal)
-	}
-	if f.orderedFormal[0].Name != string(normName) {
-		t.Error("Flag name not normalized")
-	}
+	require.Lenf(t, f.formal, 1,
+		"normalizing flags should not result in duplications in the flag set:", f.formal,
+	)
+	require.Equalf(t, string(normName), f.orderedFormal[0].Name,
+		"flag name not normalized",
+	)
+
 	for k := range f.formal {
-		if k != "valid.flag" {
-			t.Errorf("The key in the flag map should have been normalized: wanted \"%s\", got \"%s\" instead", normName, k)
-		}
+		require.Equalf(t, "valid.flag", string(k),
+			"the key in the flag map should have been normalized: wanted \"%s\", got \"%s\" instead", normName, k,
+		)
 	}
 
-	if !reflect.DeepEqual(f.formal, f.actual) {
-		t.Error("The map of set flags should get normalized. Formal:", f.formal, "Actual:", f.actual)
-	}
+	require.Equalf(t, f.actual, f.formal,
+		"the map of set flags should get normalized. Formal:",
+		f.formal, "Actual:", f.actual,
+	)
 }
 
 // Declare a user-defined flag type.
@@ -853,107 +906,143 @@ func (f *flagVar) Type() string {
 }
 
 func TestUserDefined(t *testing.T) {
-	var flags FlagSet
+	var (
+		flags FlagSet
+		v     flagVar
+	)
+
 	flags.Init("test", ContinueOnError)
-	var v flagVar
 	flags.VarP(&v, "v", "v", "usage")
-	if err := flags.Parse([]string{"--v=1", "-v2", "-v", "3"}); err != nil {
-		t.Error(err)
-	}
-	if len(v) != 3 {
-		t.Fatal("expected 3 args; got ", len(v))
-	}
-	expect := "[1 2 3]"
-	if v.String() != expect {
-		t.Errorf("expected value %q got %q", expect, v.String())
-	}
+
+	require.NoError(t, flags.Parse([]string{"--v=1", "-v2", "-v", "3"}))
+	require.Lenf(t, v, 3, "expected 3 args; got ", len(v))
+
+	const expect = "[1 2 3]"
+	require.Equalf(t, expect, v.String(),
+		"expected value %q got %q", expect, v.String(),
+	)
 }
 
 func TestSetOutput(t *testing.T) {
-	var flags FlagSet
-	var buf bytes.Buffer
-	flags.SetOutput(&buf)
-	flags.Init("test", ContinueOnError)
-	_ = flags.Parse([]string{"--unknown"})
-	if out := buf.String(); !strings.Contains(out, "--unknown") {
-		t.Logf("expected output mentioning unknown; got %q", out)
-	}
+	t.Run("with ContinueOnError", func(t *testing.T) {
+		var (
+			flags FlagSet
+			buf   bytes.Buffer
+		)
+
+		flags.SetOutput(&buf)
+		flags.Init("test", ContinueOnError)
+		err := flags.Parse([]string{"--unknown"})
+		require.Error(t, err)
+
+		out := buf.String()
+		require.Emptyf(t, out, "expected no output, only error")
+		require.Containsf(t, err.Error(), "--unknown",
+			"expected output mentioning unknown; got %q", err,
+		)
+	})
+
+	t.Run("with PanicOnError", func(t *testing.T) {
+		// notice the behavior inconsistent with the above test. It is what it is...
+		var (
+			flags FlagSet
+			buf   bytes.Buffer
+		)
+
+		flags.SetOutput(&buf)
+		flags.Init("test", PanicOnError)
+		require.PanicsWithError(t, "unknown flag: --unknown", func() {
+			_ = flags.Parse([]string{"--unknown"})
+		})
+
+		out := buf.String()
+		require.Containsf(t, out, "--unknown",
+			"expected output mentioning unknown; got %q", out,
+		)
+	})
 }
 
 func TestOutput(t *testing.T) {
-	var flags FlagSet
-	var buf bytes.Buffer
-	expect := "an example string"
+	var (
+		flags FlagSet
+		buf   bytes.Buffer
+	)
+
+	const expect = "an example string"
 	flags.SetOutput(&buf)
 	fmt.Fprint(flags.Output(), expect)
-	if out := buf.String(); !strings.Contains(out, expect) {
-		t.Errorf("expected output %q; got %q", expect, out)
-	}
+	out := buf.String()
+	require.Containsf(t, out, expect,
+		"expected output %q; got %q", expect, out,
+	)
 }
 
 // This tests that one can reset the flags. This still works but not well, and is
 // superseded by FlagSet.
+//
+// NOTE: this does not work well with parallel testing.
 func TestChangingArgs(t *testing.T) {
 	ResetForTesting(func() { t.Fatal("bad parse") })
 	oldArgs := os.Args
 	defer func() { os.Args = oldArgs }()
+
 	os.Args = []string{"cmd", "--before", "subcmd"}
 	before := Bool("before", false, "")
-	if err := GetCommandLine().Parse(os.Args[1:]); err != nil {
-		t.Fatal(err)
-	}
+	require.NoError(t, GetCommandLine().Parse(os.Args[1:]))
+
 	cmd := Arg(0)
 	os.Args = []string{"subcmd", "--after", "args"}
 	after := Bool("after", false, "")
 	Parse()
 	args := Args()
 
-	if !*before || cmd != "subcmd" || !*after || len(args) != 1 || args[0] != "args" {
-		t.Fatalf("expected true subcmd true [args] got %v %v %v %v", *before, cmd, *after, args)
-	}
+	require.True(t, *before)
+	require.Equal(t, "subcmd", cmd)
+	require.True(t, *after)
+	require.Len(t, args, 1)
+	require.Equal(t, "args", args[0])
 }
 
 // Test that -help invokes the usage message and returns ErrHelp.
 func TestHelp(t *testing.T) {
-	var helpCalled = false
-	fs := NewFlagSet("help test", ContinueOnError)
-	fs.Usage = func() { helpCalled = true }
 	var flag bool
-	fs.BoolVar(&flag, "flag", false, "regular flag")
-	// Regular flag invocation should work
-	err := fs.Parse([]string{"--flag=true"})
-	if err != nil {
-		t.Fatal("expected no error; got ", err)
+	mockHelp := func(called *bool) func() {
+		return func() {
+			*called = true
+		}
 	}
-	if !flag {
-		t.Error("flag was not set by --flag")
-	}
-	if helpCalled {
-		t.Error("help called for regular flag")
-		helpCalled = false // reset for next test
-	}
-	// Help flag should work as expected.
-	err = fs.Parse([]string{"--help"})
-	if err == nil {
-		t.Fatal("error expected")
-	}
-	if err != ErrHelp {
-		t.Fatal("expected ErrHelp; got ", err)
-	}
-	if !helpCalled {
-		t.Fatal("help was not called")
-	}
-	// If we define a help flag, that should override.
-	var help bool
-	fs.BoolVar(&help, "help", false, "help flag")
-	helpCalled = false
-	err = fs.Parse([]string{"--help"})
-	if err != nil {
-		t.Fatal("expected no error for defined --help; got ", err)
-	}
-	if helpCalled {
-		t.Fatal("help was called; should not have been for defined help flag")
-	}
+
+	t.Run("not called, regular flag invocation should work", func(t *testing.T) {
+		var helpCalled bool
+		fs := NewFlagSet("help test", ContinueOnError)
+		fs.Usage = mockHelp(&helpCalled)
+
+		fs.BoolVar(&flag, "flag", false, "regular flag")
+		require.NoError(t, fs.Parse([]string{"--flag=true"}))
+		require.Truef(t, flag, "flag was not set by --flag")
+		require.Falsef(t, helpCalled, "help called for regular flag")
+	})
+
+	t.Run("called, help flag should work", func(t *testing.T) {
+		var helpCalled bool
+		fs := NewFlagSet("help test", ContinueOnError)
+		fs.Usage = mockHelp(&helpCalled)
+		err := fs.Parse([]string{"--help"})
+		require.Error(t, err)
+		require.ErrorIsf(t, err, ErrHelp, "expected ErrHelp; got %v", err)
+		require.Truef(t, helpCalled, "help was not called")
+	})
+
+	t.Run("with help flag override", func(t *testing.T) {
+		var help, helpCalled bool
+		fs := NewFlagSet("help test", ContinueOnError)
+		fs.Usage = mockHelp(&helpCalled)
+		fs.BoolVar(&help, "help", false, "help flag")
+		require.NoErrorf(t, fs.Parse([]string{"--help"}), "expected no error for defined --help")
+		require.Falsef(t, helpCalled,
+			"help was called unexpectedly for a user-defined help flag",
+		)
+	})
 }
 
 func TestNoInterspersed(t *testing.T) {
@@ -961,180 +1050,143 @@ func TestNoInterspersed(t *testing.T) {
 	f.SetInterspersed(false)
 	f.Bool("true", true, "always true")
 	f.Bool("false", false, "always false")
-	err := f.Parse([]string{"--true", "break", "--false"})
-	if err != nil {
-		t.Fatal("expected no error; got ", err)
-	}
+	require.NoError(t, f.Parse([]string{"--true", "break", "--false"}))
+
 	args := f.Args()
-	if len(args) != 2 || args[0] != "break" || args[1] != "--false" {
-		t.Fatal("expected interspersed options/non-options to fail")
-	}
+	require.Len(t, args, 2)
+	require.Equal(t, "break", args[0])
+	require.Equal(t, "--false", args[1])
 }
 
 func TestTermination(t *testing.T) {
 	f := NewFlagSet("termination", ContinueOnError)
 	boolFlag := f.BoolP("bool", "l", false, "bool value")
-	if f.Parsed() {
-		t.Error("f.Parse() = true before Parse")
-	}
-	arg1 := "ls"
-	arg2 := "-l"
+	require.Falsef(t, f.Parsed(), "f.Parse() = true before Parse")
+
+	const (
+		arg1 = "ls"
+		arg2 = "-l"
+	)
 	args := []string{
 		"--",
 		arg1,
 		arg2,
 	}
 	f.SetOutput(ioutil.Discard)
-	if err := f.Parse(args); err != nil {
-		t.Fatal("expected no error; got ", err)
-	}
-	if !f.Parsed() {
-		t.Error("f.Parse() = false after Parse")
-	}
-	if *boolFlag {
-		t.Error("expected boolFlag=false, got true")
-	}
-	if len(f.Args()) != 2 {
-		t.Errorf("expected 2 arguments, got %d: %v", len(f.Args()), f.Args())
-	}
-	if f.Args()[0] != arg1 {
-		t.Errorf("expected argument %q got %q", arg1, f.Args()[0])
-	}
-	if f.Args()[1] != arg2 {
-		t.Errorf("expected argument %q got %q", arg2, f.Args()[1])
-	}
-	if f.ArgsLenAtDash() != 0 {
-		t.Errorf("expected argsLenAtDash %d got %d", 0, f.ArgsLenAtDash())
-	}
+	require.NoError(t, f.Parse(args))
+	require.Truef(t, f.Parsed(), "f.Parse() = false after Parse")
+	require.Falsef(t, *boolFlag, "expected boolFlag=false, got true")
+	require.Lenf(t, f.Args(), 2,
+		"expected 2 arguments, got %d: %v", len(f.Args()), f.Args(),
+	)
+	require.Equalf(t, arg1, f.Args()[0],
+		"expected argument %q got %q", arg1, f.Args()[0],
+	)
+	require.Equalf(t, arg2, f.Args()[1],
+		"expected argument %q got %q", arg2, f.Args()[0],
+	)
+	require.Equalf(t, 0, f.ArgsLenAtDash(),
+		"expected argsLenAtDash %d got %d", 0, f.ArgsLenAtDash(),
+	)
 }
 
-func getDeprecatedFlagSet() *FlagSet {
-	f := NewFlagSet("bob", ContinueOnError)
-	f.Bool("badflag", true, "always true")
-	_ = f.MarkDeprecated("badflag", "use --good-flag instead")
-	return f
-}
-func TestDeprecatedFlagInDocs(t *testing.T) {
-	f := getDeprecatedFlagSet()
+func TestDeprecated(t *testing.T) {
+	const (
+		badFlag       = "badFlag"
+		usageMsg      = "use --good-flag instead"
+		shortHandName = "noshorthandflag"
+		shortHandMsg  = "use --noshorthandflag instead"
+	)
 
-	out := new(bytes.Buffer)
-	f.SetOutput(out)
-	f.PrintDefaults()
+	newFlag := func() *FlagSet {
+		f := NewFlagSet("bob", ContinueOnError)
+		f.Bool(badFlag, true, "always true")
+		_ = f.MarkDeprecated(badFlag, usageMsg)
 
-	if strings.Contains(out.String(), "badflag") {
-		t.Errorf("found deprecated flag in usage!")
-	}
-}
-
-func TestUnHiddenDeprecatedFlagInDocs(t *testing.T) {
-	f := getDeprecatedFlagSet()
-	flg := f.Lookup("badflag")
-	if flg == nil {
-		t.Fatalf("Unable to lookup 'bob' in TestUnHiddenDeprecatedFlagInDocs")
-	}
-	flg.Hidden = false
-
-	out := new(bytes.Buffer)
-	f.SetOutput(out)
-	f.PrintDefaults()
-
-	defaults := out.String()
-	if !strings.Contains(defaults, "badflag") {
-		t.Errorf("Did not find deprecated flag in usage!")
-	}
-	if !strings.Contains(defaults, "use --good-flag instead") {
-		t.Errorf("Did not find 'use --good-flag instead' in defaults")
-	}
-}
-
-func TestDeprecatedFlagShorthandInDocs(t *testing.T) {
-	f := NewFlagSet("bob", ContinueOnError)
-	name := "noshorthandflag"
-	f.BoolP(name, "n", true, "always true")
-	_ = f.MarkShorthandDeprecated("noshorthandflag", fmt.Sprintf("use --%s instead", name))
-
-	out := new(bytes.Buffer)
-	f.SetOutput(out)
-	f.PrintDefaults()
-
-	if strings.Contains(out.String(), "-n,") {
-		t.Errorf("found deprecated flag shorthand in usage!")
-	}
-}
-
-func parseReturnStderr(_ *testing.T, f *FlagSet, args []string) (string, error) {
-	oldStderr := os.Stderr
-	r, w, _ := os.Pipe()
-	os.Stderr = w
-
-	err := f.Parse(args)
-
-	outC := make(chan string)
-	// copy the output in a separate goroutine so printing can't block indefinitely
-	go func() {
-		var buf bytes.Buffer
-		_, _ = io.Copy(&buf, r)
-		outC <- buf.String()
-	}()
-
-	w.Close()
-	os.Stderr = oldStderr
-	out := <-outC
-
-	return out, err
-}
-
-func TestDeprecatedFlagUsage(t *testing.T) {
-	f := NewFlagSet("bob", ContinueOnError)
-	f.Bool("badflag", true, "always true")
-	usageMsg := "use --good-flag instead"
-	_ = f.MarkDeprecated("badflag", usageMsg)
-
-	args := []string{"--badflag"}
-	out, err := parseReturnStderr(t, f, args)
-	if err != nil {
-		t.Fatal("expected no error; got ", err)
+		return f
 	}
 
-	if !strings.Contains(out, usageMsg) {
-		t.Errorf("usageMsg not printed when using a deprecated flag!")
-	}
-}
+	t.Run("with flag in doc", func(t *testing.T) {
+		f := newFlag()
+		require.NotContainsf(t, printFlagDefaults(f), badFlag,
+			"found deprecated flag in usage!",
+		)
+	})
 
-func TestDeprecatedFlagShorthandUsage(t *testing.T) {
-	f := NewFlagSet("bob", ContinueOnError)
-	name := "noshorthandflag"
-	f.BoolP(name, "n", true, "always true")
-	usageMsg := fmt.Sprintf("use --%s instead", name)
-	_ = f.MarkShorthandDeprecated(name, usageMsg)
+	t.Run("with unhidden flag in doc", func(t *testing.T) {
+		f := newFlag()
+		flg := f.Lookup(badFlag)
+		require.NotNilf(t, flg,
+			"unable to lookup %q in flag doc", badFlag,
+		)
+		flg.Hidden = false
+		defaults := printFlagDefaults(f)
 
-	args := []string{"-n"}
-	out, err := parseReturnStderr(t, f, args)
-	if err != nil {
-		t.Fatal("expected no error; got ", err)
-	}
+		require.Containsf(t, defaults, badFlag,
+			"did not find deprecated flag in usage!",
+		)
+		require.Containsf(t, defaults, usageMsg,
+			"did not find %q in defaults", usageMsg,
+		)
+	})
 
-	if !strings.Contains(out, usageMsg) {
-		t.Errorf("usageMsg not printed when using a deprecated flag!")
-	}
-}
+	t.Run("with shorthand in doc", func(t *testing.T) {
+		f := newFlag()
+		f.BoolP(shortHandName, "n", true, "always true")
+		require.NoError(t,
+			f.MarkShorthandDeprecated("noshorthandflag", shortHandMsg),
+		)
 
-func TestDeprecatedFlagUsageNormalized(t *testing.T) {
-	f := NewFlagSet("bob", ContinueOnError)
-	f.Bool("bad-double_flag", true, "always true")
-	f.SetNormalizeFunc(wordSepNormalizeFunc)
-	usageMsg := "use --good-flag instead"
-	_ = f.MarkDeprecated("bad_double-flag", usageMsg)
+		require.NotContainsf(t, printFlagDefaults(f), "-n,",
+			"found deprecated flag shorthand in usage!",
+		)
+	})
 
-	args := []string{"--bad_double_flag"}
-	out, err := parseReturnStderr(t, f, args)
-	if err != nil {
-		t.Fatal("expected no error; got ", err)
-	}
+	t.Run("with usage", func(t *testing.T) {
+		f := newFlag()
+		f.Bool("badflag", true, "always true")
+		usageMsg := "use --good-flag instead"
+		require.NoError(t,
+			f.MarkDeprecated("badflag", usageMsg),
+		)
 
-	if !strings.Contains(out, usageMsg) {
-		t.Errorf("usageMsg not printed when using a deprecated flag!")
-	}
+		args := []string{"--badflag"}
+		out, err := parseReturnStderr(t, f, args)
+		require.NoError(t, err)
+
+		require.Containsf(t, out, usageMsg,
+			"%q not printed when using a deprecated flag!", usageMsg,
+		)
+	})
+
+	t.Run("with shorthand usage", func(t *testing.T) {
+		f := newFlag()
+		f.BoolP(shortHandName, "n", true, "always true")
+		_ = f.MarkShorthandDeprecated(shortHandName, shortHandMsg)
+
+		args := []string{"-n"}
+		out, err := parseReturnStderr(t, f, args)
+		require.NoError(t, err)
+
+		require.Containsf(t, out, shortHandMsg,
+			"%q not printed when using a deprecated flag!", shortHandMsg,
+		)
+	})
+
+	t.Run("with usage normalized", func(t *testing.T) {
+		f := newFlag()
+		f.Bool("bad-double_flag", true, "always true")
+		f.SetNormalizeFunc(wordSepNormalizeFunc)
+		require.NoError(t, f.MarkDeprecated("bad_double-flag", usageMsg))
+
+		args := []string{"--bad_double_flag"}
+		out, err := parseReturnStderr(t, f, args)
+		require.NoError(t, err)
+
+		require.Containsf(t, out, usageMsg,
+			"%q not printed when using a deprecated flag!", usageMsg,
+		)
+	})
 }
 
 // Name normalization function should be called only once on flag addition
@@ -1145,39 +1197,39 @@ func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	f.SetNormalizeFunc(wordSepNormalizeFunc)
 	f.Bool("with_under_flag", false, "bool value")
 
-	if normalizeFlagNameInvocations != 1 {
-		t.Fatal("Expected normalizeFlagNameInvocations to be 1; got ", normalizeFlagNameInvocations)
-	}
+	require.Equalf(t, 1, normalizeFlagNameInvocations,
+		"expected normalizeFlagNameInvocations to be 1; got ", normalizeFlagNameInvocations,
+	)
 }
 
-func TestHiddenFlagInUsage(t *testing.T) {
-	f := NewFlagSet("bob", ContinueOnError)
-	f.Bool("secretFlag", true, "shhh")
-	_ = f.MarkHidden("secretFlag")
+func TestHidden(t *testing.T) {
+	t.Run("with doc", func(t *testing.T) {
+		f := NewFlagSet("bob", ContinueOnError)
+		f.Bool("secretFlag", true, "shhh")
+		require.NoError(t,
+			f.MarkHidden("secretFlag"),
+		)
 
-	out := new(bytes.Buffer)
-	f.SetOutput(out)
-	f.PrintDefaults()
+		require.NotContains(t, printFlagDefaults(f), "secretFlag",
+			"found hidden flag in usage!",
+		)
+	})
 
-	if strings.Contains(out.String(), "secretFlag") {
-		t.Errorf("found hidden flag in usage!")
-	}
-}
+	t.Run("with usage", func(t *testing.T) {
+		f := NewFlagSet("bob", ContinueOnError)
+		f.Bool("secretFlag", true, "shhh")
+		require.NoError(t,
+			f.MarkHidden("secretFlag"),
+		)
 
-func TestHiddenFlagUsage(t *testing.T) {
-	f := NewFlagSet("bob", ContinueOnError)
-	f.Bool("secretFlag", true, "shhh")
-	_ = f.MarkHidden("secretFlag")
+		args := []string{"--secretFlag"}
+		out, err := parseReturnStderr(t, f, args)
+		require.NoError(t, err)
 
-	args := []string{"--secretFlag"}
-	out, err := parseReturnStderr(t, f, args)
-	if err != nil {
-		t.Fatal("expected no error; got ", err)
-	}
-
-	if strings.Contains(out, "shhh") {
-		t.Errorf("usage message printed when using a hidden flag!")
-	}
+		require.NotContainsf(t, out, "shhh",
+			"usage message printed when using a hidden flag!",
+		)
+	})
 }
 
 const defaultOutput = `      --A                         for bootstrapping, allow 'any' type
@@ -1219,6 +1271,7 @@ func (cv *customValue) Type() string { return "custom" }
 func TestPrintDefaults(t *testing.T) {
 	fs := NewFlagSet("print defaults test", ContinueOnError)
 	var buf bytes.Buffer
+
 	fs.SetOutput(&buf)
 	fs.Bool("A", false, "for bootstrapping, allow 'any' type")
 	fs.Bool("Alongflagname", false, "disable bounds checking")
@@ -1251,11 +1304,9 @@ func TestPrintDefaults(t *testing.T) {
 
 	fs.PrintDefaults()
 	got := buf.String()
-	if got != defaultOutput {
-		fmt.Println("\n" + got)
-		fmt.Printf("\n" + defaultOutput)
-		t.Errorf("got %q want %q\n", got, defaultOutput)
-	}
+	require.Equalf(t, defaultOutput, got,
+		"got:\n%q\nwant:\n%q", got, defaultOutput,
+	)
 }
 
 func TestVisitAllFlagOrder(t *testing.T) {
@@ -1273,9 +1324,9 @@ func TestVisitAllFlagOrder(t *testing.T) {
 
 	i := 0
 	fs.VisitAll(func(f *Flag) {
-		if names[i] != f.Name {
-			t.Errorf("Incorrect order. Expected %v, got %v", names[i], f.Name)
-		}
+		require.Equalf(t, f.Name, names[i],
+			"incorrect order. Expected %v, got %v", names[i], f.Name,
+		)
 		i++
 	})
 }
@@ -1291,9 +1342,39 @@ func TestVisitFlagOrder(t *testing.T) {
 
 	i := 0
 	fs.Visit(func(f *Flag) {
-		if names[i] != f.Name {
-			t.Errorf("Incorrect order. Expected %v, got %v", names[i], f.Name)
-		}
+		require.Equalf(t, f.Name, names[i],
+			"incorrect order. Expected %v, got %v", names[i], f.Name,
+		)
 		i++
 	})
+}
+
+func parseReturnStderr(_ *testing.T, f *FlagSet, args []string) (string, error) {
+	oldStderr := os.Stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	err := f.Parse(args)
+
+	outC := make(chan string)
+	// copy the output in a separate goroutine so printing can't block indefinitely
+	go func() {
+		var buf bytes.Buffer
+		_, _ = io.Copy(&buf, r)
+		outC <- buf.String()
+	}()
+
+	w.Close()
+	os.Stderr = oldStderr
+	out := <-outC
+
+	return out, err
+}
+
+func printFlagDefaults(f *FlagSet) string {
+	out := new(bytes.Buffer)
+	f.SetOutput(out)
+	f.PrintDefaults()
+
+	return out.String()
 }

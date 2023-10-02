@@ -8,6 +8,8 @@ import (
 	"bytes"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 // This value can be a boolean ("true", "false") or "maybe"
@@ -40,6 +42,7 @@ func (v *triStateValue) Set(s string) error {
 	} else {
 		*v = triStateFalse
 	}
+
 	return err
 }
 
@@ -60,120 +63,102 @@ func setUpFlagSet(tristate *triStateValue) *FlagSet {
 	*tristate = triStateFalse
 	flag := f.VarPF(tristate, "tristate", "t", "tristate value (true, maybe or false)")
 	flag.NoOptDefVal = "true"
+
 	return f
 }
 
-func TestExplicitTrue(t *testing.T) {
-	var tristate triStateValue
-	f := setUpFlagSet(&tristate)
-	err := f.Parse([]string{"--tristate=true"})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	if tristate != triStateTrue {
-		t.Fatal("expected", triStateTrue, "(triStateTrue) but got", tristate, "instead")
-	}
-}
+func TestBool(t *testing.T) {
+	t.Parallel()
 
-func TestImplicitTrue(t *testing.T) {
-	var tristate triStateValue
-	f := setUpFlagSet(&tristate)
-	err := f.Parse([]string{"--tristate"})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	if tristate != triStateTrue {
-		t.Fatal("expected", triStateTrue, "(triStateTrue) but got", tristate, "instead")
-	}
-}
+	t.Run("with explicit true", func(t *testing.T) {
+		var triState triStateValue
+		f := setUpFlagSet(&triState)
+		require.NoError(t, f.Parse([]string{"--tristate=true"}))
+		require.Equalf(t, triStateTrue, triState,
+			"expected", triStateTrue, "(triStateTrue) but got", triState, "instead",
+		)
+	})
 
-func TestShortFlag(t *testing.T) {
-	var tristate triStateValue
-	f := setUpFlagSet(&tristate)
-	err := f.Parse([]string{"-t"})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	if tristate != triStateTrue {
-		t.Fatal("expected", triStateTrue, "(triStateTrue) but got", tristate, "instead")
-	}
-}
+	t.Run("with implicit true", func(t *testing.T) {
+		var triState triStateValue
+		f := setUpFlagSet(&triState)
+		require.NoError(t, f.Parse([]string{"--tristate"}))
+		require.Equalf(t, triStateTrue, triState,
+			"expected", triStateTrue, "(triStateTrue) but got", triState, "instead",
+		)
+	})
 
-func TestShortFlagExtraArgument(t *testing.T) {
-	var tristate triStateValue
-	f := setUpFlagSet(&tristate)
-	// The"maybe"turns into an arg, since short boolean options will only do true/false
-	err := f.Parse([]string{"-t", "maybe"})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	if tristate != triStateTrue {
-		t.Fatal("expected", triStateTrue, "(triStateTrue) but got", tristate, "instead")
-	}
-	args := f.Args()
-	if len(args) != 1 || args[0] != "maybe" {
-		t.Fatal("expected an extra 'maybe' argument to stick around")
-	}
-}
+	t.Run("with short flag", func(t *testing.T) {
+		var triState triStateValue
+		f := setUpFlagSet(&triState)
+		require.NoError(t, f.Parse([]string{"-t"}))
+		require.Equalf(t, triStateTrue, triState,
+			"expected", triStateTrue, "(triStateTrue) but got", triState, "instead",
+		)
+	})
 
-func TestExplicitMaybe(t *testing.T) {
-	var tristate triStateValue
-	f := setUpFlagSet(&tristate)
-	err := f.Parse([]string{"--tristate=maybe"})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	if tristate != triStateMaybe {
-		t.Fatal("expected", triStateMaybe, "(triStateMaybe) but got", tristate, "instead")
-	}
-}
+	t.Run("with short flag extra argument", func(t *testing.T) {
+		var triState triStateValue
+		f := setUpFlagSet(&triState)
+		// The"maybe"turns into an arg, since short boolean options will only do true/false
+		require.NoError(t, f.Parse([]string{"-t", "maybe"}))
+		require.Equalf(t, triStateTrue, triState,
+			"expected", triStateTrue, "(triStateTrue) but got", triState, "instead",
+		)
+		args := f.Args()
+		require.Len(t, args, 1)
+		require.Equalf(t, "maybe", args[0],
+			"expected an extra 'maybe' argument to stick around",
+		)
+	})
 
-func TestExplicitFalse(t *testing.T) {
-	var tristate triStateValue
-	f := setUpFlagSet(&tristate)
-	err := f.Parse([]string{"--tristate=false"})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	if tristate != triStateFalse {
-		t.Fatal("expected", triStateFalse, "(triStateFalse) but got", tristate, "instead")
-	}
-}
+	t.Run("with explicit maybe", func(t *testing.T) {
+		var triState triStateValue
+		f := setUpFlagSet(&triState)
+		require.NoError(t, f.Parse([]string{"--tristate=maybe"}))
+		require.Equalf(t, triStateMaybe, triState,
+			"expected", triStateMaybe, "(triStateMaybe) but got", triState, "instead",
+		)
+	})
 
-func TestImplicitFalse(t *testing.T) {
-	var tristate triStateValue
-	f := setUpFlagSet(&tristate)
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	if tristate != triStateFalse {
-		t.Fatal("expected", triStateFalse, "(triStateFalse) but got", tristate, "instead")
-	}
-}
+	t.Run("with explicit false", func(t *testing.T) {
+		var triState triStateValue
+		f := setUpFlagSet(&triState)
+		require.NoError(t, f.Parse([]string{"--tristate=false"}))
+		require.Equalf(t, triStateFalse, triState,
+			"expected", triStateFalse, "(triStateFalse) but got", triState, "instead",
+		)
+	})
 
-func TestInvalidValue(t *testing.T) {
-	var tristate triStateValue
-	f := setUpFlagSet(&tristate)
-	var buf bytes.Buffer
-	f.SetOutput(&buf)
-	err := f.Parse([]string{"--tristate=invalid"})
-	if err == nil {
-		t.Fatal("expected an error but did not get any, tristate has value", tristate)
-	}
-}
+	t.Run("with implicit false", func(t *testing.T) {
+		var triState triStateValue
+		f := setUpFlagSet(&triState)
+		require.NoError(t, f.Parse([]string{}))
+		require.Equalf(t, triStateFalse, triState,
+			"expected", triStateFalse, "(triStateFalse) but got", triState, "instead",
+		)
+	})
 
-func TestBoolP(t *testing.T) {
-	b := BoolP("bool", "b", false, "bool value in CommandLine")
-	c := BoolP("c", "c", false, "other bool value")
-	args := []string{"--bool"}
-	if err := CommandLine.Parse(args); err != nil {
-		t.Error("expected no error, got ", err)
-	}
-	if *b != true {
-		t.Errorf("expected b=true got b=%v", *b)
-	}
-	if *c != false {
-		t.Errorf("expect c=false got c=%v", *c)
-	}
+	t.Run("with invalid value", func(t *testing.T) {
+		var triState triStateValue
+		f := setUpFlagSet(&triState)
+		var buf bytes.Buffer
+		f.SetOutput(&buf)
+		require.Errorf(t, f.Parse([]string{"--tristate=invalid"}),
+			"expected an error but did not get any, tristate has value", triState,
+		)
+	})
+
+	t.Run("with BoolP", func(t *testing.T) {
+		b := BoolP("bool", "b", false, "bool value in CommandLine")
+		c := BoolP("c", "c", false, "other bool value")
+		args := []string{"--bool"}
+		require.NoError(t, CommandLine.Parse(args))
+		require.Truef(t, *b,
+			"expected b=true got b=%v", *b,
+		)
+		require.Falsef(t, *c,
+			"expect c=false got c=%v", *c,
+		)
+	})
 }

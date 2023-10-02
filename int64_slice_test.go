@@ -9,188 +9,167 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func setUpI64SFlagSet(isp *[]int64) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.Int64SliceVar(isp, "is", []int64{}, "Command separated list!")
-	return f
-}
+func TestInt64Slice(t *testing.T) {
+	t.Parallel()
 
-func setUpI64SFlagSetWithDefault(isp *[]int64) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.Int64SliceVar(isp, "is", []int64{0, 1}, "Command separated list!")
-	return f
-}
-
-func TestEmptyI64S(t *testing.T) {
-	var is []int64
-	f := setUpI64SFlagSet(&is)
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	newFlag := func(isp *[]int64) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.Int64SliceVar(isp, "is", []int64{}, "Command separated list!")
+		return f
 	}
 
-	getI64S, err := f.GetInt64Slice("is")
-	if err != nil {
-		t.Fatal("got an error from GetInt64Slice():", err)
-	}
-	if len(getI64S) != 0 {
-		t.Fatalf("got is %v with len=%d but expected length=0", getI64S, len(getI64S))
-	}
-}
+	t.Run("with empty slice", func(t *testing.T) {
+		is := make([]int64, 0)
+		f := newFlag(&is)
+		require.NoError(t, f.Parse([]string{}))
 
-func TestI64S(t *testing.T) {
-	var is []int64
-	f := setUpI64SFlagSet(&is)
+		getI64S, err := f.GetInt64Slice("is")
+		require.NoErrorf(t, err,
+			"got an error from GetInt64Slice(): %v", err,
+		)
+		require.Empty(t, getI64S)
+	})
 
-	vals := []string{"1", "2", "4", "3"}
-	arg := fmt.Sprintf("--is=%s", strings.Join(vals, ","))
-	erp := f.Parse([]string{arg})
-	if erp != nil {
-		t.Fatal("expected no error; got", erp)
-	}
+	t.Run("with values", func(t *testing.T) {
+		vals := []string{"1", "2", "4", "3"}
+		is := make([]int64, 0, len(vals))
+		f := newFlag(&is)
 
-	for i, v := range is {
-		d, err := strconv.ParseInt(vals[i], 0, 64)
-		if err != nil {
-			t.Fatalf("got error: %v", err)
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf("--is=%s", strings.Join(vals, ",")),
+		}))
+
+		for i, v := range is {
+			d, err := strconv.ParseInt(vals[i], 0, 64)
+			require.NoError(t, err)
+
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %s but got: %d", i, vals[i], v,
+			)
 		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %s but got: %d", i, vals[i], v)
-		}
-	}
 
-	getI64S, eri := f.GetInt64Slice("is")
-	if eri != nil {
-		t.Fatalf("got error: %v", eri)
-	}
+		getI64S, eri := f.GetInt64Slice("is")
+		require.NoError(t, eri)
 
-	for i, v := range getI64S {
-		d, err := strconv.ParseInt(vals[i], 0, 64)
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %s but got: %d from GetInt64Slice", i, vals[i], v)
-		}
-	}
-}
+		for i, v := range getI64S {
+			d, err := strconv.ParseInt(vals[i], 0, 64)
+			require.NoError(t, err)
 
-func TestI64SDefault(t *testing.T) {
-	var is []int64
-	f := setUpI64SFlagSetWithDefault(&is)
-
-	vals := []string{"0", "1"}
-
-	erp := f.Parse([]string{})
-	if erp != nil {
-		t.Fatal("expected no error; got", erp)
-	}
-
-	for i, v := range is {
-		d, err := strconv.ParseInt(vals[i], 0, 64)
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %d but got: %d", i, d, v)
-		}
-	}
-
-	getI64S, eri := f.GetInt64Slice("is")
-	if eri != nil {
-		t.Fatal("got an error from GetInt64Slice():", eri)
-	}
-
-	for i, v := range getI64S {
-		d, err := strconv.ParseInt(vals[i], 0, 64)
-		if err != nil {
-			t.Fatal("got an error from GetInt64Slice():", err)
-		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %d from GetInt64Slice but got: %d", i, d, v)
-		}
-	}
-}
-
-func TestI64SWithDefault(t *testing.T) {
-	var is []int64
-	f := setUpI64SFlagSetWithDefault(&is)
-
-	vals := []string{"1", "2"}
-	arg := fmt.Sprintf("--is=%s", strings.Join(vals, ","))
-	erp := f.Parse([]string{arg})
-	if erp != nil {
-		t.Fatal("expected no error; got", erp)
-	}
-
-	for i, v := range is {
-		d, err := strconv.ParseInt(vals[i], 0, 64)
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %d but got: %d", i, d, v)
-		}
-	}
-
-	getI64S, eri := f.GetInt64Slice("is")
-	if eri != nil {
-		t.Fatal("got an error from GetInt64Slice():", eri)
-	}
-
-	for i, v := range getI64S {
-		d, err := strconv.ParseInt(vals[i], 0, 64)
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %d from GetInt64Slice but got: %d", i, d, v)
-		}
-	}
-}
-
-func TestI64SAsSliceValue(t *testing.T) {
-	var i64s []int64
-	f := setUpI64SFlagSet(&i64s)
-
-	in := []string{"1", "2"}
-	argfmt := "--is=%s"
-	arg1 := fmt.Sprintf(argfmt, in[0])
-	arg2 := fmt.Sprintf(argfmt, in[1])
-	err := f.Parse([]string{arg1, arg2})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-
-	f.VisitAll(func(f *Flag) {
-		if val, ok := f.Value.(SliceValue); ok {
-			_ = val.Replace([]string{"3"})
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %s but got: %d from GetInt64Slice", i, vals[i], v,
+			)
 		}
 	})
-	if len(i64s) != 1 || i64s[0] != 3 {
-		t.Fatalf("Expected ss to be overwritten with '3.1', but got: %v", i64s)
-	}
-}
 
-func TestI64SCalledTwice(t *testing.T) {
-	var is []int64
-	f := setUpI64SFlagSet(&is)
-
-	in := []string{"1,2", "3"}
-	expected := []int64{1, 2, 3}
-	argfmt := "--is=%s"
-	arg1 := fmt.Sprintf(argfmt, in[0])
-	arg2 := fmt.Sprintf(argfmt, in[1])
-	err := f.Parse([]string{arg1, arg2})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	newFlagWithDefault := func(isp *[]int64) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.Int64SliceVar(isp, "is", []int64{0, 1}, "Command separated list!")
+		return f
 	}
 
-	for i, v := range is {
-		if expected[i] != v {
-			t.Fatalf("expected is[%d] to be %d but got: %d", i, expected[i], v)
+	t.Run("with defaults (1)", func(t *testing.T) {
+		vals := []string{"0", "1"}
+		is := make([]int64, 0, len(vals))
+		f := newFlagWithDefault(&is)
+
+		require.NoError(t, f.Parse([]string{}))
+
+		for i, v := range is {
+			d, err := strconv.ParseInt(vals[i], 0, 64)
+			require.NoError(t, err)
+
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %d but got: %d", i, v, d,
+			)
 		}
-	}
+
+		getI64S, eri := f.GetInt64Slice("is")
+		require.NoErrorf(t, eri,
+			"got an error from GetInt64Slice(): %v", eri,
+		)
+
+		for i, v := range getI64S {
+			d, err := strconv.ParseInt(vals[i], 0, 64)
+			require.NoErrorf(t, err,
+				"got an error from GetInt64Slice(): %v", err,
+			)
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %d from GetInt64Slice but got: %d", i, v, d,
+			)
+		}
+	})
+
+	t.Run("with defaults (2)", func(t *testing.T) {
+		vals := []string{"1", "2"}
+		is := make([]int64, 0, len(vals))
+		f := newFlagWithDefault(&is)
+
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf("--is=%s", strings.Join(vals, ",")),
+		}))
+
+		for i, v := range is {
+			d, err := strconv.ParseInt(vals[i], 0, 64)
+			require.NoError(t, err)
+
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %d but got: %d", i, v, d,
+			)
+		}
+
+		getI64S, eri := f.GetInt64Slice("is")
+		require.NoErrorf(t, eri,
+			"got an error from GetInt64Slice(): %v", eri,
+		)
+
+		for i, v := range getI64S {
+			d, err := strconv.ParseInt(vals[i], 0, 64)
+			require.NoError(t, err)
+
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %d from GetInt64Slice but got: %d", i, d, v,
+			)
+		}
+	})
+
+	t.Run("called twice", func(t *testing.T) {
+		const argfmt = "--is=%s"
+		in := []string{"1,2", "3"}
+		is := make([]int64, 0, len(in))
+		f := newFlag(&is)
+		expected := []int64{1, 2, 3}
+
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf(argfmt, in[0]),
+			fmt.Sprintf(argfmt, in[1]),
+		}))
+
+		require.Equal(t, expected, is)
+	})
+
+	t.Run("as slice value", func(t *testing.T) {
+		const argfmt = "--is=%s"
+		in := []string{"1", "2"}
+		i64s := make([]int64, 0, len(in))
+		f := newFlag(&i64s)
+
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf(argfmt, in[0]),
+			fmt.Sprintf(argfmt, in[1]),
+		}))
+
+		f.VisitAll(func(f *Flag) {
+			if val, ok := f.Value.(SliceValue); ok {
+				require.NoError(t, val.Replace([]string{"3"}))
+			}
+		})
+
+		require.Equalf(t, []int64{3}, i64s,
+			"expected ss to be overwritten with '3.1', but got: %v", i64s,
+		)
+	})
 }

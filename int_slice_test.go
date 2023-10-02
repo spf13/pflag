@@ -9,165 +9,138 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func setUpISFlagSet(isp *[]int) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.IntSliceVar(isp, "is", []int{}, "Command separated list!")
-	return f
-}
+func TestIntSlice(t *testing.T) {
+	t.Parallel()
 
-func setUpISFlagSetWithDefault(isp *[]int) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.IntSliceVar(isp, "is", []int{0, 1}, "Command separated list!")
-	return f
-}
-
-func TestEmptyIS(t *testing.T) {
-	var is []int
-	f := setUpISFlagSet(&is)
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	newFlag := func(isp *[]int) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.IntSliceVar(isp, "is", []int{}, "Command separated list!")
+		return f
 	}
 
-	getIS, err := f.GetIntSlice("is")
-	if err != nil {
-		t.Fatal("got an error from GetIntSlice():", err)
-	}
-	if len(getIS) != 0 {
-		t.Fatalf("got is %v with len=%d but expected length=0", getIS, len(getIS))
-	}
-}
+	t.Run("with empty slice", func(t *testing.T) {
+		is := make([]int, 0)
+		f := newFlag(&is)
+		require.NoError(t, f.Parse([]string{}))
 
-func TestIS(t *testing.T) {
-	var is []int
-	f := setUpISFlagSet(&is)
+		getIS, err := f.GetIntSlice("is")
+		require.NoErrorf(t, err,
+			"got an error from GetIntSlice(): %v", err,
+		)
+		require.Empty(t, getIS)
+	})
 
-	vals := []string{"1", "2", "4", "3"}
-	arg := fmt.Sprintf("--is=%s", strings.Join(vals, ","))
-	erp := f.Parse([]string{arg})
-	if erp != nil {
-		t.Fatal("expected no error; got", erp)
-	}
+	t.Run("with values", func(t *testing.T) {
+		vals := []string{"1", "2", "4", "3"}
+		is := make([]int, 0, len(vals))
+		f := newFlag(&is)
 
-	for i, v := range is {
-		d, err := strconv.Atoi(vals[i])
-		if err != nil {
-			t.Fatalf("got error: %v", err)
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf("--is=%s", strings.Join(vals, ",")),
+		}))
+
+		for i, v := range is {
+			d, err := strconv.Atoi(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %d but got: %d", i, v, d,
+			)
 		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %s but got: %d", i, vals[i], v)
+
+		getIS, eri := f.GetIntSlice("is")
+		require.NoError(t, eri)
+
+		for i, v := range getIS {
+			d, err := strconv.Atoi(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %d but got: %d from GetIntSlice", i, v, d,
+			)
 		}
+	})
+
+	newFlagWithDefault := func(isp *[]int) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.IntSliceVar(isp, "is", []int{0, 1}, "Command separated list!")
+		return f
 	}
 
-	getIS, eri := f.GetIntSlice("is")
-	if eri != nil {
-		t.Fatalf("got error: %v", eri)
-	}
+	t.Run("with defaults (1)", func(t *testing.T) {
+		vals := []string{"0", "1"}
+		is := make([]int, 0, len(vals))
+		f := newFlagWithDefault(&is)
 
-	for i, v := range getIS {
-		d, err := strconv.Atoi(vals[i])
-		if err != nil {
-			t.Fatalf("got error: %v", err)
+		require.NoError(t, f.Parse([]string{}))
+
+		for i, v := range is {
+			d, err := strconv.Atoi(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %d but got: %d", i, v, d,
+			)
 		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %s but got: %d from GetIntSlice", i, vals[i], v)
+
+		getIS, eri := f.GetIntSlice("is")
+		require.NoErrorf(t, eri,
+			"got an error from GetIntSlice(): %v", eri,
+		)
+
+		for i, v := range getIS {
+			d, err := strconv.Atoi(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %d from GetIntSlice but got: %d", i, v, d,
+			)
 		}
-	}
-}
+	})
 
-func TestISDefault(t *testing.T) {
-	var is []int
-	f := setUpISFlagSetWithDefault(&is)
+	t.Run("with defaults (2)", func(t *testing.T) {
+		vals := []string{"1", "2"}
+		is := make([]int, 0, len(vals))
+		f := newFlagWithDefault(&is)
 
-	vals := []string{"0", "1"}
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf("--is=%s", strings.Join(vals, ",")),
+		}))
 
-	erp := f.Parse([]string{})
-	if erp != nil {
-		t.Fatal("expected no error; got", erp)
-	}
-
-	for i, v := range is {
-		d, err := strconv.Atoi(vals[i])
-		if err != nil {
-			t.Fatalf("got error: %v", err)
+		for i, v := range is {
+			d, err := strconv.Atoi(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %d but got: %d", i, v, d,
+			)
 		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %d but got: %d", i, d, v)
+
+		getIS, eri := f.GetIntSlice("is")
+		require.NoErrorf(t, eri,
+			"got an error from GetIntSlice(): %v", eri,
+		)
+
+		for i, v := range getIS {
+			d, err := strconv.Atoi(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, d,
+				"expected is[%d] to be %d from GetIntSlice but got: %d", i, v, d,
+			)
 		}
-	}
+	})
 
-	getIS, eri := f.GetIntSlice("is")
-	if eri != nil {
-		t.Fatal("got an error from GetIntSlice():", eri)
-	}
+	t.Run("called twice", func(t *testing.T) {
+		const argfmt = "--is=%s"
+		in := []string{"1,2", "3"}
+		is := make([]int, 0, len(in))
+		f := newFlag(&is)
+		expected := []int{1, 2, 3}
 
-	for i, v := range getIS {
-		d, err := strconv.Atoi(vals[i])
-		if err != nil {
-			t.Fatal("got an error from GetIntSlice():", err)
-		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %d from GetIntSlice but got: %d", i, d, v)
-		}
-	}
-}
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf(argfmt, in[0]),
+			fmt.Sprintf(argfmt, in[1]),
+		}))
 
-func TestISWithDefault(t *testing.T) {
-	var is []int
-	f := setUpISFlagSetWithDefault(&is)
-
-	vals := []string{"1", "2"}
-	arg := fmt.Sprintf("--is=%s", strings.Join(vals, ","))
-	erp := f.Parse([]string{arg})
-	if erp != nil {
-		t.Fatal("expected no error; got", erp)
-	}
-
-	for i, v := range is {
-		d, err := strconv.Atoi(vals[i])
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %d but got: %d", i, d, v)
-		}
-	}
-
-	getIS, eri := f.GetIntSlice("is")
-	if eri != nil {
-		t.Fatal("got an error from GetIntSlice():", eri)
-	}
-
-	for i, v := range getIS {
-		d, err := strconv.Atoi(vals[i])
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-		if d != v {
-			t.Fatalf("expected is[%d] to be %d from GetIntSlice but got: %d", i, d, v)
-		}
-	}
-}
-
-func TestISCalledTwice(t *testing.T) {
-	var is []int
-	f := setUpISFlagSet(&is)
-
-	in := []string{"1,2", "3"}
-	expected := []int{1, 2, 3}
-	argfmt := "--is=%s"
-	arg1 := fmt.Sprintf(argfmt, in[0])
-	arg2 := fmt.Sprintf(argfmt, in[1])
-	err := f.Parse([]string{arg1, arg2})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-
-	for i, v := range is {
-		if expected[i] != v {
-			t.Fatalf("expected is[%d] to be %d but got: %d", i, expected[i], v)
-		}
-	}
+		require.Equal(t, expected, is)
+	})
 }

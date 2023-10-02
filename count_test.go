@@ -3,15 +3,17 @@ package pflag
 import (
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func setUpCount(c *int) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.CountVarP(c, "verbose", "v", "a counter")
-	return f
-}
-
 func TestCount(t *testing.T) {
+	newFlag := func(c *int) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.CountVarP(c, "verbose", "v", "a counter")
+		return f
+	}
+
 	testCases := []struct {
 		input    []string
 		success  bool
@@ -30,28 +32,26 @@ func TestCount(t *testing.T) {
 
 	devnull, _ := os.Open(os.DevNull)
 	os.Stderr = devnull
+
 	for i := range testCases {
 		var count int
-		f := setUpCount(&count)
+		f := newFlag(&count)
 
 		tc := &testCases[i]
 
 		err := f.Parse(tc.input)
-		switch {
-		case err != nil && tc.success:
-			t.Errorf("expected success with %q, got %q", tc.input, err)
+		if !tc.success {
+			require.Errorf(t, err,
+				"expected failure with %q, got success", tc.input,
+			)
+
 			continue
-		case err == nil && !tc.success:
-			t.Errorf("expected failure with %q, got success", tc.input)
-			continue
-		case tc.success:
-			c, err := f.GetCount("verbose")
-			if err != nil {
-				t.Errorf("Got error trying to fetch the counter flag")
-			}
-			if c != tc.expected {
-				t.Errorf("expected %d, got %d", tc.expected, c)
-			}
 		}
+
+		require.NoError(t, err)
+
+		c, err := f.GetCount("verbose")
+		require.NoError(t, err)
+		require.Equal(t, tc.expected, c)
 	}
 }

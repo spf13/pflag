@@ -11,7 +11,7 @@ import (
 )
 
 func ExampleShorthandLookup() {
-	name := "verbose"
+	const name = "verbose"
 	short := name[:1]
 
 	pflag.BoolP(name, short, false, "verbose output")
@@ -23,7 +23,7 @@ func ExampleShorthandLookup() {
 }
 
 func ExampleFlagSet_ShorthandLookup() {
-	name := "verbose"
+	const name = "verbose"
 	short := name[:1]
 
 	fs := pflag.NewFlagSet("Example", pflag.ContinueOnError)

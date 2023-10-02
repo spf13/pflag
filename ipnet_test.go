@@ -5,16 +5,18 @@ import (
 	"net"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func setUpIPNet(ip *net.IPNet) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	_, def, _ := net.ParseCIDR("0.0.0.0/0")
-	f.IPNetVar(ip, "address", *def, "IP Address")
-	return f
-}
-
 func TestIPNet(t *testing.T) {
+	newFlag := func(ip *net.IPNet) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		_, def, _ := net.ParseCIDR("0.0.0.0/0")
+		f.IPNetVar(ip, "address", *def, "IP Address")
+		return f
+	}
+
 	testCases := []struct {
 		input    string
 		success  bool
@@ -43,29 +45,27 @@ func TestIPNet(t *testing.T) {
 
 	devnull, _ := os.Open(os.DevNull)
 	os.Stderr = devnull
+
 	for i := range testCases {
 		var addr net.IPNet
-		f := setUpIPNet(&addr)
-
+		f := newFlag(&addr)
 		tc := &testCases[i]
 
-		arg := fmt.Sprintf("--address=%s", tc.input)
-		err := f.Parse([]string{arg})
-		switch {
-		case err != nil && tc.success:
-			t.Errorf("expected success, got %q", err)
+		err := f.Parse([]string{
+			fmt.Sprintf("--address=%s", tc.input),
+		})
+		if !tc.success {
+			require.Errorf(t, err, "expected failure")
+
 			continue
-		case err == nil && !tc.success:
-			t.Errorf("expected failure")
-			continue
-		case tc.success:
-			ip, err := f.GetIPNet("address")
-			if err != nil {
-				t.Errorf("Got error trying to fetch the IP flag: %v", err)
-			}
-			if ip.String() != tc.expected {
-				t.Errorf("expected %q, got %q", tc.expected, ip.String())
-			}
 		}
+
+		require.NoErrorf(t, err, "expected success, got %q", err)
+
+		ip, err := f.GetIPNet("address")
+		require.NoErrorf(t, err,
+			"got error trying to fetch the IPnet flag: %v", err,
+		)
+		require.Equal(t, tc.expected, ip.String())
 	}
 }
