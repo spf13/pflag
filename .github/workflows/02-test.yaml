@@ -1,0 +1,37 @@
+name: Tests
+on:
+  pull_request:
+  push:
+    tags:
+      - v*
+    branches:
+      - master
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        go_version: ['1.18', '1.19','oldstable','stable']
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        persist-credentials: false
+    - uses: actions/setup-go@v4
+      with:
+        go-version: ${{ matrix.go_version }}
+        check-latest: true
+
+    - name: Tests
+      run: go test -v -race -cover -coverprofile=coverage.out -covermode=atomic ./...
+
+
+    #- name: Update Coverage
+    #  uses: shogo82148/actions-goveralls@v1
+    #  with:
+    #    path-to-profile: coverage.out
