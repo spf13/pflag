@@ -52,14 +52,15 @@ func TestBytesHex(t *testing.T) {
 		for _, arg := range args {
 			err := f.Parse([]string{arg})
 
-			if err != nil && tc.success == true {
+			switch {
+			case err != nil && tc.success:
 				t.Errorf("expected success, got %q", err)
 				continue
-			} else if err == nil && tc.success == false {
+			case err == nil && !tc.success:
 				// bytesHex, err := f.GetBytesHex("bytes")
 				t.Errorf("expected failure while processing %q", tc.input)
 				continue
-			} else if tc.success {
+			case tc.success:
 				bytesHex, err := f.GetBytesHex("bytes")
 				if err != nil {
 					t.Errorf("Got error trying to fetch the 'bytes' flag: %v", err)
@@ -113,14 +114,15 @@ func TestBytesBase64(t *testing.T) {
 		for _, arg := range args {
 			err := f.Parse([]string{arg})
 
-			if err != nil && tc.success == true {
+			switch {
+			case err != nil && tc.success:
 				t.Errorf("expected success, got %q", err)
 				continue
-			} else if err == nil && tc.success == false {
+			case err == nil && !tc.success:
 				// bytesBase64, err := f.GetBytesBase64("bytes")
 				t.Errorf("expected failure while processing %q", tc.input)
 				continue
-			} else if tc.success {
+			case tc.success:
 				bytesBase64, err := f.GetBytesBase64("bytes")
 				if err != nil {
 					t.Errorf("Got error trying to fetch the 'bytes' flag: %v", err)

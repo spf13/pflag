@@ -42,10 +42,11 @@ func TestUIS(t *testing.T) {
 
 	vals := []string{"1", "2", "4", "3"}
 	arg := fmt.Sprintf("--uis=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range uis {
 		u, err := strconv.ParseUint(vals[i], 10, 0)
 		if err != nil {
@@ -55,10 +56,11 @@ func TestUIS(t *testing.T) {
 			t.Fatalf("expected uis[%d] to be %s but got %d", i, vals[i], v)
 		}
 	}
-	getUIS, err := f.GetUintSlice("uis")
-	if err != nil {
-		t.Fatalf("got error: %v", err)
+	getUIS, eru := f.GetUintSlice("uis")
+	if eru != nil {
+		t.Fatalf("got error: %v", eru)
 	}
+
 	for i, v := range getUIS {
 		u, err := strconv.ParseUint(vals[i], 10, 0)
 		if err != nil {
@@ -76,10 +78,11 @@ func TestUISDefault(t *testing.T) {
 
 	vals := []string{"0", "1"}
 
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range uis {
 		u, err := strconv.ParseUint(vals[i], 10, 0)
 		if err != nil {
@@ -90,10 +93,11 @@ func TestUISDefault(t *testing.T) {
 		}
 	}
 
-	getUIS, err := f.GetUintSlice("uis")
-	if err != nil {
-		t.Fatal("got an error from GetUintSlice():", err)
+	getUIS, eru := f.GetUintSlice("uis")
+	if eru != nil {
+		t.Fatal("got an error from GetUintSlice():", eru)
 	}
+
 	for i, v := range getUIS {
 		u, err := strconv.ParseUint(vals[i], 10, 0)
 		if err != nil {
@@ -111,10 +115,11 @@ func TestUISWithDefault(t *testing.T) {
 
 	vals := []string{"1", "2"}
 	arg := fmt.Sprintf("--uis=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range uis {
 		u, err := strconv.ParseUint(vals[i], 10, 0)
 		if err != nil {
@@ -125,9 +130,9 @@ func TestUISWithDefault(t *testing.T) {
 		}
 	}
 
-	getUIS, err := f.GetUintSlice("uis")
-	if err != nil {
-		t.Fatal("got an error from GetUintSlice():", err)
+	getUIS, eru := f.GetUintSlice("uis")
+	if eru != nil {
+		t.Fatal("got an error from GetUintSlice():", eru)
 	}
 	for i, v := range getUIS {
 		u, err := strconv.ParseUint(vals[i], 10, 0)
@@ -176,6 +181,7 @@ func TestUISCalledTwice(t *testing.T) {
 	if err != nil {
 		t.Fatal("expected no error; got", err)
 	}
+
 	for i, v := range uis {
 		if uint(expected[i]) != v {
 			t.Fatalf("expected uis[%d] to be %d but got: %d", i, expected[i], v)

@@ -27,23 +27,32 @@ unaffected.
 Define flags using flag.String(), Bool(), Int(), etc.
 
 This declares an integer flag, -flagname, stored in the pointer ip, with type *int.
+
 	var ip = flag.Int("flagname", 1234, "help message for flagname")
+
 If you like, you can bind the flag to a variable using the Var() functions.
+
 	var flagvar int
 	func init() {
 		flag.IntVar(&flagvar, "flagname", 1234, "help message for flagname")
 	}
+
 Or you can create custom flags that satisfy the Value interface (with
 pointer receivers) and couple them to flag parsing by
+
 	flag.Var(&flagVal, "name", "help message for flagname")
+
 For such flags, the default value is just the initial value of the variable.
 
 After all flags are defined, call
+
 	flag.Parse()
+
 to parse the command line into the defined flags.
 
 Flags may then be used directly. If you're using the flags themselves,
 they are all pointers; if you bind to variables, they're values.
+
 	fmt.Println("ip has value ", *ip)
 	fmt.Println("flagvar has value ", flagvar)
 
@@ -54,22 +63,26 @@ The arguments are indexed from 0 through flag.NArg()-1.
 The pflag package also defines some new functions that are not in flag,
 that give one-letter shorthands for flags. You can use these by appending
 'P' to the name of any function that defines a flag.
+
 	var ip = flag.IntP("flagname", "f", 1234, "help message")
 	var flagvar bool
 	func init() {
 		flag.BoolVarP(&flagvar, "boolname", "b", true, "help message")
 	}
 	flag.VarP(&flagval, "varname", "v", "help message")
+
 Shorthand letters can be used with single dashes on the command line.
 Boolean shorthand flags can be combined with other shorthand flags.
 
 Command line flag syntax:
+
 	--flag    // boolean flags only
 	--flag=x
 
 Unlike the flag package, a single dash before an option means something
 different than a double dash. Single dashes signify a series of shorthand
 letters for flags. All but the last shorthand letter must be boolean flags.
+
 	// boolean flags
 	-f
 	-abc
@@ -606,7 +619,7 @@ func UnquoteUsage(flag *Flag) (name string, usage string) {
 		name = "bools"
 	}
 
-	return
+	return name, usage
 }
 
 // Splits the string `s` on whitespace into an initial substring up to
@@ -634,7 +647,7 @@ func wrapN(i, slop int, s string) (string, string) {
 // caller). Pass `w` == 0 to do no wrapping
 func wrap(i, w int, s string) string {
 	if w == 0 {
-		return strings.Replace(s, "\n", "\n"+strings.Repeat(" ", i), -1)
+		return strings.ReplaceAll(s, "\n", "\n"+strings.Repeat(" ", i))
 	}
 
 	// space between indent i and end of line width w into which
@@ -652,26 +665,26 @@ func wrap(i, w int, s string) string {
 	}
 	// If still not enough space then don't even try to wrap.
 	if wrap < 24 {
-		return strings.Replace(s, "\n", r, -1)
+		return strings.ReplaceAll(s, "\n", r)
 	}
 
 	// Try to avoid short orphan words on the final line, by
 	// allowing wrapN to go a bit over if that would fit in the
 	// remainder of the line.
 	slop := 5
-	wrap = wrap - slop
+	wrap -= slop
 
 	// Handle first line, which is indented by the caller (or the
 	// special case above)
 	l, s = wrapN(wrap, slop, s)
-	r = r + strings.Replace(l, "\n", "\n"+strings.Repeat(" ", i), -1)
+	r += strings.ReplaceAll(l, "\n", "\n"+strings.Repeat(" ", i))
 
 	// Now wrap the rest
 	for s != "" {
 		var t string
 
 		t, s = wrapN(wrap, slop, s)
-		r = r + "\n" + strings.Repeat(" ", i) + strings.Replace(t, "\n", "\n"+strings.Repeat(" ", i), -1)
+		r = r + "\n" + strings.Repeat(" ", i) + strings.ReplaceAll(t, "\n", "\n"+strings.Repeat(" ", i))
 	}
 
 	return r
@@ -925,18 +938,19 @@ func (f *FlagSet) failf(format string, a ...interface{}) error {
 // usage calls the Usage method for the flag set, or the usage function if
 // the flag set is CommandLine.
 func (f *FlagSet) usage() {
-	if f == CommandLine {
+	switch {
+	case f == CommandLine:
 		Usage()
-	} else if f.Usage == nil {
+	case f.Usage == nil:
 		defaultUsage(f)
-	} else {
+	default:
 		f.Usage()
 	}
 }
 
-//--unknown (args will be empty)
-//--unknown --next-flag ... (args will be --next-flag ...)
-//--unknown arg ... (args will be arg ...)
+// --unknown (args will be empty)
+// --unknown --next-flag ... (args will be --next-flag ...)
+// --unknown arg ... (args will be arg ...)
 func stripUnknownFlagValue(args []string) []string {
 	if len(args) == 0 {
 		//--unknown
@@ -961,7 +975,8 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	name := s[2:]
 	if len(name) == 0 || name[0] == '-' || name[0] == '=' {
 		err = f.failf("bad flag syntax: %s", s)
-		return
+
+		return a, err
 	}
 
 	split := strings.SplitN(name, "=", 2)
@@ -983,39 +998,43 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 			return stripUnknownFlagValue(a), nil
 		default:
 			err = f.failf("unknown flag: --%s", name)
-			return
+
+			return a, err
 		}
 	}
 
 	var value string
-	if len(split) == 2 {
+	switch {
+	case len(split) == 2:
 		// '--flag=arg'
 		value = split[1]
-	} else if flag.NoOptDefVal != "" {
+	case flag.NoOptDefVal != "":
 		// '--flag' (arg was optional)
 		value = flag.NoOptDefVal
-	} else if len(a) > 0 {
+	case len(a) > 0:
 		// '--flag arg'
 		value = a[0]
 		a = a[1:]
-	} else {
+	default:
 		// '--flag' (arg was required)
 		err = f.failf("flag needs an argument: %s", s)
-		return
+
+		return a, err
 	}
 
 	err = fn(flag, value)
 	if err != nil {
-		f.failf(err.Error())
+		_ = f.failf(err.Error())
 	}
-	return
+
+	return a, err
 }
 
 func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parseFunc) (outShorts string, outArgs []string, err error) {
 	outArgs = args
 
 	if strings.HasPrefix(shorthands, "test.") {
-		return
+		return "", outArgs, nil
 	}
 
 	outShorts = shorthands[1:]
@@ -1026,44 +1045,44 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		switch {
 		case c == 'h':
 			f.usage()
-			err = ErrHelp
-			return
+
+			return "", outArgs, ErrHelp
 		case f.ParseErrorsWhitelist.UnknownFlags:
 			// '-f=arg arg ...'
 			// we do not want to lose arg in this case
 			if len(shorthands) > 2 && shorthands[1] == '=' {
-				outShorts = ""
-				return
+
+				return "", outArgs, nil
 			}
 
 			outArgs = stripUnknownFlagValue(outArgs)
-			return
+
+			return outShorts, outArgs, err
 		default:
-			err = f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
-			return
+			return outShorts, outArgs, f.failf("unknown shorthand flag: %q in -%s", c, shorthands)
 		}
 	}
 
 	var value string
-	if len(shorthands) > 2 && shorthands[1] == '=' {
+	switch {
+	case len(shorthands) > 2 && shorthands[1] == '=':
 		// '-f=arg'
 		value = shorthands[2:]
 		outShorts = ""
-	} else if flag.NoOptDefVal != "" {
+	case flag.NoOptDefVal != "":
 		// '-f' (arg was optional)
 		value = flag.NoOptDefVal
-	} else if len(shorthands) > 1 {
+	case len(shorthands) > 1:
 		// '-farg'
 		value = shorthands[1:]
 		outShorts = ""
-	} else if len(args) > 0 {
+	case len(args) > 0:
 		// '-f arg'
 		value = args[0]
 		outArgs = args[1:]
-	} else {
+	default:
 		// '-f' (arg was required)
-		err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
-		return
+		return outShorts, outArgs, f.failf("flag needs an argument: %q in -%s", c, shorthands)
 	}
 
 	if flag.ShorthandDeprecated != "" {
@@ -1072,9 +1091,10 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 
 	err = fn(flag, value)
 	if err != nil {
-		f.failf(err.Error())
+		_ = f.failf(err.Error())
 	}
-	return
+
+	return outShorts, outArgs, err
 }
 
 func (f *FlagSet) parseShortArg(s string, args []string, fn parseFunc) (a []string, err error) {
@@ -1085,24 +1105,27 @@ func (f *FlagSet) parseShortArg(s string, args []string, fn parseFunc) (a []stri
 	for len(shorthands) > 0 {
 		shorthands, a, err = f.parseSingleShortArg(shorthands, args, fn)
 		if err != nil {
-			return
+			return a, err
 		}
 	}
 
-	return
+	return a, nil
 }
 
 func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 	for len(args) > 0 {
 		s := args[0]
 		args = args[1:]
+
 		if len(s) == 0 || s[0] != '-' || len(s) == 1 {
 			if !f.interspersed {
 				f.args = append(f.args, s)
 				f.args = append(f.args, args...)
+
 				return nil
 			}
 			f.args = append(f.args, s)
+
 			continue
 		}
 
@@ -1110,6 +1133,7 @@ func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 			if len(s) == 2 { // "--" terminates the flags
 				f.argsLenAtDash = len(f.args)
 				f.args = append(f.args, args...)
+
 				break
 			}
 			args, err = f.parseLongArg(s, args, fn)
@@ -1117,10 +1141,11 @@ func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 			args, err = f.parseShortArg(s, args, fn)
 		}
 		if err != nil {
-			return
+			return err
 		}
 	}
-	return
+
+	return nil
 }
 
 // Parse parses flag definitions from the argument list, which should not
@@ -1130,14 +1155,10 @@ func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 func (f *FlagSet) Parse(arguments []string) error {
 	if f.addedGoFlagSets != nil {
 		for _, goFlagSet := range f.addedGoFlagSets {
-			goFlagSet.Parse(nil)
+			_ = goFlagSet.Parse(nil)
 		}
 	}
 	f.parsed = true
-
-	if len(arguments) < 0 {
-		return nil
-	}
 
 	f.args = make([]string, 0, len(arguments))
 
@@ -1157,6 +1178,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 			panic(err)
 		}
 	}
+
 	return nil
 }
 
@@ -1194,7 +1216,7 @@ func (f *FlagSet) Parsed() bool {
 // after all flags are defined and before flags are accessed by the program.
 func Parse() {
 	// Ignore errors; CommandLine is set for ExitOnError.
-	CommandLine.Parse(os.Args[1:])
+	_ = CommandLine.Parse(os.Args[1:])
 }
 
 // ParseAll parses the command-line flags from os.Args[1:] and called fn for each.
@@ -1202,7 +1224,7 @@ func Parse() {
 // defined and before flags are accessed by the program.
 func ParseAll(fn func(flag *Flag, value string) error) {
 	// Ignore errors; CommandLine is set for ExitOnError.
-	CommandLine.ParseAll(os.Args[1:], fn)
+	_ = CommandLine.ParseAll(os.Args[1:], fn)
 }
 
 // SetInterspersed sets whether to support interspersed option/non-option arguments.

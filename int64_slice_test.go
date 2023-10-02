@@ -46,10 +46,11 @@ func TestI64S(t *testing.T) {
 
 	vals := []string{"1", "2", "4", "3"}
 	arg := fmt.Sprintf("--is=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range is {
 		d, err := strconv.ParseInt(vals[i], 0, 64)
 		if err != nil {
@@ -59,10 +60,12 @@ func TestI64S(t *testing.T) {
 			t.Fatalf("expected is[%d] to be %s but got: %d", i, vals[i], v)
 		}
 	}
-	getI64S, err := f.GetInt64Slice("is")
-	if err != nil {
-		t.Fatalf("got error: %v", err)
+
+	getI64S, eri := f.GetInt64Slice("is")
+	if eri != nil {
+		t.Fatalf("got error: %v", eri)
 	}
+
 	for i, v := range getI64S {
 		d, err := strconv.ParseInt(vals[i], 0, 64)
 		if err != nil {
@@ -80,10 +83,11 @@ func TestI64SDefault(t *testing.T) {
 
 	vals := []string{"0", "1"}
 
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range is {
 		d, err := strconv.ParseInt(vals[i], 0, 64)
 		if err != nil {
@@ -94,10 +98,11 @@ func TestI64SDefault(t *testing.T) {
 		}
 	}
 
-	getI64S, err := f.GetInt64Slice("is")
-	if err != nil {
-		t.Fatal("got an error from GetInt64Slice():", err)
+	getI64S, eri := f.GetInt64Slice("is")
+	if eri != nil {
+		t.Fatal("got an error from GetInt64Slice():", eri)
 	}
+
 	for i, v := range getI64S {
 		d, err := strconv.ParseInt(vals[i], 0, 64)
 		if err != nil {
@@ -115,10 +120,11 @@ func TestI64SWithDefault(t *testing.T) {
 
 	vals := []string{"1", "2"}
 	arg := fmt.Sprintf("--is=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range is {
 		d, err := strconv.ParseInt(vals[i], 0, 64)
 		if err != nil {
@@ -129,10 +135,11 @@ func TestI64SWithDefault(t *testing.T) {
 		}
 	}
 
-	getI64S, err := f.GetInt64Slice("is")
-	if err != nil {
-		t.Fatal("got an error from GetInt64Slice():", err)
+	getI64S, eri := f.GetInt64Slice("is")
+	if eri != nil {
+		t.Fatal("got an error from GetInt64Slice():", eri)
 	}
+
 	for i, v := range getI64S {
 		d, err := strconv.ParseInt(vals[i], 0, 64)
 		if err != nil {
@@ -180,6 +187,7 @@ func TestI64SCalledTwice(t *testing.T) {
 	if err != nil {
 		t.Fatal("expected no error; got", err)
 	}
+
 	for i, v := range is {
 		if expected[i] != v {
 			t.Fatalf("expected is[%d] to be %d but got: %d", i, expected[i], v)

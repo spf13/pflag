@@ -88,15 +88,15 @@ func TestEverything(t *testing.T) {
 		}
 	}
 	// Now set all flags
-	Set("test_bool", "true")
-	Set("test_int", "1")
-	Set("test_int64", "1")
-	Set("test_uint", "1")
-	Set("test_uint64", "1")
-	Set("test_string", "1")
-	Set("test_float64", "1")
-	Set("test_duration", "1s")
-	Set("test_optional_int", "1")
+	_ = Set("test_bool", "true")
+	_ = Set("test_int", "1")
+	_ = Set("test_int64", "1")
+	_ = Set("test_uint", "1")
+	_ = Set("test_uint64", "1")
+	_ = Set("test_string", "1")
+	_ = Set("test_float64", "1")
+	_ = Set("test_duration", "1s")
+	_ = Set("test_optional_int", "1")
 	desired = "1"
 	Visit(visitor)
 	if len(m) != 9 {
@@ -330,16 +330,16 @@ func testParse(f *FlagSet, t *testing.T) {
 	if v, err := f.GetFloat64("float64"); err != nil || v != *float64Flag {
 		t.Errorf("GetFloat64 returned %v but float64Flag was %v", v, *float64Flag)
 	}
-	if !(*ipFlag).Equal(net.ParseIP("10.11.12.13")) {
+	if !ipFlag.Equal(net.ParseIP("10.11.12.13")) {
 		t.Error("ip flag should be 10.11.12.13, is ", *ipFlag)
 	}
 	if v, err := f.GetIP("ip"); err != nil || !v.Equal(*ipFlag) {
 		t.Errorf("GetIP returned %v but ipFlag was %v", v, *ipFlag)
 	}
-	if (*maskFlag).String() != ParseIPv4Mask("255.255.255.0").String() {
-		t.Error("mask flag should be 255.255.255.0, is ", (*maskFlag).String())
+	if maskFlag.String() != ParseIPv4Mask("255.255.255.0").String() {
+		t.Error("mask flag should be 255.255.255.0, is ", maskFlag.String())
 	}
-	if v, err := f.GetIPv4Mask("mask"); err != nil || v.String() != (*maskFlag).String() {
+	if v, err := f.GetIPv4Mask("mask"); err != nil || v.String() != maskFlag.String() {
 		t.Errorf("GetIP returned %v maskFlag was %v error was %v", v, *maskFlag, err)
 	}
 	if *durationFlag != 2*time.Minute {
@@ -446,7 +446,7 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		"-u=unknown3Value",
 		"-p",
 		"unknown4Value",
-		"-q", //another unknown with bool value
+		"-q", // another unknown with bool value
 		"-y",
 		"ee",
 		"--unknown7=unknown7value",
@@ -541,13 +541,16 @@ func TestShorthand(t *testing.T) {
 	if *stringzFlag != "something" {
 		t.Error("stringz flag should be `something`, is ", *stringzFlag)
 	}
-	if len(f.Args()) != 2 {
+
+	switch {
+	case len(f.Args()) != 2:
 		t.Error("expected one argument, got", len(f.Args()))
-	} else if f.Args()[0] != extra {
+	case f.Args()[0] != extra:
 		t.Errorf("expected argument %q got %q", extra, f.Args()[0])
-	} else if f.Args()[1] != notaflag {
+	case f.Args()[1] != notaflag:
 		t.Errorf("expected argument %q got %q", notaflag, f.Args()[1])
 	}
+
 	if f.ArgsLenAtDash() != 1 {
 		t.Errorf("expected argsLenAtDash %d got %d", f.ArgsLenAtDash(), 1)
 	}
@@ -583,7 +586,7 @@ func TestShorthandLookup(t *testing.T) {
 		t.Errorf("f.ShorthandLookup(\"\") did not return nil")
 	}
 	defer func() {
-		recover()
+		_ = recover()
 	}()
 	_ = f.ShorthandLookup("ab")
 	// should NEVER get here. lookup should panic. defer'd func should recover it.
@@ -640,16 +643,16 @@ func TestChangedHelper(t *testing.T) {
 	}
 }
 
-func replaceSeparators(name string, from []string, to string) string {
+func replaceSeparators(name string, from []string, to string) string { //nolint: unparam
 	result := name
 	for _, sep := range from {
-		result = strings.Replace(result, sep, to, -1)
+		result = strings.ReplaceAll(result, sep, to)
 	}
 	// Type convert to indicate normalization has been done.
 	return result
 }
 
-func wordSepNormalizeFunc(f *FlagSet, name string) NormalizedName {
+func wordSepNormalizeFunc(_ *FlagSet, name string) NormalizedName {
 	seps := []string{"-", "_"}
 	name = replaceSeparators(name, seps, ".")
 	normalizeFlagNameInvocations++
@@ -707,15 +710,14 @@ func TestWordSepNormalizedNames(t *testing.T) {
 	testWordSepNormalizedNames(args, t)
 }
 
-func aliasAndWordSepFlagNames(f *FlagSet, name string) NormalizedName {
+func aliasAndWordSepFlagNames(_ *FlagSet, name string) NormalizedName {
 	seps := []string{"-", "_"}
 
 	oldName := replaceSeparators("old-valid_flag", seps, ".")
 	newName := replaceSeparators("valid-flag", seps, ".")
 
 	name = replaceSeparators(name, seps, ".")
-	switch name {
-	case oldName:
+	if name == oldName {
 		name = newName
 	}
 
@@ -814,7 +816,7 @@ func TestNormalizationSetFlags(t *testing.T) {
 	}
 
 	f.Bool(testName, false, "bool value")
-	f.Set(testName, "true")
+	_ = f.Set(testName, "true")
 	f.SetNormalizeFunc(nfunc)
 
 	if len(f.formal) != 1 {
@@ -872,7 +874,7 @@ func TestSetOutput(t *testing.T) {
 	var buf bytes.Buffer
 	flags.SetOutput(&buf)
 	flags.Init("test", ContinueOnError)
-	flags.Parse([]string{"--unknown"})
+	_ = flags.Parse([]string{"--unknown"})
 	if out := buf.String(); !strings.Contains(out, "--unknown") {
 		t.Logf("expected output mentioning unknown; got %q", out)
 	}
@@ -1009,7 +1011,7 @@ func TestTermination(t *testing.T) {
 func getDeprecatedFlagSet() *FlagSet {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("badflag", true, "always true")
-	f.MarkDeprecated("badflag", "use --good-flag instead")
+	_ = f.MarkDeprecated("badflag", "use --good-flag instead")
 	return f
 }
 func TestDeprecatedFlagInDocs(t *testing.T) {
@@ -1049,7 +1051,7 @@ func TestDeprecatedFlagShorthandInDocs(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	name := "noshorthandflag"
 	f.BoolP(name, "n", true, "always true")
-	f.MarkShorthandDeprecated("noshorthandflag", fmt.Sprintf("use --%s instead", name))
+	_ = f.MarkShorthandDeprecated("noshorthandflag", fmt.Sprintf("use --%s instead", name))
 
 	out := new(bytes.Buffer)
 	f.SetOutput(out)
@@ -1060,7 +1062,7 @@ func TestDeprecatedFlagShorthandInDocs(t *testing.T) {
 	}
 }
 
-func parseReturnStderr(t *testing.T, f *FlagSet, args []string) (string, error) {
+func parseReturnStderr(_ *testing.T, f *FlagSet, args []string) (string, error) {
 	oldStderr := os.Stderr
 	r, w, _ := os.Pipe()
 	os.Stderr = w
@@ -1071,7 +1073,7 @@ func parseReturnStderr(t *testing.T, f *FlagSet, args []string) (string, error) 
 	// copy the output in a separate goroutine so printing can't block indefinitely
 	go func() {
 		var buf bytes.Buffer
-		io.Copy(&buf, r)
+		_, _ = io.Copy(&buf, r)
 		outC <- buf.String()
 	}()
 
@@ -1086,7 +1088,7 @@ func TestDeprecatedFlagUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("badflag", true, "always true")
 	usageMsg := "use --good-flag instead"
-	f.MarkDeprecated("badflag", usageMsg)
+	_ = f.MarkDeprecated("badflag", usageMsg)
 
 	args := []string{"--badflag"}
 	out, err := parseReturnStderr(t, f, args)
@@ -1104,7 +1106,7 @@ func TestDeprecatedFlagShorthandUsage(t *testing.T) {
 	name := "noshorthandflag"
 	f.BoolP(name, "n", true, "always true")
 	usageMsg := fmt.Sprintf("use --%s instead", name)
-	f.MarkShorthandDeprecated(name, usageMsg)
+	_ = f.MarkShorthandDeprecated(name, usageMsg)
 
 	args := []string{"-n"}
 	out, err := parseReturnStderr(t, f, args)
@@ -1122,7 +1124,7 @@ func TestDeprecatedFlagUsageNormalized(t *testing.T) {
 	f.Bool("bad-double_flag", true, "always true")
 	f.SetNormalizeFunc(wordSepNormalizeFunc)
 	usageMsg := "use --good-flag instead"
-	f.MarkDeprecated("bad_double-flag", usageMsg)
+	_ = f.MarkDeprecated("bad_double-flag", usageMsg)
 
 	args := []string{"--bad_double_flag"}
 	out, err := parseReturnStderr(t, f, args)
@@ -1148,11 +1150,10 @@ func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagInUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
-	f.MarkHidden("secretFlag")
+	_ = f.MarkHidden("secretFlag")
 
 	out := new(bytes.Buffer)
 	f.SetOutput(out)
@@ -1163,11 +1164,10 @@ func TestHiddenFlagInUsage(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
-	f.MarkHidden("secretFlag")
+	_ = f.MarkHidden("secretFlag")
 
 	args := []string{"--secretFlag"}
 	out, err := parseReturnStderr(t, f, args)
@@ -1253,7 +1253,7 @@ func TestPrintDefaults(t *testing.T) {
 	got := buf.String()
 	if got != defaultOutput {
 		fmt.Println("\n" + got)
-		fmt.Println("\n" + defaultOutput)
+		fmt.Printf("\n" + defaultOutput)
 		t.Errorf("got %q want %q\n", got, defaultOutput)
 	}
 }
@@ -1286,7 +1286,7 @@ func TestVisitFlagOrder(t *testing.T) {
 	names := []string{"C", "B", "A", "D"}
 	for _, name := range names {
 		fs.Bool(name, false, "")
-		fs.Set(name, "true")
+		_ = fs.Set(name, "true")
 	}
 
 	i := 0

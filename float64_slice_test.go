@@ -46,10 +46,11 @@ func TestF64S(t *testing.T) {
 
 	vals := []string{"1.0", "2.0", "4.0", "3.0"}
 	arg := fmt.Sprintf("--f64s=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range f64s {
 		d, err := strconv.ParseFloat(vals[i], 64)
 		if err != nil {
@@ -59,10 +60,12 @@ func TestF64S(t *testing.T) {
 			t.Fatalf("expected f64s[%d] to be %s but got: %f", i, vals[i], v)
 		}
 	}
-	getF64S, err := f.GetFloat64Slice("f64s")
-	if err != nil {
-		t.Fatalf("got error: %v", err)
+
+	getF64S, erf := f.GetFloat64Slice("f64s")
+	if erf != nil {
+		t.Fatalf("got error: %v", erf)
 	}
+
 	for i, v := range getF64S {
 		d, err := strconv.ParseFloat(vals[i], 64)
 		if err != nil {
@@ -80,10 +83,11 @@ func TestF64SDefault(t *testing.T) {
 
 	vals := []string{"0.0", "1.0"}
 
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range f64s {
 		d, err := strconv.ParseFloat(vals[i], 64)
 		if err != nil {
@@ -94,10 +98,11 @@ func TestF64SDefault(t *testing.T) {
 		}
 	}
 
-	getF64S, err := f.GetFloat64Slice("f64s")
-	if err != nil {
-		t.Fatal("got an error from GetFloat64Slice():", err)
+	getF64S, erf := f.GetFloat64Slice("f64s")
+	if erf != nil {
+		t.Fatal("got an error from GetFloat64Slice():", erf)
 	}
+
 	for i, v := range getF64S {
 		d, err := strconv.ParseFloat(vals[i], 64)
 		if err != nil {
@@ -115,10 +120,11 @@ func TestF64SWithDefault(t *testing.T) {
 
 	vals := []string{"1.0", "2.0"}
 	arg := fmt.Sprintf("--f64s=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range f64s {
 		d, err := strconv.ParseFloat(vals[i], 64)
 		if err != nil {
@@ -129,10 +135,11 @@ func TestF64SWithDefault(t *testing.T) {
 		}
 	}
 
-	getF64S, err := f.GetFloat64Slice("f64s")
-	if err != nil {
-		t.Fatal("got an error from GetFloat64Slice():", err)
+	getF64S, erf := f.GetFloat64Slice("f64s")
+	if erf != nil {
+		t.Fatal("got an error from GetFloat64Slice():", erf)
 	}
+
 	for i, v := range getF64S {
 		d, err := strconv.ParseFloat(vals[i], 64)
 		if err != nil {
@@ -180,6 +187,7 @@ func TestF64SCalledTwice(t *testing.T) {
 	if err != nil {
 		t.Fatal("expected no error; got", err)
 	}
+
 	for i, v := range f64s {
 		if expected[i] != v {
 			t.Fatalf("expected f64s[%d] to be %f but got: %f", i, expected[i], v)

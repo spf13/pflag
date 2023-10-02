@@ -65,10 +65,11 @@ func TestIPSDefault(t *testing.T) {
 	f := setUpIPSFlagSetWithDefault(&ips)
 
 	vals := []string{"192.168.1.1", "0:0:0:0:0:0:0:1"}
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range ips {
 		if ip := net.ParseIP(vals[i]); ip == nil {
 			t.Fatalf("invalid string being converted to IP address: %s", vals[i])
@@ -77,10 +78,11 @@ func TestIPSDefault(t *testing.T) {
 		}
 	}
 
-	getIPS, err := f.GetIPSlice("ips")
-	if err != nil {
+	getIPS, eri := f.GetIPSlice("ips")
+	if eri != nil {
 		t.Fatal("got an error from GetIPSlice")
 	}
+
 	for i, v := range getIPS {
 		if ip := net.ParseIP(vals[i]); ip == nil {
 			t.Fatalf("invalid string being converted to IP address: %s", vals[i])
