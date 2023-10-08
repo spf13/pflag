@@ -5,234 +5,212 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func setUpBSFlagSet(bsp *[]bool) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.BoolSliceVar(bsp, "bs", []bool{}, "Command separated list!")
-	return f
-}
+func TestBoolSlice(t *testing.T) {
+	t.Parallel()
 
-func setUpBSFlagSetWithDefault(bsp *[]bool) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.BoolSliceVar(bsp, "bs", []bool{false, true}, "Command separated list!")
-	return f
-}
-
-func TestEmptyBS(t *testing.T) {
-	var bs []bool
-	f := setUpBSFlagSet(&bs)
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	newFlag := func(bsp *[]bool) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.BoolSliceVar(bsp, "bs", []bool{}, "Command separated list!")
+		return f
 	}
 
-	getBS, err := f.GetBoolSlice("bs")
-	if err != nil {
-		t.Fatal("got an error from GetBoolSlice():", err)
-	}
-	if len(getBS) != 0 {
-		t.Fatalf("got bs %v with len=%d but expected length=0", getBS, len(getBS))
-	}
-}
+	t.Run("with empty slice", func(t *testing.T) {
+		bs := make([]bool, 0)
+		f := newFlag(&bs)
 
-func TestBS(t *testing.T) {
-	var bs []bool
-	f := setUpBSFlagSet(&bs)
+		require.NoError(t, f.Parse([]string{}))
 
-	vals := []string{"1", "F", "TRUE", "0"}
-	arg := fmt.Sprintf("--bs=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	for i, v := range bs {
-		b, err := strconv.ParseBool(vals[i])
-		if err != nil {
-			t.Fatalf("got error: %v", err)
+		getBS, err := f.GetBoolSlice("bs")
+		require.NoErrorf(t, err,
+			"got an error from GetBoolSlice(): %v", err,
+		)
+
+		require.Empty(t, getBS)
+	})
+
+	t.Run("with truthy/falsy values", func(t *testing.T) {
+		vals := []string{"1", "F", "TRUE", "0"}
+		bs := make([]bool, 0, len(vals))
+		f := newFlag(&bs)
+
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf("--bs=%s", strings.Join(vals, ",")),
+		}))
+
+		for i, v := range bs {
+			b, err := strconv.ParseBool(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, b,
+				"expected is[%d] to be %s but got: %t", i, vals[i], v,
+			)
 		}
-		if b != v {
-			t.Fatalf("expected is[%d] to be %s but got: %t", i, vals[i], v)
-		}
-	}
-	getBS, err := f.GetBoolSlice("bs")
-	if err != nil {
-		t.Fatalf("got error: %v", err)
-	}
-	for i, v := range getBS {
-		b, err := strconv.ParseBool(vals[i])
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-		if b != v {
-			t.Fatalf("expected bs[%d] to be %s but got: %t from GetBoolSlice", i, vals[i], v)
-		}
-	}
-}
 
-func TestBSDefault(t *testing.T) {
-	var bs []bool
-	f := setUpBSFlagSetWithDefault(&bs)
+		getBS, erb := f.GetBoolSlice("bs")
+		require.NoError(t, erb)
 
-	vals := []string{"false", "T"}
-
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	for i, v := range bs {
-		b, err := strconv.ParseBool(vals[i])
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-		if b != v {
-			t.Fatalf("expected bs[%d] to be %t from GetBoolSlice but got: %t", i, b, v)
-		}
-	}
-
-	getBS, err := f.GetBoolSlice("bs")
-	if err != nil {
-		t.Fatal("got an error from GetBoolSlice():", err)
-	}
-	for i, v := range getBS {
-		b, err := strconv.ParseBool(vals[i])
-		if err != nil {
-			t.Fatal("got an error from GetBoolSlice():", err)
-		}
-		if b != v {
-			t.Fatalf("expected bs[%d] to be %t from GetBoolSlice but got: %t", i, b, v)
-		}
-	}
-}
-
-func TestBSWithDefault(t *testing.T) {
-	var bs []bool
-	f := setUpBSFlagSetWithDefault(&bs)
-
-	vals := []string{"FALSE", "1"}
-	arg := fmt.Sprintf("--bs=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	for i, v := range bs {
-		b, err := strconv.ParseBool(vals[i])
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-		if b != v {
-			t.Fatalf("expected bs[%d] to be %t but got: %t", i, b, v)
-		}
-	}
-
-	getBS, err := f.GetBoolSlice("bs")
-	if err != nil {
-		t.Fatal("got an error from GetBoolSlice():", err)
-	}
-	for i, v := range getBS {
-		b, err := strconv.ParseBool(vals[i])
-		if err != nil {
-			t.Fatalf("got error: %v", err)
-		}
-		if b != v {
-			t.Fatalf("expected bs[%d] to be %t from GetBoolSlice but got: %t", i, b, v)
-		}
-	}
-}
-
-func TestBSCalledTwice(t *testing.T) {
-	var bs []bool
-	f := setUpBSFlagSet(&bs)
-
-	in := []string{"T,F", "T"}
-	expected := []bool{true, false, true}
-	argfmt := "--bs=%s"
-	arg1 := fmt.Sprintf(argfmt, in[0])
-	arg2 := fmt.Sprintf(argfmt, in[1])
-	err := f.Parse([]string{arg1, arg2})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-	for i, v := range bs {
-		if expected[i] != v {
-			t.Fatalf("expected bs[%d] to be %t but got %t", i, expected[i], v)
-		}
-	}
-}
-
-func TestBSAsSliceValue(t *testing.T) {
-	var bs []bool
-	f := setUpBSFlagSet(&bs)
-
-	in := []string{"true", "false"}
-	argfmt := "--bs=%s"
-	arg1 := fmt.Sprintf(argfmt, in[0])
-	arg2 := fmt.Sprintf(argfmt, in[1])
-	err := f.Parse([]string{arg1, arg2})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
-	}
-
-	f.VisitAll(func(f *Flag) {
-		if val, ok := f.Value.(SliceValue); ok {
-			_ = val.Replace([]string{"false"})
+		for i, v := range getBS {
+			b, err := strconv.ParseBool(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, b,
+				"expected bs[%d] to be %s but got: %t from GetBoolSlice", i, vals[i], v,
+			)
 		}
 	})
-	if len(bs) != 1 || bs[0] != false {
-		t.Fatalf("Expected ss to be overwritten with 'false', but got: %v", bs)
-	}
-}
 
-func TestBSBadQuoting(t *testing.T) {
-
-	tests := []struct {
-		Want    []bool
-		FlagArg []string
-	}{
-		{
-			Want:    []bool{true, false, true},
-			FlagArg: []string{"1", "0", "true"},
-		},
-		{
-			Want:    []bool{true, false},
-			FlagArg: []string{"True", "F"},
-		},
-		{
-			Want:    []bool{true, false},
-			FlagArg: []string{"T", "0"},
-		},
-		{
-			Want:    []bool{true, false},
-			FlagArg: []string{"1", "0"},
-		},
-		{
-			Want:    []bool{true, false, false},
-			FlagArg: []string{"true,false", "false"},
-		},
-		{
-			Want:    []bool{true, false, false, true, false, true, false},
-			FlagArg: []string{`"true,false,false,1,0,     T"`, " false "},
-		},
-		{
-			Want:    []bool{false, false, true, false, true, false, true},
-			FlagArg: []string{`"0, False,  T,false  , true,F"`, "true"},
-		},
+	newFlagWithDefault := func(bsp *[]bool) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.BoolSliceVar(bsp, "bs", []bool{false, true}, "Command separated list!")
+		return f
 	}
 
-	for i, test := range tests {
+	t.Run("with defaults (1)", func(t *testing.T) {
+		vals := []string{"false", "T"}
+		bs := make([]bool, 0, len(vals))
+		f := newFlagWithDefault(&bs)
 
-		var bs []bool
-		f := setUpBSFlagSet(&bs)
+		require.NoError(t, f.Parse([]string{}))
 
-		if err := f.Parse([]string{fmt.Sprintf("--bs=%s", strings.Join(test.FlagArg, ","))}); err != nil {
-			t.Fatalf("flag parsing failed with error: %s\nparsing:\t%#v\nwant:\t\t%#v",
-				err, test.FlagArg, test.Want[i])
+		for i, v := range bs {
+			b, err := strconv.ParseBool(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, b,
+				"expected bs[%d] to be %t from GetBoolSlice but got: %t", i, b, v,
+			)
 		}
 
-		for j, b := range bs {
-			if b != test.Want[j] {
-				t.Fatalf("bad value parsed for test %d on bool %d:\nwant:\t%t\ngot:\t%t", i, j, test.Want[j], b)
+		getBS, erb := f.GetBoolSlice("bs")
+		require.NoErrorf(t, erb,
+			"got an error from GetBoolSlice(): %v", erb,
+		)
+
+		for i, v := range getBS {
+			b, err := strconv.ParseBool(vals[i])
+			require.NoErrorf(t, err,
+				"got an error from GetBoolSlice(): %v", err,
+			)
+			require.Equalf(t, v, b,
+				"expected bs[%d] to be %t from GetBoolSlice but got: %t", i, b, v,
+			)
+		}
+	})
+
+	t.Run("with defaults (2)", func(t *testing.T) {
+		vals := []string{"FALSE", "1"}
+		bs := make([]bool, 0, len(vals))
+		f := newFlagWithDefault(&bs)
+
+		arg := fmt.Sprintf("--bs=%s", strings.Join(vals, ","))
+		require.NoError(t, f.Parse([]string{arg}))
+
+		for i, v := range bs {
+			b, err := strconv.ParseBool(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, b,
+				"expected bs[%d] to be %t but got: %t", i, b, v,
+			)
+		}
+
+		getBS, erb := f.GetBoolSlice("bs")
+		require.NoErrorf(t, erb,
+			"got an error from GetBoolSlice(): %v", erb,
+		)
+
+		for i, v := range getBS {
+			b, err := strconv.ParseBool(vals[i])
+			require.NoError(t, err)
+			require.Equalf(t, v, b,
+				"expected bs[%d] to be %t from GetBoolSlice but got: %t", i, b, v,
+			)
+		}
+	})
+
+	t.Run("called twice", func(t *testing.T) {
+		const argfmt = "--bs=%s"
+		in := []string{"T,F", "T"}
+		bs := make([]bool, 0, len(in))
+		f := newFlag(&bs)
+		expected := []bool{true, false, true}
+
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf(argfmt, in[0]),
+			fmt.Sprintf(argfmt, in[1]),
+		}))
+
+		require.Equal(t, expected, bs)
+	})
+
+	t.Run("as slice value", func(t *testing.T) {
+		const argfmt = "--bs=%s"
+		in := []string{"true", "false"}
+		bs := make([]bool, 0, len(in))
+		f := newFlag(&bs)
+
+		require.NoError(t, f.Parse([]string{
+			fmt.Sprintf(argfmt, in[0]),
+			fmt.Sprintf(argfmt, in[1]),
+		}))
+
+		f.VisitAll(func(f *Flag) {
+			if val, ok := f.Value.(SliceValue); ok {
+				require.NoError(t, val.Replace([]string{"false"}))
 			}
+		})
+
+		require.Equalf(t, []bool{false}, bs,
+			"expected ss to be overwritten with 'false', but got: %v", bs,
+		)
+	})
+
+	t.Run("with quoting", func(t *testing.T) {
+		tests := []struct {
+			Want    []bool
+			FlagArg []string
+		}{
+			{
+				Want:    []bool{true, false, true},
+				FlagArg: []string{"1", "0", "true"},
+			},
+			{
+				Want:    []bool{true, false},
+				FlagArg: []string{"True", "F"},
+			},
+			{
+				Want:    []bool{true, false},
+				FlagArg: []string{"T", "0"},
+			},
+			{
+				Want:    []bool{true, false},
+				FlagArg: []string{"1", "0"},
+			},
+			{
+				Want:    []bool{true, false, false},
+				FlagArg: []string{"true,false", "false"},
+			},
+			{
+				Want:    []bool{true, false, false, true, false, true, false},
+				FlagArg: []string{`"true,false,false,1,0,     T"`, " false "},
+			},
+			{
+				Want:    []bool{false, false, true, false, true, false, true},
+				FlagArg: []string{`"0, False,  T,false  , true,F"`, "true"},
+			},
 		}
-	}
+
+		for i, test := range tests {
+			bs := make([]bool, 0, 7)
+			f := newFlag(&bs)
+
+			require.NoErrorf(t,
+				f.Parse([]string{fmt.Sprintf("--bs=%s", strings.Join(test.FlagArg, ","))}),
+				"flag parsing failed for test %d with error:\nparsing:\t%#vnwant:\t\t%#v",
+				test.FlagArg, test.Want,
+			)
+
+			require.Equalf(t, test.Want, bs, "on test %d", i)
+		}
+	})
 }

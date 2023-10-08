@@ -5,16 +5,18 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func setUpBytesHex(bytesHex *[]byte) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.BytesHexVar(bytesHex, "bytes", []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}, "Some bytes in HEX")
-	f.BytesHexVarP(bytesHex, "bytes2", "B", []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}, "Some bytes in HEX")
-	return f
-}
-
 func TestBytesHex(t *testing.T) {
+	newFlag := func(bytesHex *[]byte) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.BytesHexVar(bytesHex, "bytes", []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}, "Some bytes in HEX")
+		f.BytesHexVarP(bytesHex, "bytes2", "B", []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}, "Some bytes in HEX")
+		return f
+	}
+
 	testCases := []struct {
 		input    string
 		success  bool
@@ -38,7 +40,7 @@ func TestBytesHex(t *testing.T) {
 
 	for i := range testCases {
 		var bytesHex []byte
-		f := setUpBytesHex(&bytesHex)
+		f := newFlag(&bytesHex)
 
 		tc := &testCases[i]
 
@@ -52,34 +54,37 @@ func TestBytesHex(t *testing.T) {
 		for _, arg := range args {
 			err := f.Parse([]string{arg})
 
-			if err != nil && tc.success == true {
-				t.Errorf("expected success, got %q", err)
+			if !tc.success {
+				require.Errorf(t, err,
+					"expected failure while processing %q", tc.input,
+				)
+
 				continue
-			} else if err == nil && tc.success == false {
-				// bytesHex, err := f.GetBytesHex("bytes")
-				t.Errorf("expected failure while processing %q", tc.input)
-				continue
-			} else if tc.success {
-				bytesHex, err := f.GetBytesHex("bytes")
-				if err != nil {
-					t.Errorf("Got error trying to fetch the 'bytes' flag: %v", err)
-				}
-				if fmt.Sprintf("%X", bytesHex) != tc.expected {
-					t.Errorf("expected %q, got '%X'", tc.expected, bytesHex)
-				}
 			}
+
+			require.NoErrorf(t, err, "expected success, got %q", err)
+
+			bytesHex, err := f.GetBytesHex("bytes")
+			require.NoErrorf(t, err,
+				"got error trying to fetch the 'bytes' flag: %v", err,
+			)
+
+			require.Equalf(t, tc.expected, fmt.Sprintf("%X", bytesHex),
+				"expected %q, got '%X'", tc.expected, bytesHex,
+			)
+
 		}
 	}
 }
 
-func setUpBytesBase64(bytesBase64 *[]byte) *FlagSet {
-	f := NewFlagSet("test", ContinueOnError)
-	f.BytesBase64Var(bytesBase64, "bytes", []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}, "Some bytes in Base64")
-	f.BytesBase64VarP(bytesBase64, "bytes2", "B", []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}, "Some bytes in Base64")
-	return f
-}
-
 func TestBytesBase64(t *testing.T) {
+	newFlag := func(bytesBase64 *[]byte) *FlagSet {
+		f := NewFlagSet("test", ContinueOnError)
+		f.BytesBase64Var(bytesBase64, "bytes", []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}, "Some bytes in Base64")
+		f.BytesBase64VarP(bytesBase64, "bytes2", "B", []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 0}, "Some bytes in Base64")
+		return f
+	}
+
 	testCases := []struct {
 		input    string
 		success  bool
@@ -99,11 +104,9 @@ func TestBytesBase64(t *testing.T) {
 
 	for i := range testCases {
 		var bytesBase64 []byte
-		f := setUpBytesBase64(&bytesBase64)
-
+		f := newFlag(&bytesBase64)
 		tc := &testCases[i]
 
-		// --bytes
 		args := []string{
 			fmt.Sprintf("--bytes=%s", tc.input),
 			fmt.Sprintf("-B  %s", tc.input),
@@ -112,23 +115,23 @@ func TestBytesBase64(t *testing.T) {
 
 		for _, arg := range args {
 			err := f.Parse([]string{arg})
+			if !tc.success {
+				require.Errorf(t, err,
+					"expected failure while processing %q", tc.input,
+				)
 
-			if err != nil && tc.success == true {
-				t.Errorf("expected success, got %q", err)
 				continue
-			} else if err == nil && tc.success == false {
-				// bytesBase64, err := f.GetBytesBase64("bytes")
-				t.Errorf("expected failure while processing %q", tc.input)
-				continue
-			} else if tc.success {
-				bytesBase64, err := f.GetBytesBase64("bytes")
-				if err != nil {
-					t.Errorf("Got error trying to fetch the 'bytes' flag: %v", err)
-				}
-				if base64.StdEncoding.EncodeToString(bytesBase64) != tc.expected {
-					t.Errorf("expected %q, got '%X'", tc.expected, bytesBase64)
-				}
 			}
+
+			require.NoErrorf(t, err, "expected success, got %q", err)
+
+			bytesBase64, err := f.GetBytesBase64("bytes")
+			require.NoErrorf(t, err,
+				"got error trying to fetch the 'bytes' flag: %v", err,
+			)
+			require.Equalf(t, tc.expected, base64.StdEncoding.EncodeToString(bytesBase64),
+				"expected %q, got '%X'", tc.expected, bytesBase64,
+			)
 		}
 	}
 }
