@@ -527,7 +527,8 @@ func Set(name, value string) error {
 }
 
 // PrintDefaults prints, to standard error unless configured
-// otherwise, the default values of all defined flags in the set.
+// otherwise, the default values of all defined flags in the set. See the
+// documentation for the global function PrintDefaults for more information.
 func (f *FlagSet) PrintDefaults() {
 	usages := f.FlagUsages()
 	fmt.Fprint(f.Output(), usages)
@@ -759,6 +760,17 @@ func (f *FlagSet) FlagUsages() string {
 }
 
 // PrintDefaults prints to standard error the default values of all defined command-line flags.
+//
+// The listed type can be changed by placing a back-quoted name in the flag's
+// usage string; the first such item in the message is taken to be a parameter
+// name to show in the message and the back quotes are stripped from the
+// message when displayed. For instance, given
+//
+//	flag.String("I", "", "search `directory` for include files")
+//
+// the output will be
+//
+//	-I directory search directory for include files.
 func PrintDefaults() {
 	CommandLine.PrintDefaults()
 }
