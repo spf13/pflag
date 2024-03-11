@@ -145,6 +145,9 @@ type FlagSet struct {
 	// help/usage messages.
 	SortFlags bool
 
+	// Allow multiple characters shorthand
+	AllowMultCharsShorthand bool
+
 	// ParseErrorsWhitelist is used to configure a whitelist of errors
 	ParseErrorsWhitelist ParseErrorsWhitelist
 
@@ -156,7 +159,7 @@ type FlagSet struct {
 	formal            map[NormalizedName]*Flag
 	orderedFormal     []*Flag
 	sortedFormal      []*Flag
-	shorthands        map[byte]*Flag
+	shorthands        map[string]*Flag
 	args              []string // arguments after flags
 	argsLenAtDash     int      // len(args) when a '--' was located when parsing, or -1 if no --
 	errorHandling     ErrorHandling
@@ -363,12 +366,17 @@ func (f *FlagSet) ShorthandLookup(name string) *Flag {
 	if name == "" {
 		return nil
 	}
-	if len(name) > 1 {
-		msg := fmt.Sprintf("can not look up shorthand which is more than one ASCII character: %q", name)
-		fmt.Fprintf(f.Output(), msg)
-		panic(msg)
+	c := ""
+	if f.AllowMultCharsShorthand {
+		c = name
+	} else {
+		if len(name) > 1 {
+			msg := fmt.Sprintf("can not look up shorthand which is more than one ASCII character: %q", name)
+			fmt.Fprintf(f.Output(), msg)
+			panic(msg)
+		}
+		c = string(name[0])
 	}
-	c := name[0]
 	return f.shorthands[c]
 }
 
@@ -865,15 +873,20 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	if flag.Shorthand == "" {
 		return
 	}
-	if len(flag.Shorthand) > 1 {
+	if !f.AllowMultCharsShorthand && len(flag.Shorthand) > 1 {
 		msg := fmt.Sprintf("%q shorthand is more than one ASCII character", flag.Shorthand)
 		fmt.Fprintf(f.Output(), msg)
 		panic(msg)
 	}
 	if f.shorthands == nil {
-		f.shorthands = make(map[byte]*Flag)
+		f.shorthands = make(map[string]*Flag)
 	}
-	c := flag.Shorthand[0]
+	c := ""
+	if f.AllowMultCharsShorthand {
+		c = flag.Shorthand
+	} else {
+		c = string(flag.Shorthand[0])
+	}
 	used, alreadyThere := f.shorthands[c]
 	if alreadyThere {
 		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
@@ -1018,22 +1031,42 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		return
 	}
 
-	outShorts = shorthands[1:]
-	c := shorthands[0]
+	c := ""
+	eqVal := ""
+	if f.AllowMultCharsShorthand {
+		// When in multiple-chars-shorhand-enabled mode, only "-ff=arg" or "-ff arg" is allowed.
+		eqPos := strings.Index(shorthands, "=")
+		if eqPos > 0 {
+			c = shorthands[0:eqPos]
+			eqVal = shorthands[eqPos+1:]
+		} else {
+			c = shorthands
+		}
+		outShorts = ""
+	} else {
+		outShorts = shorthands[1:]
+		c = string(shorthands[0])
+	}
 
 	flag, exists := f.shorthands[c]
 	if !exists {
 		switch {
-		case c == 'h':
+		case c == "h":
 			f.usage()
 			err = ErrHelp
 			return
 		case f.ParseErrorsWhitelist.UnknownFlags:
 			// '-f=arg arg ...'
 			// we do not want to lose arg in this case
-			if len(shorthands) > 2 && shorthands[1] == '=' {
-				outShorts = ""
-				return
+			if f.AllowMultCharsShorthand {
+				if len(eqVal) > 0 {
+					return
+				}
+			} else {
+				if len(shorthands) > 2 && shorthands[1] == '=' {
+					outShorts = ""
+					return
+				}
 			}
 
 			outArgs = stripUnknownFlagValue(outArgs)
@@ -1045,25 +1078,43 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 	}
 
 	var value string
-	if len(shorthands) > 2 && shorthands[1] == '=' {
-		// '-f=arg'
-		value = shorthands[2:]
-		outShorts = ""
-	} else if flag.NoOptDefVal != "" {
-		// '-f' (arg was optional)
-		value = flag.NoOptDefVal
-	} else if len(shorthands) > 1 {
-		// '-farg'
-		value = shorthands[1:]
-		outShorts = ""
-	} else if len(args) > 0 {
-		// '-f arg'
-		value = args[0]
-		outArgs = args[1:]
+	if f.AllowMultCharsShorthand {
+		if len(eqVal) > 0 {
+			value = eqVal
+			outShorts = ""
+		} else if flag.NoOptDefVal != "" {
+			// '-f' (arg was optional)
+			value = flag.NoOptDefVal
+		} else if len(args) > 0 {
+			// '-f arg'
+			value = args[0]
+			outArgs = args[1:]
+		} else {
+			// '-f' (arg was required)
+			err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
+			return
+		}
 	} else {
-		// '-f' (arg was required)
-		err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
-		return
+		if len(shorthands) > 2 && shorthands[1] == '=' {
+			// '-f=arg'
+			value = shorthands[2:]
+			outShorts = ""
+		} else if flag.NoOptDefVal != "" {
+			// '-f' (arg was optional)
+			value = flag.NoOptDefVal
+		} else if len(shorthands) > 1 {
+			// '-farg'
+			value = shorthands[1:]
+			outShorts = ""
+		} else if len(args) > 0 {
+			// '-f arg'
+			value = args[0]
+			outArgs = args[1:]
+		} else {
+			// '-f' (arg was required)
+			err = f.failf("flag needs an argument: %q in -%s", c, shorthands)
+			return
+		}
 	}
 
 	if flag.ShorthandDeprecated != "" {
