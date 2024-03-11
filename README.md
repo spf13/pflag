@@ -1,7 +1,7 @@
 # carapace-pflag
 
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/rsteube/carapace-pflag)](https://pkg.go.dev/github.com/rsteube/carapace-pflag)
-[![GoReportCard](https://goreportcard.com/badge/github.com/rsteube/carapace-pflag)](https://goreportcard.com/report/github.com/rsteube/carapace-pflag)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/carapace-sh/carapace-pflag)](https://pkg.go.dev/github.com/carapace-sh/carapace-pflag)
+[![GoReportCard](https://goreportcard.com/badge/github.com/carapace-sh/carapace-pflag)](https://goreportcard.com/report/github.com/carapace-sh/carapace-pflag)
 [![Coverage Status](https://coveralls.io/repos/github/rsteube/carapace-pflag/badge.svg?branch=master)](https://coveralls.io/github/rsteube/carapace-pflag?branch=master)
 
 Fork of [spf13/pflag](https://github.com/spf13/pflag) aimed to provide support for non-posix variants in [carapace](https://github.com/rsteube/carapace) standalone mode (e.g. [carapace-bin](https://github.com/rsteube/carapace-bin)).
