@@ -9,7 +9,7 @@ POSIX/GNU-style --flags.
 
 pflag is compatible with the [GNU extensions to the POSIX recommendations
 for command-line options][1]. For a more precise description, see the
-"Command-line flag syntax" section below.
+"Command line flag syntax" section below.
 
 [1]: http://www.gnu.org/software/libc/manual/html_node/Argument-Syntax.html
 
