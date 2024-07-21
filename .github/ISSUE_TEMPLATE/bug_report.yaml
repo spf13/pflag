@@ -32,28 +32,6 @@ body:
     description: Version where this occured.
   validations:
     required: false
-- type: checkboxes
-  attributes:
-    label: OS
-    description: Operating System where this occured.
-    options:
-    - label: Linux
-    - label: OSX
-    - label: Termux
-    - label: Windows
-- type: checkboxes
-  attributes:
-    label: Shell
-    description: Shell where this occured.
-    options:
-    - label: Bash
-    - label: Elvish
-    - label: Fish
-    - label: Nushell
-    - label: Oil
-    - label: Powershell
-    - label: Xonsh
-    - label: Zsh
 - type: textarea
   attributes:
     label: Anything else?
