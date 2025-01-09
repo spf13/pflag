@@ -46,10 +46,11 @@ func TestF32S(t *testing.T) {
 
 	vals := []string{"1.0", "2.0", "4.0", "3.0"}
 	arg := fmt.Sprintf("--f32s=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range f32s {
 		d64, err := strconv.ParseFloat(vals[i], 32)
 		if err != nil {
@@ -61,10 +62,12 @@ func TestF32S(t *testing.T) {
 			t.Fatalf("expected f32s[%d] to be %s but got: %f", i, vals[i], v)
 		}
 	}
-	getF32S, err := f.GetFloat32Slice("f32s")
-	if err != nil {
-		t.Fatalf("got error: %v", err)
+
+	getF32S, erf := f.GetFloat32Slice("f32s")
+	if erf != nil {
+		t.Fatalf("got error: %v", erf)
 	}
+
 	for i, v := range getF32S {
 		d64, err := strconv.ParseFloat(vals[i], 32)
 		if err != nil {
@@ -84,10 +87,11 @@ func TestF32SDefault(t *testing.T) {
 
 	vals := []string{"0.0", "1.0"}
 
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range f32s {
 		d64, err := strconv.ParseFloat(vals[i], 32)
 		if err != nil {
@@ -100,10 +104,11 @@ func TestF32SDefault(t *testing.T) {
 		}
 	}
 
-	getF32S, err := f.GetFloat32Slice("f32s")
-	if err != nil {
-		t.Fatal("got an error from GetFloat32Slice():", err)
+	getF32S, erf := f.GetFloat32Slice("f32s")
+	if erf != nil {
+		t.Fatal("got an error from GetFloat32Slice():", erf)
 	}
+
 	for i, v := range getF32S {
 		d64, err := strconv.ParseFloat(vals[i], 32)
 		if err != nil {
@@ -123,10 +128,11 @@ func TestF32SWithDefault(t *testing.T) {
 
 	vals := []string{"1.0", "2.0"}
 	arg := fmt.Sprintf("--f32s=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range f32s {
 		d64, err := strconv.ParseFloat(vals[i], 32)
 		if err != nil {
@@ -139,10 +145,11 @@ func TestF32SWithDefault(t *testing.T) {
 		}
 	}
 
-	getF32S, err := f.GetFloat32Slice("f32s")
-	if err != nil {
-		t.Fatal("got an error from GetFloat32Slice():", err)
+	getF32S, erf := f.GetFloat32Slice("f32s")
+	if erf != nil {
+		t.Fatal("got an error from GetFloat32Slice():", erf)
 	}
+
 	for i, v := range getF32S {
 		d64, err := strconv.ParseFloat(vals[i], 32)
 		if err != nil {
@@ -192,6 +199,7 @@ func TestF32SCalledTwice(t *testing.T) {
 	if err != nil {
 		t.Fatal("expected no error; got", err)
 	}
+
 	for i, v := range f32s {
 		if expected[i] != v {
 			t.Fatalf("expected f32s[%d] to be %f but got: %f", i, expected[i], v)

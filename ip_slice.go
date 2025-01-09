@@ -72,7 +72,7 @@ func (s *ipSliceValue) String() string {
 	return "[" + out + "]"
 }
 
-func (s *ipSliceValue) fromString(val string) (net.IP, error) {
+func (s *ipSliceValue) fromString(val string) (net.IP, error) { // nolint: unparam
 	return net.ParseIP(strings.TrimSpace(val)), nil
 }
 

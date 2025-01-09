@@ -37,13 +37,14 @@ func TestCount(t *testing.T) {
 		tc := &testCases[i]
 
 		err := f.Parse(tc.input)
-		if err != nil && tc.success == true {
-			t.Errorf("expected success, got %q", err)
+		switch {
+		case err != nil && tc.success:
+			t.Errorf("expected success with %q, got %q", tc.input, err)
 			continue
-		} else if err == nil && tc.success == false {
-			t.Errorf("expected failure, got success")
+		case err == nil && !tc.success:
+			t.Errorf("expected failure with %q, got success", tc.input)
 			continue
-		} else if tc.success {
+		case tc.success:
 			c, err := f.GetCount("verbose")
 			if err != nil {
 				t.Errorf("Got error trying to fetch the counter flag")

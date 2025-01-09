@@ -46,10 +46,11 @@ func TestDS(t *testing.T) {
 
 	vals := []string{"1ns", "2ms", "3m", "4h"}
 	arg := fmt.Sprintf("--ds=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range ds {
 		d, err := time.ParseDuration(vals[i])
 		if err != nil {
@@ -59,10 +60,12 @@ func TestDS(t *testing.T) {
 			t.Fatalf("expected ds[%d] to be %s but got: %d", i, vals[i], v)
 		}
 	}
-	getDS, err := f.GetDurationSlice("ds")
-	if err != nil {
-		t.Fatalf("got error: %v", err)
+
+	getDS, erd := f.GetDurationSlice("ds")
+	if erd != nil {
+		t.Fatalf("got error: %v", erd)
 	}
+
 	for i, v := range getDS {
 		d, err := time.ParseDuration(vals[i])
 		if err != nil {
@@ -80,10 +83,11 @@ func TestDSDefault(t *testing.T) {
 
 	vals := []string{"0s", "1ns"}
 
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range ds {
 		d, err := time.ParseDuration(vals[i])
 		if err != nil {
@@ -94,10 +98,11 @@ func TestDSDefault(t *testing.T) {
 		}
 	}
 
-	getDS, err := f.GetDurationSlice("ds")
-	if err != nil {
-		t.Fatal("got an error from GetDurationSlice():", err)
+	getDS, erd := f.GetDurationSlice("ds")
+	if erd != nil {
+		t.Fatal("got an error from GetDurationSlice():", erd)
 	}
+
 	for i, v := range getDS {
 		d, err := time.ParseDuration(vals[i])
 		if err != nil {
@@ -115,10 +120,11 @@ func TestDSWithDefault(t *testing.T) {
 
 	vals := []string{"1ns", "2ns"}
 	arg := fmt.Sprintf("--ds=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range ds {
 		d, err := time.ParseDuration(vals[i])
 		if err != nil {
@@ -129,10 +135,11 @@ func TestDSWithDefault(t *testing.T) {
 		}
 	}
 
-	getDS, err := f.GetDurationSlice("ds")
-	if err != nil {
-		t.Fatal("got an error from GetDurationSlice():", err)
+	getDS, erd := f.GetDurationSlice("ds")
+	if erd != nil {
+		t.Fatal("got an error from GetDurationSlice():", erd)
 	}
+
 	for i, v := range getDS {
 		d, err := time.ParseDuration(vals[i])
 		if err != nil {
@@ -180,6 +187,7 @@ func TestDSCalledTwice(t *testing.T) {
 	if err != nil {
 		t.Fatal("expected no error; got", err)
 	}
+
 	for i, v := range ds {
 		if expected[i] != v {
 			t.Fatalf("expected ds[%d] to be %d but got: %d", i, expected[i], v)

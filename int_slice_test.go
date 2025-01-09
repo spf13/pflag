@@ -46,10 +46,11 @@ func TestIS(t *testing.T) {
 
 	vals := []string{"1", "2", "4", "3"}
 	arg := fmt.Sprintf("--is=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range is {
 		d, err := strconv.Atoi(vals[i])
 		if err != nil {
@@ -59,10 +60,12 @@ func TestIS(t *testing.T) {
 			t.Fatalf("expected is[%d] to be %s but got: %d", i, vals[i], v)
 		}
 	}
-	getIS, err := f.GetIntSlice("is")
-	if err != nil {
-		t.Fatalf("got error: %v", err)
+
+	getIS, eri := f.GetIntSlice("is")
+	if eri != nil {
+		t.Fatalf("got error: %v", eri)
 	}
+
 	for i, v := range getIS {
 		d, err := strconv.Atoi(vals[i])
 		if err != nil {
@@ -80,10 +83,11 @@ func TestISDefault(t *testing.T) {
 
 	vals := []string{"0", "1"}
 
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range is {
 		d, err := strconv.Atoi(vals[i])
 		if err != nil {
@@ -94,10 +98,11 @@ func TestISDefault(t *testing.T) {
 		}
 	}
 
-	getIS, err := f.GetIntSlice("is")
-	if err != nil {
-		t.Fatal("got an error from GetIntSlice():", err)
+	getIS, eri := f.GetIntSlice("is")
+	if eri != nil {
+		t.Fatal("got an error from GetIntSlice():", eri)
 	}
+
 	for i, v := range getIS {
 		d, err := strconv.Atoi(vals[i])
 		if err != nil {
@@ -115,10 +120,11 @@ func TestISWithDefault(t *testing.T) {
 
 	vals := []string{"1", "2"}
 	arg := fmt.Sprintf("--is=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range is {
 		d, err := strconv.Atoi(vals[i])
 		if err != nil {
@@ -129,10 +135,11 @@ func TestISWithDefault(t *testing.T) {
 		}
 	}
 
-	getIS, err := f.GetIntSlice("is")
-	if err != nil {
-		t.Fatal("got an error from GetIntSlice():", err)
+	getIS, eri := f.GetIntSlice("is")
+	if eri != nil {
+		t.Fatal("got an error from GetIntSlice():", eri)
 	}
+
 	for i, v := range getIS {
 		d, err := strconv.Atoi(vals[i])
 		if err != nil {
@@ -157,6 +164,7 @@ func TestISCalledTwice(t *testing.T) {
 	if err != nil {
 		t.Fatal("expected no error; got", err)
 	}
+
 	for i, v := range is {
 		if expected[i] != v {
 			t.Fatalf("expected is[%d] to be %d but got: %d", i, expected[i], v)

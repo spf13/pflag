@@ -8,15 +8,12 @@ import (
 )
 
 // Helper function to set static slices
-func getCIDR(ip net.IP, cidr *net.IPNet, err error) net.IPNet {
+func getCIDR(_ net.IP, cidr *net.IPNet, _ error) net.IPNet {
 	return *cidr
 }
 
 func equalCIDR(c1 net.IPNet, c2 net.IPNet) bool {
-	if c1.String() == c2.String() {
-		return true
-	}
-	return false
+	return c1.String() == c2.String()
 }
 
 func setUpIPNetFlagSet(ipsp *[]net.IPNet) *FlagSet {

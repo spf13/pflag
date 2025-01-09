@@ -44,13 +44,14 @@ func TestIP(t *testing.T) {
 
 		arg := fmt.Sprintf("--address=%s", tc.input)
 		err := f.Parse([]string{arg})
-		if err != nil && tc.success == true {
+		switch {
+		case err != nil && tc.success:
 			t.Errorf("expected success, got %q", err)
 			continue
-		} else if err == nil && tc.success == false {
+		case err == nil && !tc.success:
 			t.Errorf("expected failure")
 			continue
-		} else if tc.success {
+		case tc.success:
 			ip, err := f.GetIP("address")
 			if err != nil {
 				t.Errorf("Got error trying to fetch the IP flag: %v", err)

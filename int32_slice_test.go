@@ -46,10 +46,11 @@ func TestI32S(t *testing.T) {
 
 	vals := []string{"1", "2", "4", "3"}
 	arg := fmt.Sprintf("--is=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range is {
 		d64, err := strconv.ParseInt(vals[i], 0, 32)
 		if err != nil {
@@ -60,10 +61,12 @@ func TestI32S(t *testing.T) {
 			t.Fatalf("expected is[%d] to be %s but got: %d", i, vals[i], v)
 		}
 	}
-	getI32S, err := f.GetInt32Slice("is")
-	if err != nil {
-		t.Fatalf("got error: %v", err)
+
+	getI32S, eri := f.GetInt32Slice("is")
+	if eri != nil {
+		t.Fatalf("got error: %v", eri)
 	}
+
 	for i, v := range getI32S {
 		d64, err := strconv.ParseInt(vals[i], 0, 32)
 		if err != nil {
@@ -82,10 +85,11 @@ func TestI32SDefault(t *testing.T) {
 
 	vals := []string{"0", "1"}
 
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range is {
 		d64, err := strconv.ParseInt(vals[i], 0, 32)
 		if err != nil {
@@ -97,10 +101,11 @@ func TestI32SDefault(t *testing.T) {
 		}
 	}
 
-	getI32S, err := f.GetInt32Slice("is")
-	if err != nil {
-		t.Fatal("got an error from GetInt32Slice():", err)
+	getI32S, eri := f.GetInt32Slice("is")
+	if eri != nil {
+		t.Fatal("got an error from GetInt32Slice():", eri)
 	}
+
 	for i, v := range getI32S {
 		d64, err := strconv.ParseInt(vals[i], 0, 32)
 		if err != nil {
@@ -119,10 +124,11 @@ func TestI32SWithDefault(t *testing.T) {
 
 	vals := []string{"1", "2"}
 	arg := fmt.Sprintf("--is=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range is {
 		d64, err := strconv.ParseInt(vals[i], 0, 32)
 		if err != nil {
@@ -134,10 +140,11 @@ func TestI32SWithDefault(t *testing.T) {
 		}
 	}
 
-	getI32S, err := f.GetInt32Slice("is")
-	if err != nil {
-		t.Fatal("got an error from GetInt32Slice():", err)
+	getI32S, eri := f.GetInt32Slice("is")
+	if eri != nil {
+		t.Fatal("got an error from GetInt32Slice():", eri)
 	}
+
 	for i, v := range getI32S {
 		d64, err := strconv.ParseInt(vals[i], 0, 32)
 		if err != nil {
@@ -186,6 +193,7 @@ func TestI32SCalledTwice(t *testing.T) {
 	if err != nil {
 		t.Fatal("expected no error; got", err)
 	}
+
 	for i, v := range is {
 		if expected[i] != v {
 			t.Fatalf("expected is[%d] to be %d but got: %d", i, expected[i], v)

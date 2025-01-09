@@ -254,3 +254,10 @@ func TestSAWithSquareBrackets(t *testing.T) {
 		}
 	}
 }
+
+func TestStringArrayConv(t *testing.T) {
+	_, err := stringArrayConv("")
+	if err != nil {
+		t.Errorf("unexpected failure on stringArrayConv")
+	}
+}

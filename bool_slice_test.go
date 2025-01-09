@@ -42,10 +42,11 @@ func TestBS(t *testing.T) {
 
 	vals := []string{"1", "F", "TRUE", "0"}
 	arg := fmt.Sprintf("--bs=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range bs {
 		b, err := strconv.ParseBool(vals[i])
 		if err != nil {
@@ -55,10 +56,12 @@ func TestBS(t *testing.T) {
 			t.Fatalf("expected is[%d] to be %s but got: %t", i, vals[i], v)
 		}
 	}
-	getBS, err := f.GetBoolSlice("bs")
-	if err != nil {
-		t.Fatalf("got error: %v", err)
+
+	getBS, erb := f.GetBoolSlice("bs")
+	if erb != nil {
+		t.Fatalf("got error: %v", erb)
 	}
+
 	for i, v := range getBS {
 		b, err := strconv.ParseBool(vals[i])
 		if err != nil {
@@ -76,10 +79,11 @@ func TestBSDefault(t *testing.T) {
 
 	vals := []string{"false", "T"}
 
-	err := f.Parse([]string{})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range bs {
 		b, err := strconv.ParseBool(vals[i])
 		if err != nil {
@@ -90,10 +94,11 @@ func TestBSDefault(t *testing.T) {
 		}
 	}
 
-	getBS, err := f.GetBoolSlice("bs")
-	if err != nil {
-		t.Fatal("got an error from GetBoolSlice():", err)
+	getBS, erb := f.GetBoolSlice("bs")
+	if erb != nil {
+		t.Fatal("got an error from GetBoolSlice():", erb)
 	}
+
 	for i, v := range getBS {
 		b, err := strconv.ParseBool(vals[i])
 		if err != nil {
@@ -111,10 +116,11 @@ func TestBSWithDefault(t *testing.T) {
 
 	vals := []string{"FALSE", "1"}
 	arg := fmt.Sprintf("--bs=%s", strings.Join(vals, ","))
-	err := f.Parse([]string{arg})
-	if err != nil {
-		t.Fatal("expected no error; got", err)
+	erp := f.Parse([]string{arg})
+	if erp != nil {
+		t.Fatal("expected no error; got", erp)
 	}
+
 	for i, v := range bs {
 		b, err := strconv.ParseBool(vals[i])
 		if err != nil {
@@ -125,10 +131,11 @@ func TestBSWithDefault(t *testing.T) {
 		}
 	}
 
-	getBS, err := f.GetBoolSlice("bs")
-	if err != nil {
-		t.Fatal("got an error from GetBoolSlice():", err)
+	getBS, erb := f.GetBoolSlice("bs")
+	if erb != nil {
+		t.Fatal("got an error from GetBoolSlice():", erb)
 	}
+
 	for i, v := range getBS {
 		b, err := strconv.ParseBool(vals[i])
 		if err != nil {
