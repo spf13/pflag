@@ -100,6 +100,12 @@ func TestEverything(t *testing.T) {
 	}
 }
 
+func TestNoArgument(t *testing.T) {
+	if GetCommandLine().Parse([]string{}) != nil {
+		t.Error("parse failed for empty argument list")
+	}
+}
+
 func TestUsage(t *testing.T) {
 	called := false
 	ResetForTesting(func() { called = true })
