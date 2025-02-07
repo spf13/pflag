@@ -5,7 +5,9 @@ import "strconv"
 // -- count Value
 type countValue int
 
-func newCountValue(val int, p *int) *countValue {
+// NewCountValue creates counter, that can be used as flag (with Value interface implementation).
+// This counter calculates the number of flag appearances in args
+func NewCountValue(val int, p *int) *countValue {
 	*p = val
 	return (*countValue)(p)
 }
@@ -53,7 +55,7 @@ func (f *FlagSet) CountVar(p *int, name string, usage string) {
 
 // CountVarP is like CountVar only take a shorthand for the flag name.
 func (f *FlagSet) CountVarP(p *int, name, shorthand string, usage string) {
-	flag := f.VarPF(newCountValue(0, p), name, shorthand, usage)
+	flag := f.VarPF(NewCountValue(0, p), name, shorthand, usage)
 	flag.NoOptDefVal = "+1"
 }
 

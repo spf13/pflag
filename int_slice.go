@@ -12,7 +12,8 @@ type intSliceValue struct {
 	changed bool
 }
 
-func newIntSliceValue(val []int, p *[]int) *intSliceValue {
+// NewIntSliceValue creates []int adapted to be used as flag (with Value interface implementation)
+func NewIntSliceValue(val []int, p *[]int) *intSliceValue {
 	isv := new(intSliceValue)
 	isv.value = p
 	*isv.value = val
@@ -112,23 +113,23 @@ func (f *FlagSet) GetIntSlice(name string) ([]int, error) {
 // IntSliceVar defines a intSlice flag with specified name, default value, and usage string.
 // The argument p points to a []int variable in which to store the value of the flag.
 func (f *FlagSet) IntSliceVar(p *[]int, name string, value []int, usage string) {
-	f.VarP(newIntSliceValue(value, p), name, "", usage)
+	f.VarP(NewIntSliceValue(value, p), name, "", usage)
 }
 
 // IntSliceVarP is like IntSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) IntSliceVarP(p *[]int, name, shorthand string, value []int, usage string) {
-	f.VarP(newIntSliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewIntSliceValue(value, p), name, shorthand, usage)
 }
 
 // IntSliceVar defines a int[] flag with specified name, default value, and usage string.
 // The argument p points to a int[] variable in which to store the value of the flag.
 func IntSliceVar(p *[]int, name string, value []int, usage string) {
-	CommandLine.VarP(newIntSliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewIntSliceValue(value, p), name, "", usage)
 }
 
 // IntSliceVarP is like IntSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func IntSliceVarP(p *[]int, name, shorthand string, value []int, usage string) {
-	CommandLine.VarP(newIntSliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewIntSliceValue(value, p), name, shorthand, usage)
 }
 
 // IntSlice defines a []int flag with specified name, default value, and usage string.
