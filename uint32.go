@@ -39,6 +39,15 @@ func (f *FlagSet) GetUint32(name string) (uint32, error) {
 	return val.(uint32), nil
 }
 
+// MustGetUint32 is like GetUint32, but panics on error.
+func (f *FlagSet) MustGetUint32(name string) uint32 {
+	val, err := f.GetUint32(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // Uint32Var defines a uint32 flag with specified name, default value, and usage string.
 // The argument p points to a uint32 variable in which to store the value of the flag.
 func (f *FlagSet) Uint32Var(p *uint32, name string, value uint32, usage string) {

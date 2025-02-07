@@ -96,6 +96,15 @@ func (f *FlagSet) GetStringToInt(name string) (map[string]int, error) {
 	return val.(map[string]int), nil
 }
 
+// MustGetStringToInt is like GetStringToInt, but panics on error.
+func (f *FlagSet) MustGetStringToInt(name string) map[string]int {
+	val, err := f.GetStringToInt(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // StringToIntVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a map[string]int variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma
