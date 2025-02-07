@@ -41,6 +41,16 @@ func (s *float32SliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *float32SliceValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case []float32:
+		*s.value = tv
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (s *float32SliceValue) Type() string {
 	return "float32Slice"
 }

@@ -53,6 +53,17 @@ func (s *boolSliceValue) Set(val string) error {
 	return nil
 }
 
+// Setv tries its best to set the value from an arbitrary type
+func (s *boolSliceValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case []bool:
+		*s.value = tv
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 // Type returns a string that uniquely represents this flag's type.
 func (s *boolSliceValue) Type() string {
 	return "boolSlice"

@@ -16,6 +16,36 @@ func (f *float64Value) Set(s string) error {
 	return err
 }
 
+func (f *float64Value) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case float64:
+		*f = float64Value(tv)
+	case float32:
+		*f = float64Value(tv)
+	case int:
+		*f = float64Value(tv)
+	case int32:
+		*f = float64Value(tv)
+	case int16:
+		*f = float64Value(tv)
+	case int8:
+		*f = float64Value(tv)
+	case uint:
+		*f = float64Value(tv)
+	case uint32:
+		*f = float64Value(tv)
+	case uint16:
+		*f = float64Value(tv)
+	case uint8:
+		*f = float64Value(tv)
+	case string:
+		return f.Set(tv)
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (f *float64Value) Type() string {
 	return "float64"
 }
