@@ -84,6 +84,11 @@ func (f *FlagSet) IPMaskVarP(p *net.IPMask, name, shorthand string, value net.IP
 	f.VarP(newIPMaskValue(value, p), name, shorthand, usage)
 }
 
+// IPMaskVarPF is like IPMaskVarP, but returns the created flag.
+func (f *FlagSet) IPMaskVarPF(p *net.IPMask, name, shorthand string, value net.IPMask, usage string) *Flag {
+	return f.VarPF(newIPMaskValue(value, p), name, shorthand, usage)
+}
+
 // IPMaskVar defines an net.IPMask flag with specified name, default value, and usage string.
 // The argument p points to an net.IPMask variable in which to store the value of the flag.
 func IPMaskVar(p *net.IPMask, name string, value net.IPMask, usage string) {
@@ -93,6 +98,11 @@ func IPMaskVar(p *net.IPMask, name string, value net.IPMask, usage string) {
 // IPMaskVarP is like IPMaskVar, but accepts a shorthand letter that can be used after a single dash.
 func IPMaskVarP(p *net.IPMask, name, shorthand string, value net.IPMask, usage string) {
 	CommandLine.VarP(newIPMaskValue(value, p), name, shorthand, usage)
+}
+
+// IPMaskVarPF is like IPMaskVarP, but returns the created flag.
+func IPMaskVarPF(p *net.IPMask, name, shorthand string, value net.IPMask, usage string) *Flag {
+	return CommandLine.VarPF(newIPMaskValue(value, p), name, shorthand, usage)
 }
 
 // IPMask defines an net.IPMask flag with specified name, default value, and usage string.

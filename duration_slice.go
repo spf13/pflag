@@ -128,6 +128,11 @@ func (f *FlagSet) DurationSliceVarP(p *[]time.Duration, name, shorthand string, 
 	f.VarP(newDurationSliceValue(value, p), name, shorthand, usage)
 }
 
+// DurationSliceVarPF is like DurationSliceVarP, but returns the created flag.
+func (f *FlagSet) DurationSliceVarPF(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) *Flag {
+	return f.VarPF(newDurationSliceValue(value, p), name, shorthand, usage)
+}
+
 // DurationSliceVar defines a duration[] flag with specified name, default value, and usage string.
 // The argument p points to a duration[] variable in which to store the value of the flag.
 func DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string) {
@@ -137,6 +142,11 @@ func DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, us
 // DurationSliceVarP is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func DurationSliceVarP(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) {
 	CommandLine.VarP(newDurationSliceValue(value, p), name, shorthand, usage)
+}
+
+// DurationSliceVarPF is like DurationSliceVarP, but returns the created flag.
+func DurationSliceVarPF(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) *Flag {
+	return CommandLine.VarPF(newDurationSliceValue(value, p), name, shorthand, usage)
 }
 
 // DurationSlice defines a []time.Duration flag with specified name, default value, and usage string.
