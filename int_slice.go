@@ -7,19 +7,19 @@ import (
 )
 
 // -- intSlice Value
-type intSliceValue struct {
+type IntSliceValue struct {
 	value   *[]int
 	changed bool
 }
 
-func newIntSliceValue(val []int, p *[]int) *intSliceValue {
-	isv := new(intSliceValue)
+func newIntSliceValue(val []int, p *[]int) *IntSliceValue {
+	isv := new(IntSliceValue)
 	isv.value = p
 	*isv.value = val
 	return isv
 }
 
-func (s *intSliceValue) Set(val string) error {
+func (s *IntSliceValue) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make([]int, len(ss))
 	for i, d := range ss {
@@ -39,11 +39,11 @@ func (s *intSliceValue) Set(val string) error {
 	return nil
 }
 
-func (s *intSliceValue) Type() string {
+func (s *IntSliceValue) Type() string {
 	return "intSlice"
 }
 
-func (s *intSliceValue) String() string {
+func (s *IntSliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = fmt.Sprintf("%d", d)
@@ -51,7 +51,7 @@ func (s *intSliceValue) String() string {
 	return "[" + strings.Join(out, ",") + "]"
 }
 
-func (s *intSliceValue) Append(val string) error {
+func (s *IntSliceValue) Append(val string) error {
 	i, err := strconv.Atoi(val)
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (s *intSliceValue) Append(val string) error {
 	return nil
 }
 
-func (s *intSliceValue) Replace(val []string) error {
+func (s *IntSliceValue) Replace(val []string) error {
 	out := make([]int, len(val))
 	for i, d := range val {
 		var err error
@@ -73,7 +73,7 @@ func (s *intSliceValue) Replace(val []string) error {
 	return nil
 }
 
-func (s *intSliceValue) GetSlice() []string {
+func (s *IntSliceValue) GetSlice() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = strconv.Itoa(d)

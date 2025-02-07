@@ -7,13 +7,13 @@ import (
 )
 
 // -- stringSlice Value
-type stringSliceValue struct {
+type StringSliceValue struct {
 	value   *[]string
 	changed bool
 }
 
-func newStringSliceValue(val []string, p *[]string) *stringSliceValue {
-	ssv := new(stringSliceValue)
+func newStringSliceValue(val []string, p *[]string) *StringSliceValue {
+	ssv := new(StringSliceValue)
 	ssv.value = p
 	*ssv.value = val
 	return ssv
@@ -39,7 +39,7 @@ func writeAsCSV(vals []string) (string, error) {
 	return strings.TrimSuffix(b.String(), "\n"), nil
 }
 
-func (s *stringSliceValue) Set(val string) error {
+func (s *StringSliceValue) Set(val string) error {
 	v, err := readAsCSV(val)
 	if err != nil {
 		return err
@@ -53,26 +53,26 @@ func (s *stringSliceValue) Set(val string) error {
 	return nil
 }
 
-func (s *stringSliceValue) Type() string {
+func (s *StringSliceValue) Type() string {
 	return "stringSlice"
 }
 
-func (s *stringSliceValue) String() string {
+func (s *StringSliceValue) String() string {
 	str, _ := writeAsCSV(*s.value)
 	return "[" + str + "]"
 }
 
-func (s *stringSliceValue) Append(val string) error {
+func (s *StringSliceValue) Append(val string) error {
 	*s.value = append(*s.value, val)
 	return nil
 }
 
-func (s *stringSliceValue) Replace(val []string) error {
+func (s *StringSliceValue) Replace(val []string) error {
 	*s.value = val
 	return nil
 }
 
-func (s *stringSliceValue) GetSlice() []string {
+func (s *StringSliceValue) GetSlice() []string {
 	return *s.value
 }
 
