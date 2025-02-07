@@ -46,6 +46,10 @@ func (s *stringToIntValue) Set(val string) error {
 	return nil
 }
 
+func (s *stringToIntValue) Get() interface{} {
+	return *s.value
+}
+
 func (s *stringToIntValue) Type() string {
 	return "stringToInt"
 }
@@ -65,31 +69,9 @@ func (s *stringToIntValue) String() string {
 	return "[" + buf.String() + "]"
 }
 
-func stringToIntConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// An empty string would cause an empty map
-	if len(val) == 0 {
-		return map[string]int{}, nil
-	}
-	ss := strings.Split(val, ",")
-	out := make(map[string]int, len(ss))
-	for _, pair := range ss {
-		kv := strings.SplitN(pair, "=", 2)
-		if len(kv) != 2 {
-			return nil, fmt.Errorf("%s must be formatted as key=value", pair)
-		}
-		var err error
-		out[kv[0]], err = strconv.Atoi(kv[1])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return out, nil
-}
-
 // GetStringToInt return the map[string]int value of a flag with the given name
 func (f *FlagSet) GetStringToInt(name string) (map[string]int, error) {
-	val, err := f.getFlagType(name, "stringToInt", stringToIntConv)
+	val, err := f.getFlagType(name, "stringToInt")
 	if err != nil {
 		return map[string]int{}, err
 	}

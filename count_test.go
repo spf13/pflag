@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -9,6 +10,14 @@ func setUpCount(c *int) *FlagSet {
 	f := NewFlagSet("test", ContinueOnError)
 	f.CountVarP(c, "verbose", "v", "a counter")
 	return f
+}
+
+func TestCountValueImplementsGetter(t *testing.T) {
+	var v Value = new(countValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
 }
 
 func TestCount(t *testing.T) {
@@ -50,6 +59,15 @@ func TestCount(t *testing.T) {
 			}
 			if c != tc.expected {
 				t.Errorf("expected %d, got %d", tc.expected, c)
+			}
+
+			c2, err := f.Get("verbose")
+			if err != nil {
+				t.Fatal("got an error from Get():", err)
+			}
+
+			if !reflect.DeepEqual(c, c2) {
+				t.Fatalf("expected %v with type %T but got %v with type %T", c, c, c2, c2)
 			}
 		}
 	}

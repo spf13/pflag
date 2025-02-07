@@ -12,19 +12,18 @@ func (s *stringValue) Set(val string) error {
 	*s = stringValue(val)
 	return nil
 }
+func (s *stringValue) Get() interface{} {
+	return string(*s)
+}
 func (s *stringValue) Type() string {
 	return "string"
 }
 
 func (s *stringValue) String() string { return string(*s) }
 
-func stringConv(sval string) (interface{}, error) {
-	return sval, nil
-}
-
 // GetString return the string value of a flag with the given name
 func (f *FlagSet) GetString(name string) (string, error) {
-	val, err := f.getFlagType(name, "string", stringConv)
+	val, err := f.getFlagType(name, "string")
 	if err != nil {
 		return "", err
 	}

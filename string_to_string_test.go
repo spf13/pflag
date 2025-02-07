@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -39,6 +40,14 @@ func createS2SFlag(vals map[string]string) string {
 	return strings.TrimSpace(buf.String())
 }
 
+func TestS2SValueImplementsGetter(t *testing.T) {
+	var v Value = new(stringToStringValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
+}
+
 func TestEmptyS2S(t *testing.T) {
 	var s2s map[string]string
 	f := setUpS2SFlagSet(&s2s)
@@ -53,6 +62,13 @@ func TestEmptyS2S(t *testing.T) {
 	}
 	if len(getS2S) != 0 {
 		t.Fatalf("got s2s %v with len=%d but expected length=0", getS2S, len(getS2S))
+	}
+	getS2S_2, err := f.Get("s2s")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getS2S_2, getS2S) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getS2S, getS2S, getS2S_2, getS2S_2)
 	}
 }
 
@@ -79,6 +95,13 @@ func TestS2S(t *testing.T) {
 		if vals[k] != v {
 			t.Fatalf("expected s2s[%s] to be %s but got: %s from GetStringToString", k, vals[k], v)
 		}
+	}
+	getS2S_2, err := f.Get("s2s")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getS2S_2, getS2S) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getS2S, getS2S, getS2S_2, getS2S_2)
 	}
 }
 
@@ -107,6 +130,13 @@ func TestS2SDefault(t *testing.T) {
 			t.Fatalf("expected s2s[%s] to be %s from GetStringToString but got: %s", k, vals[k], v)
 		}
 	}
+	getS2S_2, err := f.Get("s2s")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getS2S_2, getS2S) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getS2S, getS2S, getS2S_2, getS2S_2)
+	}
 }
 
 func TestS2SWithDefault(t *testing.T) {
@@ -133,6 +163,13 @@ func TestS2SWithDefault(t *testing.T) {
 		if vals[k] != v {
 			t.Fatalf("expected s2s[%s] to be %s from GetStringToString but got: %s", k, vals[k], v)
 		}
+	}
+	getS2S_2, err := f.Get("s2s")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getS2S_2, getS2S) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getS2S, getS2S, getS2S_2, getS2S_2)
 	}
 }
 

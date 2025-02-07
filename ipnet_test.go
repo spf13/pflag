@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"reflect"
 	"testing"
 )
 
@@ -14,6 +15,13 @@ func setUpIPNet(ip *net.IPNet) *FlagSet {
 	return f
 }
 
+func TestIPNetValueImplementsGetter(t *testing.T) {
+	var v Value = new(ipNetValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
+}
 func TestIPNet(t *testing.T) {
 	testCases := []struct {
 		input    string
@@ -64,6 +72,14 @@ func TestIPNet(t *testing.T) {
 			}
 			if ip.String() != tc.expected {
 				t.Errorf("expected %q, got %q", tc.expected, ip.String())
+			}
+			ip2, err := f.Get("address")
+			if err != nil {
+				t.Errorf("Got error trying to fetch the IP flag: %v", err)
+			}
+			if !reflect.DeepEqual(ip, ip2) {
+				ip2 := ip2.(net.IPNet)
+				t.Errorf("expected %q, got %q", ip.String(), ip2.String())
 			}
 		}
 	}

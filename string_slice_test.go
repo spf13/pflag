@@ -6,6 +6,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -20,6 +21,14 @@ func setUpSSFlagSetWithDefault(ssp *[]string) *FlagSet {
 	f := NewFlagSet("test", ContinueOnError)
 	f.StringSliceVar(ssp, "ss", []string{"default", "values"}, "Command separated list!")
 	return f
+}
+
+func TestSSValueImplementsGetter(t *testing.T) {
+	var v Value = new(stringSliceValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
 }
 
 func TestEmptySS(t *testing.T) {
@@ -37,6 +46,13 @@ func TestEmptySS(t *testing.T) {
 	if len(getSS) != 0 {
 		t.Fatalf("got ss %v with len=%d but expected length=0", getSS, len(getSS))
 	}
+	getSS_2, err := f.Get("ss")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getSS_2, getSS) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getSS, getSS, getSS_2, getSS_2)
+	}
 }
 
 func TestEmptySSValue(t *testing.T) {
@@ -53,6 +69,13 @@ func TestEmptySSValue(t *testing.T) {
 	}
 	if len(getSS) != 0 {
 		t.Fatalf("got ss %v with len=%d but expected length=0", getSS, len(getSS))
+	}
+	getSS_2, err := f.Get("ss")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getSS_2, getSS) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getSS, getSS, getSS_2, getSS_2)
 	}
 }
 
@@ -81,6 +104,13 @@ func TestSS(t *testing.T) {
 			t.Fatalf("expected ss[%d] to be %s from GetStringSlice but got: %s", i, vals[i], v)
 		}
 	}
+	getSS_2, err := f.Get("ss")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getSS_2, getSS) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getSS, getSS, getSS_2, getSS_2)
+	}
 }
 
 func TestSSDefault(t *testing.T) {
@@ -108,6 +138,13 @@ func TestSSDefault(t *testing.T) {
 			t.Fatalf("expected ss[%d] to be %s from GetStringSlice but got: %s", i, vals[i], v)
 		}
 	}
+	getSS_2, err := f.Get("ss")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getSS_2, getSS) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getSS, getSS, getSS_2, getSS_2)
+	}
 }
 
 func TestSSWithDefault(t *testing.T) {
@@ -134,6 +171,13 @@ func TestSSWithDefault(t *testing.T) {
 		if vals[i] != v {
 			t.Fatalf("expected ss[%d] to be %s from GetStringSlice but got: %s", i, vals[i], v)
 		}
+	}
+	getSS_2, err := f.Get("ss")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getSS_2, getSS) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getSS, getSS, getSS_2, getSS_2)
 	}
 }
 
@@ -172,6 +216,13 @@ func TestSSCalledTwice(t *testing.T) {
 		if expected[i] != v {
 			t.Fatalf("expected got ss[%d] to be %s but got: %s", i, expected[i], v)
 		}
+	}
+	values_2, err := f.Get("ss")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(values_2, values) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", values, values, values_2, values_2)
 	}
 }
 
@@ -212,6 +263,13 @@ func TestSSWithComma(t *testing.T) {
 			t.Fatalf("expected got ss[%d] to be %s but got: %s", i, expected[i], v)
 		}
 	}
+	values_2, err := f.Get("ss")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(values_2, values) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", values, values, values_2, values_2)
+	}
 }
 
 func TestSSWithSquareBrackets(t *testing.T) {
@@ -249,6 +307,13 @@ func TestSSWithSquareBrackets(t *testing.T) {
 		if expected[i] != v {
 			t.Fatalf("expected got ss[%d] to be %s but got: %s", i, expected[i], v)
 		}
+	}
+	values_2, err := f.Get("ss")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(values_2, values) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", values, values, values_2, values_2)
 	}
 }
 

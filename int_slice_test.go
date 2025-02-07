@@ -6,6 +6,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -23,6 +24,14 @@ func setUpISFlagSetWithDefault(isp *[]int) *FlagSet {
 	return f
 }
 
+func TestISValueImplementsGetter(t *testing.T) {
+	var v Value = new(intSliceValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
+}
+
 func TestEmptyIS(t *testing.T) {
 	var is []int
 	f := setUpISFlagSet(&is)
@@ -37,6 +46,14 @@ func TestEmptyIS(t *testing.T) {
 	}
 	if len(getIS) != 0 {
 		t.Fatalf("got is %v with len=%d but expected length=0", getIS, len(getIS))
+	}
+	getIS_2, err := f.Get("is")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+
+	if !reflect.DeepEqual(getIS_2, getIS) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getIS, getIS, getIS_2, getIS_2)
 	}
 }
 
@@ -71,6 +88,14 @@ func TestIS(t *testing.T) {
 		if d != v {
 			t.Fatalf("expected is[%d] to be %s but got: %d from GetIntSlice", i, vals[i], v)
 		}
+	}
+	getIS_2, err := f.Get("is")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+
+	if !reflect.DeepEqual(getIS_2, getIS) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getIS, getIS, getIS_2, getIS_2)
 	}
 }
 

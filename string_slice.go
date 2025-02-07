@@ -53,6 +53,10 @@ func (s *stringSliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *stringSliceValue) Get() interface{} {
+	return *s.value
+}
+
 func (s *stringSliceValue) Type() string {
 	return "stringSlice"
 }
@@ -76,18 +80,9 @@ func (s *stringSliceValue) GetSlice() []string {
 	return *s.value
 }
 
-func stringSliceConv(sval string) (interface{}, error) {
-	sval = sval[1 : len(sval)-1]
-	// An empty string would cause a slice with one (empty) string
-	if len(sval) == 0 {
-		return []string{}, nil
-	}
-	return readAsCSV(sval)
-}
-
 // GetStringSlice return the []string value of a flag with the given name
 func (f *FlagSet) GetStringSlice(name string) ([]string, error) {
-	val, err := f.getFlagType(name, "stringSlice", stringSliceConv)
+	val, err := f.getFlagType(name, "stringSlice")
 	if err != nil {
 		return []string{}, err
 	}

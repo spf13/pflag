@@ -63,6 +63,14 @@ func setUpFlagSet(tristate *triStateValue) *FlagSet {
 	return f
 }
 
+func TestBoolValueImplementsGetter(t *testing.T) {
+	var v Value = new(boolValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
+}
+
 func TestExplicitTrue(t *testing.T) {
 	var tristate triStateValue
 	f := setUpFlagSet(&tristate)

@@ -54,6 +54,10 @@ func (s *ipSliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *ipSliceValue) Get() interface{} {
+	return *s.value
+}
+
 // Type returns a string that uniquely represents this flag's type.
 func (s *ipSliceValue) Type() string {
 	return "ipSlice"
@@ -110,27 +114,9 @@ func (s *ipSliceValue) GetSlice() []string {
 	return out
 }
 
-func ipSliceConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// Empty string would cause a slice with one (empty) entry
-	if len(val) == 0 {
-		return []net.IP{}, nil
-	}
-	ss := strings.Split(val, ",")
-	out := make([]net.IP, len(ss))
-	for i, sval := range ss {
-		ip := net.ParseIP(strings.TrimSpace(sval))
-		if ip == nil {
-			return nil, fmt.Errorf("invalid string being converted to IP address: %s", sval)
-		}
-		out[i] = ip
-	}
-	return out, nil
-}
-
 // GetIPSlice returns the []net.IP value of a flag with the given name
 func (f *FlagSet) GetIPSlice(name string) ([]net.IP, error) {
-	val, err := f.getFlagType(name, "ipSlice", ipSliceConv)
+	val, err := f.getFlagType(name, "ipSlice")
 	if err != nil {
 		return []net.IP{}, err
 	}

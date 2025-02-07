@@ -3,6 +3,7 @@ package pflag
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -36,6 +37,14 @@ func setUpIPNetFlagSetWithDefault(ipsp *[]net.IPNet) *FlagSet {
 	return f
 }
 
+func TestIPNetsValueImplementsGetter(t *testing.T) {
+	var v Value = new(ipNetSliceValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
+}
+
 func TestEmptyIPNet(t *testing.T) {
 	var cidrs []net.IPNet
 	f := setUpIPNetFlagSet(&cidrs)
@@ -50,6 +59,13 @@ func TestEmptyIPNet(t *testing.T) {
 	}
 	if len(getIPNet) != 0 {
 		t.Fatalf("got ips %v with len=%d but expected length=0", getIPNet, len(getIPNet))
+	}
+	getIPNet_2, err := f.Get("cidrs")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getIPNet_2, getIPNet) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getIPNet, getIPNet, getIPNet_2, getIPNet_2)
 	}
 }
 
@@ -100,6 +116,13 @@ func TestIPNetDefault(t *testing.T) {
 			t.Fatalf("expected cidrs[%d] to be %s but got: %s", i, vals[i], v)
 		}
 	}
+	getIPNet_2, err := f.Get("cidrs")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getIPNet_2, getIPNet) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getIPNet, getIPNet, getIPNet_2, getIPNet_2)
+	}
 }
 
 func TestIPNetWithDefault(t *testing.T) {
@@ -130,6 +153,13 @@ func TestIPNetWithDefault(t *testing.T) {
 		} else if !equalCIDR(*cidr, v) {
 			t.Fatalf("expected cidrs[%d] to be %s but got: %s", i, vals[i], v)
 		}
+	}
+	getIPNet_2, err := f.Get("cidrs")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+	if !reflect.DeepEqual(getIPNet_2, getIPNet) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getIPNet, getIPNet, getIPNet_2, getIPNet_2)
 	}
 }
 

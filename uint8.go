@@ -16,23 +16,19 @@ func (i *uint8Value) Set(s string) error {
 	return err
 }
 
+func (i *uint8Value) Get() interface{} {
+	return uint8(*i)
+}
+
 func (i *uint8Value) Type() string {
 	return "uint8"
 }
 
 func (i *uint8Value) String() string { return strconv.FormatUint(uint64(*i), 10) }
 
-func uint8Conv(sval string) (interface{}, error) {
-	v, err := strconv.ParseUint(sval, 0, 8)
-	if err != nil {
-		return 0, err
-	}
-	return uint8(v), nil
-}
-
 // GetUint8 return the uint8 value of a flag with the given name
 func (f *FlagSet) GetUint8(name string) (uint8, error) {
-	val, err := f.getFlagType(name, "uint8", uint8Conv)
+	val, err := f.getFlagType(name, "uint8")
 	if err != nil {
 		return 0, err
 	}

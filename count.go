@@ -21,23 +21,19 @@ func (i *countValue) Set(s string) error {
 	return err
 }
 
+func (i *countValue) Get() interface{} {
+	return int(*i)
+}
+
 func (i *countValue) Type() string {
 	return "count"
 }
 
 func (i *countValue) String() string { return strconv.Itoa(int(*i)) }
 
-func countConv(sval string) (interface{}, error) {
-	i, err := strconv.Atoi(sval)
-	if err != nil {
-		return nil, err
-	}
-	return i, nil
-}
-
 // GetCount return the int value of a flag with the given name
 func (f *FlagSet) GetCount(name string) (int, error) {
-	val, err := f.getFlagType(name, "count", countConv)
+	val, err := f.getFlagType(name, "count")
 	if err != nil {
 		return 0, err
 	}
