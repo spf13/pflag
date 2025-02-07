@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -155,4 +156,24 @@ func IntSlice(name string, value []int, usage string) *[]int {
 // IntSliceP is like IntSlice, but accepts a shorthand letter that can be used after a single dash.
 func IntSliceP(name, shorthand string, value []int, usage string) *[]int {
 	return CommandLine.IntSliceP(name, shorthand, value, usage)
+}
+
+// Set int slice flag to flagSet
+func setIntSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := intSliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IntSliceP(name, shorthand, defVal.([]int), usage)
+	return nil
+}
+
+// Set int slice value from flagSet
+func setIntSliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetIntSlice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }
