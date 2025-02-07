@@ -551,7 +551,7 @@ func (f *Flag) defaultIsZeroValue() bool {
 	case *intSliceValue, *stringSliceValue, *stringArrayValue:
 		return f.DefValue == "[]"
 	default:
-		switch f.Value.String() {
+		switch f.DefValue {
 		case "false":
 			return true
 		case "<nil>":
