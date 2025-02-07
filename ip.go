@@ -3,6 +3,7 @@ package pflag
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"strings"
 )
 
@@ -94,4 +95,24 @@ func IP(name string, value net.IP, usage string) *net.IP {
 // IPP is like IP, but accepts a shorthand letter that can be used after a single dash.
 func IPP(name, shorthand string, value net.IP, usage string) *net.IP {
 	return CommandLine.IPP(name, shorthand, value, usage)
+}
+
+// Set net.IP flag to flagSet
+func setIPFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := ipConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IPP(name, shorthand, defVal.(net.IP), usage)
+	return nil
+}
+
+// Set net.IP value from flagSet
+func setIPValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetIP(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

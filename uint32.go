@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- uint32 value
 type uint32Value uint32
@@ -85,4 +88,24 @@ func Uint32(name string, value uint32, usage string) *uint32 {
 // Uint32P is like Uint32, but accepts a shorthand letter that can be used after a single dash.
 func Uint32P(name, shorthand string, value uint32, usage string) *uint32 {
 	return CommandLine.Uint32P(name, shorthand, value, usage)
+}
+
+// Set uint32 flag to flagSet
+func setUint32Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := uint32Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Uint32P(name, shorthand, defVal.(uint32), usage)
+	return nil
+}
+
+// Set uint32 value from flagSet
+func setUint32Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetUint32(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

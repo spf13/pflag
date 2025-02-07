@@ -123,6 +123,23 @@ in a command-line interface. The methods of FlagSet are
 analogous to the top-level functions for the command-line
 flag set.
 
+Not only can you set flags one by one, but also set them by struct. For example:
+
+```go
+type testOptions struct {
+    String      string   `flag:"string" short:"a" default:"abc" desc:"this is string"`
+}
+
+flagSet.AddFlags(testOptions{})
+```
+
+It is also very convenient to use:
+
+```go
+var opts = testOptions{}
+flagSet.SetValues(&opts)
+```
+
 ## Setting no option default values for flags
 
 After you create a flag it is possible to set the pflag.NoOptDefVal for
@@ -270,6 +287,7 @@ In order to support flags defined using Go's `flag` package, they must be added 
 to support flags defined by third-party dependencies (e.g. `golang/glog`).
 
 **Example**: You want to add the Go flags to the `CommandLine` flagset
+
 ```go
 import (
 	goflag "flag"
