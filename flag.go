@@ -758,6 +758,79 @@ func (f *FlagSet) FlagUsages() string {
 	return f.FlagUsagesWrapped(0)
 }
 
+// FlagUsagesWrappedWithoutDefault returns a string containing the usage information
+// for all flags in the FlagSet without default. Wrapped to `cols` columns (0 for no
+// wrapping)
+func (f *FlagSet) FlagUsagesWrappedWithoutDefault(cols int) string {
+	buf := new(bytes.Buffer)
+
+	lines := make([]string, 0, len(f.formal))
+
+	maxlen := 0
+	f.VisitAll(func(flag *Flag) {
+		if flag.Hidden {
+			return
+		}
+
+		line := ""
+		if flag.Shorthand != "" && flag.ShorthandDeprecated == "" {
+			line = fmt.Sprintf("  -%s, --%s", flag.Shorthand, flag.Name)
+		} else {
+			line = fmt.Sprintf("      --%s", flag.Name)
+		}
+
+		varname, usage := UnquoteUsage(flag)
+		if varname != "" {
+			line += " " + varname
+		}
+		if flag.NoOptDefVal != "" {
+			switch flag.Value.Type() {
+			case "string":
+				line += fmt.Sprintf("[=\"%s\"]", flag.NoOptDefVal)
+			case "bool":
+				if flag.NoOptDefVal != "true" {
+					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+				}
+			case "count":
+				if flag.NoOptDefVal != "+1" {
+					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+				}
+			default:
+				line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+			}
+		}
+
+		// This special character will be replaced with spacing once the
+		// correct alignment is calculated
+		line += "\x00"
+		if len(line) > maxlen {
+			maxlen = len(line)
+		}
+
+		line += usage
+		if len(flag.Deprecated) != 0 {
+			line += fmt.Sprintf(" (DEPRECATED: %s)", flag.Deprecated)
+		}
+
+		lines = append(lines, line)
+	})
+
+	for _, line := range lines {
+		sidx := strings.Index(line, "\x00")
+		spacing := strings.Repeat(" ", maxlen-sidx)
+		// maxlen + 2 comes from + 1 for the \x00 and + 1 for the (deliberate) off-by-one in maxlen-sidx
+		fmt.Fprintln(buf, line[:sidx], spacing, wrap(maxlen+2, cols, line[sidx+1:]))
+	}
+
+	return buf.String()
+}
+
+// FlagUsagesWithoutDefault returns a string containing the usage information for all flags in
+// the FlagSet without default
+func (f *FlagSet) FlagUsagesWithoutDefault() string {
+	return f.FlagUsagesWrappedWithoutDefault(0)
+}
+
 // PrintDefaults prints to standard error the default values of all defined command-line flags.
 func PrintDefaults() {
 	CommandLine.PrintDefaults()
