@@ -10,6 +10,18 @@ import (
 	"strings"
 )
 
+// prefix of go test flags
+const gotestFlagPrefix = "test."
+
+// additionalGoTestFlagPrefix is optional: only the first value in additionalGoTestFlagPrefix will be used.
+func isGoTestFlag(flag string, additionalGoTestFlagPrefix ...string) bool {
+	additionalPrefix := ""
+	if len(additionalGoTestFlagPrefix) > 0 {
+		additionalPrefix = additionalGoTestFlagPrefix[0]
+	}
+	return strings.HasPrefix(flag, additionalPrefix+gotestFlagPrefix)
+}
+
 // flagValueWrapper implements pflag.Value around a flag.Value.  The main
 // difference here is the addition of the Type method that returns a string
 // name of the type.  As this is generally unknown, we approximate that with
@@ -102,4 +114,16 @@ func (f *FlagSet) AddGoFlagSet(newSet *goflag.FlagSet) {
 		f.addedGoFlagSets = make([]*goflag.FlagSet, 0)
 	}
 	f.addedGoFlagSets = append(f.addedGoFlagSets, newSet)
+}
+
+// ParseGoTestFlags Parses go test flags (i.e. the one with '-test.') separately because pflag.Parse() skip  flags with '-test.' prefix
+// Typical usage example: `ParseGoTestFlags(os.Args[1:], goflag.CommandLine)`
+func ParseGoTestFlags(osArgs []string, goFlagSet *goflag.FlagSet) error {
+	var goTestFlags []string
+	for _, f := range osArgs {
+		if isGoTestFlag(f, "-") {
+			goTestFlags = append(goTestFlags, f)
+		}
+	}
+	return goFlagSet.Parse(goTestFlags)
 }
