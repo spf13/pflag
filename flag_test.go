@@ -1186,6 +1186,7 @@ const defaultOutput = `      --A                         for bootstrapping, allo
       --custom-with-val custom    custom value which has been set from command line while help is shown
       --customP custom            a VarP with default (default 10)
       --maxT timeout              set timeout for dial
+      --slash string              a string with a slash (default "a\slash")
   -v, --verbose count             verbosity
 `
 
@@ -1228,6 +1229,7 @@ func TestPrintDefaults(t *testing.T) {
 	fs.StringSlice("StringSlice", []string{}, "string slice with zero default")
 	fs.StringArray("StringArray", []string{}, "string array with zero default")
 	fs.CountP("verbose", "v", "verbosity")
+	fs.String("slash", "a\\slash", "a string with a slash")
 
 	var cv customValue
 	fs.Var(&cv, "custom", "custom Value implementation")
