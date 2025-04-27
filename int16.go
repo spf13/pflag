@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- int16 Value
 type int16Value int16
@@ -85,4 +88,24 @@ func Int16(name string, value int16, usage string) *int16 {
 // Int16P is like Int16, but accepts a shorthand letter that can be used after a single dash.
 func Int16P(name, shorthand string, value int16, usage string) *int16 {
 	return CommandLine.Int16P(name, shorthand, value, usage)
+}
+
+// Set int16 flag to flagSet
+func setInt16Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := int16Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Int16P(name, shorthand, defVal.(int16), usage)
+	return nil
+}
+
+// Set int16 value from flagSet
+func setInt16Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetInt16(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }
