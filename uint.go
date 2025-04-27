@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- uint Value
 type uintValue uint
@@ -85,4 +88,24 @@ func Uint(name string, value uint, usage string) *uint {
 // UintP is like Uint, but accepts a shorthand letter that can be used after a single dash.
 func UintP(name, shorthand string, value uint, usage string) *uint {
 	return CommandLine.UintP(name, shorthand, value, usage)
+}
+
+// Set uint flag to flagSet
+func setUintFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := uintConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.UintP(name, shorthand, defVal.(uint), usage)
+	return nil
+}
+
+// Set uint value from flagSet
+func setUintValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetUint(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }
