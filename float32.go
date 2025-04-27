@@ -16,23 +16,19 @@ func (f *float32Value) Set(s string) error {
 	return err
 }
 
+func (s *float32Value) Get() interface{} {
+	return float32(*s)
+}
+
 func (f *float32Value) Type() string {
 	return "float32"
 }
 
 func (f *float32Value) String() string { return strconv.FormatFloat(float64(*f), 'g', -1, 32) }
 
-func float32Conv(sval string) (interface{}, error) {
-	v, err := strconv.ParseFloat(sval, 32)
-	if err != nil {
-		return 0, err
-	}
-	return float32(v), nil
-}
-
 // GetFloat32 return the float32 value of a flag with the given name
 func (f *FlagSet) GetFloat32(name string) (float32, error) {
-	val, err := f.getFlagType(name, "float32", float32Conv)
+	val, err := f.getFlagType(name, "float32")
 	if err != nil {
 		return 0, err
 	}

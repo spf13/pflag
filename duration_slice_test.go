@@ -6,6 +6,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
@@ -23,6 +24,14 @@ func setUpDSFlagSetWithDefault(dsp *[]time.Duration) *FlagSet {
 	return f
 }
 
+func TestDSValueImplementsGetter(t *testing.T) {
+	var v Value = new(durationSliceValue)
+
+	if _, ok := v.(Getter); !ok {
+		t.Fatalf("%T should implement the Getter interface", v)
+	}
+}
+
 func TestEmptyDS(t *testing.T) {
 	var ds []time.Duration
 	f := setUpDSFlagSet(&ds)
@@ -35,8 +44,18 @@ func TestEmptyDS(t *testing.T) {
 	if err != nil {
 		t.Fatal("got an error from GetDurationSlice():", err)
 	}
+
 	if len(getDS) != 0 {
 		t.Fatalf("got ds %v with len=%d but expected length=0", getDS, len(getDS))
+	}
+
+	getDS2, err := f.Get("ds")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+
+	if !reflect.DeepEqual(getDS, getDS2) {
+		t.Fatalf("expected %v with type %T but got %v with type %T ", getDS, getDS, getDS2, getDS2)
 	}
 }
 
@@ -71,6 +90,15 @@ func TestDS(t *testing.T) {
 		if d != v {
 			t.Fatalf("expected ds[%d] to be %s but got: %d from GetDurationSlice", i, vals[i], v)
 		}
+	}
+
+	getDS2, err := f.Get("ds")
+	if err != nil {
+		t.Fatal("got an error from Get():", err)
+	}
+
+	if !reflect.DeepEqual(getDS2, getDS) {
+		t.Fatalf("got %v with type %T but expected %v with type %T", getDS2, getDS2, getDS, getDS)
 	}
 }
 

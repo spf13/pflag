@@ -39,6 +39,10 @@ func (s *intSliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *intSliceValue) Get() interface{} {
+	return *s.value
+}
+
 func (s *intSliceValue) Type() string {
 	return "intSlice"
 }
@@ -81,28 +85,9 @@ func (s *intSliceValue) GetSlice() []string {
 	return out
 }
 
-func intSliceConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// Empty string would cause a slice with one (empty) entry
-	if len(val) == 0 {
-		return []int{}, nil
-	}
-	ss := strings.Split(val, ",")
-	out := make([]int, len(ss))
-	for i, d := range ss {
-		var err error
-		out[i], err = strconv.Atoi(d)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-	return out, nil
-}
-
 // GetIntSlice return the []int value of a flag with the given name
 func (f *FlagSet) GetIntSlice(name string) ([]int, error) {
-	val, err := f.getFlagType(name, "intSlice", intSliceConv)
+	val, err := f.getFlagType(name, "intSlice")
 	if err != nil {
 		return []int{}, err
 	}

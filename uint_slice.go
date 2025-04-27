@@ -38,6 +38,10 @@ func (s *uintSliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *uintSliceValue) Get() interface{} {
+	return *s.value
+}
+
 func (s *uintSliceValue) Type() string {
 	return "uintSlice"
 }
@@ -92,27 +96,9 @@ func (s *uintSliceValue) GetSlice() []string {
 	return out
 }
 
-func uintSliceConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// Empty string would cause a slice with one (empty) entry
-	if len(val) == 0 {
-		return []uint{}, nil
-	}
-	ss := strings.Split(val, ",")
-	out := make([]uint, len(ss))
-	for i, d := range ss {
-		u, err := strconv.ParseUint(d, 10, 0)
-		if err != nil {
-			return nil, err
-		}
-		out[i] = uint(u)
-	}
-	return out, nil
-}
-
 // GetUintSlice returns the []uint value of a flag with the given name.
 func (f *FlagSet) GetUintSlice(name string) ([]uint, error) {
-	val, err := f.getFlagType(name, "uintSlice", uintSliceConv)
+	val, err := f.getFlagType(name, "uintSlice")
 	if err != nil {
 		return []uint{}, err
 	}

@@ -19,6 +19,10 @@ func newFloat64SliceValue(val []float64, p *[]float64) *float64SliceValue {
 	return isv
 }
 
+func (s *float64SliceValue) Get() interface{} {
+	return *s.value
+}
+
 func (s *float64SliceValue) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make([]float64, len(ss))
@@ -89,28 +93,9 @@ func (s *float64SliceValue) GetSlice() []string {
 	return out
 }
 
-func float64SliceConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// Empty string would cause a slice with one (empty) entry
-	if len(val) == 0 {
-		return []float64{}, nil
-	}
-	ss := strings.Split(val, ",")
-	out := make([]float64, len(ss))
-	for i, d := range ss {
-		var err error
-		out[i], err = strconv.ParseFloat(d, 64)
-		if err != nil {
-			return nil, err
-		}
-
-	}
-	return out, nil
-}
-
 // GetFloat64Slice return the []float64 value of a flag with the given name
 func (f *FlagSet) GetFloat64Slice(name string) ([]float64, error) {
-	val, err := f.getFlagType(name, "float64Slice", float64SliceConv)
+	val, err := f.getFlagType(name, "float64Slice")
 	if err != nil {
 		return []float64{}, err
 	}
