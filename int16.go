@@ -5,7 +5,7 @@ import "strconv"
 // -- int16 Value
 type int16Value int16
 
-func newInt16Value(val int16, p *int16) *int16Value {
+func NewInt16Value(val int16, p *int16) *int16Value {
 	*p = val
 	return (*int16Value)(p)
 }
@@ -42,23 +42,23 @@ func (f *FlagSet) GetInt16(name string) (int16, error) {
 // Int16Var defines an int16 flag with specified name, default value, and usage string.
 // The argument p points to an int16 variable in which to store the value of the flag.
 func (f *FlagSet) Int16Var(p *int16, name string, value int16, usage string) {
-	f.VarP(newInt16Value(value, p), name, "", usage)
+	f.VarP(NewInt16Value(value, p), name, "", usage)
 }
 
 // Int16VarP is like Int16Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Int16VarP(p *int16, name, shorthand string, value int16, usage string) {
-	f.VarP(newInt16Value(value, p), name, shorthand, usage)
+	f.VarP(NewInt16Value(value, p), name, shorthand, usage)
 }
 
 // Int16Var defines an int16 flag with specified name, default value, and usage string.
 // The argument p points to an int16 variable in which to store the value of the flag.
 func Int16Var(p *int16, name string, value int16, usage string) {
-	CommandLine.VarP(newInt16Value(value, p), name, "", usage)
+	CommandLine.VarP(NewInt16Value(value, p), name, "", usage)
 }
 
 // Int16VarP is like Int16Var, but accepts a shorthand letter that can be used after a single dash.
 func Int16VarP(p *int16, name, shorthand string, value int16, usage string) {
-	CommandLine.VarP(newInt16Value(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewInt16Value(value, p), name, shorthand, usage)
 }
 
 // Int16 defines an int16 flag with specified name, default value, and usage string.

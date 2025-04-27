@@ -12,7 +12,7 @@ type float64SliceValue struct {
 	changed bool
 }
 
-func newFloat64SliceValue(val []float64, p *[]float64) *float64SliceValue {
+func NewFloat64SliceValue(val []float64, p *[]float64) *float64SliceValue {
 	isv := new(float64SliceValue)
 	isv.value = p
 	*isv.value = val
@@ -120,23 +120,23 @@ func (f *FlagSet) GetFloat64Slice(name string) ([]float64, error) {
 // Float64SliceVar defines a float64Slice flag with specified name, default value, and usage string.
 // The argument p points to a []float64 variable in which to store the value of the flag.
 func (f *FlagSet) Float64SliceVar(p *[]float64, name string, value []float64, usage string) {
-	f.VarP(newFloat64SliceValue(value, p), name, "", usage)
+	f.VarP(NewFloat64SliceValue(value, p), name, "", usage)
 }
 
 // Float64SliceVarP is like Float64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Float64SliceVarP(p *[]float64, name, shorthand string, value []float64, usage string) {
-	f.VarP(newFloat64SliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewFloat64SliceValue(value, p), name, shorthand, usage)
 }
 
 // Float64SliceVar defines a float64[] flag with specified name, default value, and usage string.
 // The argument p points to a float64[] variable in which to store the value of the flag.
 func Float64SliceVar(p *[]float64, name string, value []float64, usage string) {
-	CommandLine.VarP(newFloat64SliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewFloat64SliceValue(value, p), name, "", usage)
 }
 
 // Float64SliceVarP is like Float64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Float64SliceVarP(p *[]float64, name, shorthand string, value []float64, usage string) {
-	CommandLine.VarP(newFloat64SliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewFloat64SliceValue(value, p), name, shorthand, usage)
 }
 
 // Float64Slice defines a []float64 flag with specified name, default value, and usage string.

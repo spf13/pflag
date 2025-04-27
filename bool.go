@@ -12,7 +12,7 @@ type boolFlag interface {
 // -- bool Value
 type boolValue bool
 
-func newBoolValue(val bool, p *bool) *boolValue {
+func NewBoolValue(val bool, p *bool) *boolValue {
 	*p = val
 	return (*boolValue)(p)
 }
@@ -52,7 +52,7 @@ func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string) {
 
 // BoolVarP is like BoolVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
-	flag := f.VarPF(newBoolValue(value, p), name, shorthand, usage)
+	flag := f.VarPF(NewBoolValue(value, p), name, shorthand, usage)
 	flag.NoOptDefVal = "true"
 }
 
@@ -64,7 +64,7 @@ func BoolVar(p *bool, name string, value bool, usage string) {
 
 // BoolVarP is like BoolVar, but accepts a shorthand letter that can be used after a single dash.
 func BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
-	flag := CommandLine.VarPF(newBoolValue(value, p), name, shorthand, usage)
+	flag := CommandLine.VarPF(NewBoolValue(value, p), name, shorthand, usage)
 	flag.NoOptDefVal = "true"
 }
 
