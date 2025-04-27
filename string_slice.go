@@ -98,9 +98,12 @@ func (f *FlagSet) GetStringSlice(name string) ([]string, error) {
 // The argument p points to a []string variable in which to store the value of the flag.
 // Compared to StringArray flags, StringSlice flags take comma-separated value as arguments and split them accordingly.
 // For example:
-//   --ss="v1,v2" --ss="v3"
+//
+//	--ss="v1,v2" --ss="v3"
+//
 // will result in
-//   []string{"v1", "v2", "v3"}
+//
+//	[]string{"v1", "v2", "v3"}
 func (f *FlagSet) StringSliceVar(p *[]string, name string, value []string, usage string) {
 	f.VarP(newStringSliceValue(value, p), name, "", usage)
 }
@@ -110,13 +113,21 @@ func (f *FlagSet) StringSliceVarP(p *[]string, name, shorthand string, value []s
 	f.VarP(newStringSliceValue(value, p), name, shorthand, usage)
 }
 
+// StringSliceVarPF is like StringSliceVarP, but returns the created flag.
+func (f *FlagSet) StringSliceVarPF(p *[]string, name, shorthand string, value []string, usage string) *Flag {
+	return f.VarPF(newStringSliceValue(value, p), name, shorthand, usage)
+}
+
 // StringSliceVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the value of the flag.
 // Compared to StringArray flags, StringSlice flags take comma-separated value as arguments and split them accordingly.
 // For example:
-//   --ss="v1,v2" --ss="v3"
+//
+//	--ss="v1,v2" --ss="v3"
+//
 // will result in
-//   []string{"v1", "v2", "v3"}
+//
+//	[]string{"v1", "v2", "v3"}
 func StringSliceVar(p *[]string, name string, value []string, usage string) {
 	CommandLine.VarP(newStringSliceValue(value, p), name, "", usage)
 }
@@ -126,13 +137,21 @@ func StringSliceVarP(p *[]string, name, shorthand string, value []string, usage 
 	CommandLine.VarP(newStringSliceValue(value, p), name, shorthand, usage)
 }
 
+// StringSliceVarPF is like StringSliceVarP, but returns the created flag.
+func StringSliceVarPF(p *[]string, name, shorthand string, value []string, usage string) *Flag {
+	return CommandLine.VarPF(newStringSliceValue(value, p), name, shorthand, usage)
+}
+
 // StringSlice defines a string flag with specified name, default value, and usage string.
 // The return value is the address of a []string variable that stores the value of the flag.
 // Compared to StringArray flags, StringSlice flags take comma-separated value as arguments and split them accordingly.
 // For example:
-//   --ss="v1,v2" --ss="v3"
+//
+//	--ss="v1,v2" --ss="v3"
+//
 // will result in
-//   []string{"v1", "v2", "v3"}
+//
+//	[]string{"v1", "v2", "v3"}
 func (f *FlagSet) StringSlice(name string, value []string, usage string) *[]string {
 	p := []string{}
 	f.StringSliceVarP(&p, name, "", value, usage)
@@ -150,9 +169,12 @@ func (f *FlagSet) StringSliceP(name, shorthand string, value []string, usage str
 // The return value is the address of a []string variable that stores the value of the flag.
 // Compared to StringArray flags, StringSlice flags take comma-separated value as arguments and split them accordingly.
 // For example:
-//   --ss="v1,v2" --ss="v3"
+//
+//	--ss="v1,v2" --ss="v3"
+//
 // will result in
-//   []string{"v1", "v2", "v3"}
+//
+//	[]string{"v1", "v2", "v3"}
 func StringSlice(name string, value []string, usage string) *[]string {
 	return CommandLine.StringSliceP(name, "", value, usage)
 }

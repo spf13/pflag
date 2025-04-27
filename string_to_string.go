@@ -119,6 +119,11 @@ func (f *FlagSet) StringToStringVarP(p *map[string]string, name, shorthand strin
 	f.VarP(newStringToStringValue(value, p), name, shorthand, usage)
 }
 
+// StringToStringVarPF is like StringToStringVarP, but returns the created flag.
+func (f *FlagSet) StringToStringVarPF(p *map[string]string, name, shorthand string, value map[string]string, usage string) *Flag {
+	return f.VarPF(newStringToStringValue(value, p), name, shorthand, usage)
+}
+
 // StringToStringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a map[string]string variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma
@@ -129,6 +134,11 @@ func StringToStringVar(p *map[string]string, name string, value map[string]strin
 // StringToStringVarP is like StringToStringVar, but accepts a shorthand letter that can be used after a single dash.
 func StringToStringVarP(p *map[string]string, name, shorthand string, value map[string]string, usage string) {
 	CommandLine.VarP(newStringToStringValue(value, p), name, shorthand, usage)
+}
+
+// StringToStringVarPF is like StringToStringVarP, but returns the created flag.
+func StringToStringVarPF(p *map[string]string, name, shorthand string, value map[string]string, usage string) *Flag {
+	return CommandLine.VarPF(newStringToStringValue(value, p), name, shorthand, usage)
 }
 
 // StringToString defines a string flag with specified name, default value, and usage string.

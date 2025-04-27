@@ -59,6 +59,11 @@ func (f *FlagSet) IPVarP(p *net.IP, name, shorthand string, value net.IP, usage 
 	f.VarP(newIPValue(value, p), name, shorthand, usage)
 }
 
+// IPVarPF is like IPVarP, but returns the created flag.
+func (f *FlagSet) IPVarPF(p *net.IP, name, shorthand string, value net.IP, usage string) *Flag {
+	return f.VarPF(newIPValue(value, p), name, shorthand, usage)
+}
+
 // IPVar defines an net.IP flag with specified name, default value, and usage string.
 // The argument p points to an net.IP variable in which to store the value of the flag.
 func IPVar(p *net.IP, name string, value net.IP, usage string) {
@@ -68,6 +73,11 @@ func IPVar(p *net.IP, name string, value net.IP, usage string) {
 // IPVarP is like IPVar, but accepts a shorthand letter that can be used after a single dash.
 func IPVarP(p *net.IP, name, shorthand string, value net.IP, usage string) {
 	CommandLine.VarP(newIPValue(value, p), name, shorthand, usage)
+}
+
+// IPVarPF is like IPVarP, but returns the created flag.
+func IPVarPF(p *net.IP, name, shorthand string, value net.IP, usage string) *Flag {
+	return CommandLine.VarPF(newIPValue(value, p), name, shorthand, usage)
 }
 
 // IP defines an net.IP flag with specified name, default value, and usage string.

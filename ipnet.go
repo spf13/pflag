@@ -60,6 +60,11 @@ func (f *FlagSet) IPNetVarP(p *net.IPNet, name, shorthand string, value net.IPNe
 	f.VarP(newIPNetValue(value, p), name, shorthand, usage)
 }
 
+// IPNetVarPF is like IPNetVarP, but returns the created flag.
+func (f *FlagSet) IPNetVarPF(p *net.IPNet, name, shorthand string, value net.IPNet, usage string) *Flag {
+	return f.VarPF(newIPNetValue(value, p), name, shorthand, usage)
+}
+
 // IPNetVar defines an net.IPNet flag with specified name, default value, and usage string.
 // The argument p points to an net.IPNet variable in which to store the value of the flag.
 func IPNetVar(p *net.IPNet, name string, value net.IPNet, usage string) {
@@ -69,6 +74,11 @@ func IPNetVar(p *net.IPNet, name string, value net.IPNet, usage string) {
 // IPNetVarP is like IPNetVar, but accepts a shorthand letter that can be used after a single dash.
 func IPNetVarP(p *net.IPNet, name, shorthand string, value net.IPNet, usage string) {
 	CommandLine.VarP(newIPNetValue(value, p), name, shorthand, usage)
+}
+
+// IPNetVarPF is like IPNetVarP, but returns the created flag.
+func IPNetVarPF(p *net.IPNet, name, shorthand string, value net.IPNet, usage string) *Flag {
+	return CommandLine.VarPF(newIPNetValue(value, p), name, shorthand, usage)
 }
 
 // IPNet defines an net.IPNet flag with specified name, default value, and usage string.
