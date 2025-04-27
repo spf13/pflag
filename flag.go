@@ -187,6 +187,10 @@ type Flag struct {
 type Value interface {
 	String() string
 	Set(string) error
+}
+
+// Typed is an interface of Values that can communicate their type.
+type Typed interface {
 	Type() string
 }
 
@@ -385,8 +389,8 @@ func (f *FlagSet) getFlagType(name string, ftype string, convFunc func(sval stri
 		return nil, err
 	}
 
-	if flag.Value.Type() != ftype {
-		err := fmt.Errorf("trying to get %s value of flag of type %s", ftype, flag.Value.Type())
+	if v, ok := flag.Value.(Typed); ok && v.Type() != ftype {
+		err := fmt.Errorf("trying to get %s value of flag of type %s", ftype, v.Type())
 		return nil, err
 	}
 
@@ -584,24 +588,27 @@ func UnquoteUsage(flag *Flag) (name string, usage string) {
 		}
 	}
 
-	name = flag.Value.Type()
-	switch name {
-	case "bool":
-		name = ""
-	case "float64":
-		name = "float"
-	case "int64":
-		name = "int"
-	case "uint64":
-		name = "uint"
-	case "stringSlice":
-		name = "strings"
-	case "intSlice":
-		name = "ints"
-	case "uintSlice":
-		name = "uints"
-	case "boolSlice":
-		name = "bools"
+	name = "value" // compatibility layer to be a drop-in replacement
+	if v, ok := flag.Value.(Typed); ok {
+		name = v.Type()
+		switch name {
+		case "bool":
+			name = ""
+		case "float64":
+			name = "float"
+		case "int64":
+			name = "int"
+		case "uint64":
+			name = "uint"
+		case "stringSlice":
+			name = "strings"
+		case "intSlice":
+			name = "ints"
+		case "uintSlice":
+			name = "uints"
+		case "boolSlice":
+			name = "bools"
+		}
 	}
 
 	return
@@ -702,18 +709,22 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 			line += " " + varname
 		}
 		if flag.NoOptDefVal != "" {
-			switch flag.Value.Type() {
-			case "string":
-				line += fmt.Sprintf("[=\"%s\"]", flag.NoOptDefVal)
-			case "bool":
-				if flag.NoOptDefVal != "true" {
+			if v, ok := flag.Value.(Typed); ok {
+				switch v.Type() {
+				case "string":
+					line += fmt.Sprintf("[=\"%s\"]", flag.NoOptDefVal)
+				case "bool":
+					if flag.NoOptDefVal != "true" {
+						line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+					}
+				case "count":
+					if flag.NoOptDefVal != "+1" {
+						line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
+					}
+				default:
 					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
 				}
-			case "count":
-				if flag.NoOptDefVal != "+1" {
-					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
-				}
-			default:
+			} else {
 				line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
 			}
 		}
@@ -727,7 +738,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 
 		line += usage
 		if !flag.defaultIsZeroValue() {
-			if flag.Value.Type() == "string" {
+			if v, ok := flag.Value.(Typed); ok && v.Type() == "string" {
 				line += fmt.Sprintf(" (default %q)", flag.DefValue)
 			} else {
 				line += fmt.Sprintf(" (default %s)", flag.DefValue)
