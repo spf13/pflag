@@ -37,6 +37,15 @@ func (f *FlagSet) GetDuration(name string) (time.Duration, error) {
 	return val.(time.Duration), nil
 }
 
+// MustGetDuration is like GetDuration, but panics on error.
+func (f *FlagSet) MustGetDuration(name string) time.Duration {
+	val, err := f.GetDuration(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // DurationVar defines a time.Duration flag with specified name, default value, and usage string.
 // The argument p points to a time.Duration variable in which to store the value of the flag.
 func (f *FlagSet) DurationVar(p *time.Duration, name string, value time.Duration, usage string) {

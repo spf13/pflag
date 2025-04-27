@@ -49,6 +49,15 @@ func (f *FlagSet) GetIPNet(name string) (net.IPNet, error) {
 	return val.(net.IPNet), nil
 }
 
+// MustGetIPNet is like GetIPNet, but panics on error.
+func (f *FlagSet) MustGetIPNet(name string) net.IPNet {
+	val, err := f.GetIPNet(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // IPNetVar defines an net.IPNet flag with specified name, default value, and usage string.
 // The argument p points to an net.IPNet variable in which to store the value of the flag.
 func (f *FlagSet) IPNetVar(p *net.IPNet, name string, value net.IPNet, usage string) {

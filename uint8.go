@@ -39,6 +39,15 @@ func (f *FlagSet) GetUint8(name string) (uint8, error) {
 	return val.(uint8), nil
 }
 
+// MustGetUint8 is like GetUint8, but panics on error.
+func (f *FlagSet) MustGetUint8(name string) uint8 {
+	val, err := f.GetUint8(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // Uint8Var defines a uint8 flag with specified name, default value, and usage string.
 // The argument p points to a uint8 variable in which to store the value of the flag.
 func (f *FlagSet) Uint8Var(p *uint8, name string, value uint8, usage string) {
