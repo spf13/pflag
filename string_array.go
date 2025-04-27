@@ -23,6 +23,16 @@ func (s *stringArrayValue) Set(val string) error {
 	return nil
 }
 
+func (s *stringArrayValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case []string:
+		*s.value = tv
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (s *stringArrayValue) Append(val string) error {
 	*s.value = append(*s.value, val)
 	return nil

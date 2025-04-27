@@ -92,6 +92,34 @@ func TestEverything(t *testing.T) {
 			t.Log(k, *v)
 		}
 	}
+	// Now set all flags to real values
+	if Setv("test_bool", true) != nil {
+		t.Error("Could not Setv bool to true")
+	}
+	if Setv("test_int", 1) != nil {
+		t.Error("Could not Setv int to 1")
+	}
+	if Setv("test_int64", 1) != nil {
+		t.Error("Could not Setv int64 to 1")
+	}
+	if Setv("test_uint", 1) != nil {
+		t.Error("Could not Setv uint to 1")
+	}
+	if Setv("test_uint64", 1) != nil {
+		t.Error("Could not Setv uint64 to 1")
+	}
+	if Setv("test_string", "1") != nil {
+		t.Error("Could not Setv string to \"1\"")
+	}
+	if Setv("test_float64", 1) != nil {
+		t.Error("Could not Setv float64 to 1")
+	}
+	if Setv("test_duration", time.Duration(1)) != nil {
+		t.Error("Could not Setv time.Duration to 1")
+	}
+	if Setv("test_optional_int", 1) != nil {
+		t.Error("Could not Setv optional int to 1")
+	}
 	// Now test they're visited in sort order.
 	var flagNames []string
 	Visit(func(f *Flag) { flagNames = append(flagNames, f.Name) })
