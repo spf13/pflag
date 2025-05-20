@@ -128,6 +128,11 @@ func (f *FlagSet) Int64SliceVarP(p *[]int64, name, shorthand string, value []int
 	f.VarP(newInt64SliceValue(value, p), name, shorthand, usage)
 }
 
+// Int64SliceVarPF is like Int64SliceVarP, but returns the created flag.
+func (f *FlagSet) Int64SliceVarPF(p *[]int64, name, shorthand string, value []int64, usage string) *Flag {
+	return f.VarPF(newInt64SliceValue(value, p), name, shorthand, usage)
+}
+
 // Int64SliceVar defines a int64[] flag with specified name, default value, and usage string.
 // The argument p points to a int64[] variable in which to store the value of the flag.
 func Int64SliceVar(p *[]int64, name string, value []int64, usage string) {
@@ -137,6 +142,11 @@ func Int64SliceVar(p *[]int64, name string, value []int64, usage string) {
 // Int64SliceVarP is like Int64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Int64SliceVarP(p *[]int64, name, shorthand string, value []int64, usage string) {
 	CommandLine.VarP(newInt64SliceValue(value, p), name, shorthand, usage)
+}
+
+// Int64SliceVarPF is like Int64SliceVarP, but returns the created flag.
+func Int64SliceVarPF(p *[]int64, name, shorthand string, value []int64, usage string) *Flag {
+	return CommandLine.VarPF(newInt64SliceValue(value, p), name, shorthand, usage)
 }
 
 // Int64Slice defines a []int64 flag with specified name, default value, and usage string.
