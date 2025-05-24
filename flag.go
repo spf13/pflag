@@ -1156,7 +1156,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 	}
 	f.parsed = true
 
-	if len(arguments) < 0 {
+	if len(arguments) == 0 {
 		return nil
 	}
 
