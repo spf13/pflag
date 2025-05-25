@@ -1172,7 +1172,10 @@ func (f *FlagSet) Parse(arguments []string) error {
 		case ContinueOnError:
 			return err
 		case ExitOnError:
-			fmt.Println(err)
+			if err == ErrHelp {
+				os.Exit(0)
+			}
+			fmt.Fprintln(os.Stderr, err)
 			os.Exit(2)
 		case PanicOnError:
 			panic(err)
