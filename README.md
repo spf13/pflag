@@ -246,6 +246,22 @@ It is possible to mark a flag as hidden, meaning it will still function as norma
 flags.MarkHidden("secretFlag")
 ```
 
+## Custom flag variable names
+It is possible to change the variable name used in command help output for non-boolean flags. By default, the variable name is an educated guess based on the flag type.
+
+**Example**
+```go
+flags.String("normalflag", "", "unchanged variable name")
+flags.String("fancyflag", "", "enter a `fancyvalue` for this flag")
+flags.PrintDefaults()
+```
+
+**Output**
+```
+  --fancyflag fancyvalue   enter a fancyvalue for this flag
+  --normalflag string      unchanged variable name
+```
+
 ## Disable sorting of flags
 `pflag` allows you to disable sorting of flags for help and usage message.
 
