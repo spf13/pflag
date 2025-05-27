@@ -53,8 +53,14 @@ func (f *FlagSet) CountVar(p *int, name string, usage string) {
 
 // CountVarP is like CountVar only take a shorthand for the flag name.
 func (f *FlagSet) CountVarP(p *int, name, shorthand string, usage string) {
+	f.CountVarPF(p, name, shorthand, usage)
+}
+
+// CountVarPF is like CountVarP, but returns the created flag.
+func (f *FlagSet) CountVarPF(p *int, name, shorthand string, usage string) *Flag {
 	flag := f.VarPF(newCountValue(0, p), name, shorthand, usage)
 	flag.NoOptDefVal = "+1"
+	return flag
 }
 
 // CountVar like CountVar only the flag is placed on the CommandLine instead of a given flag set
@@ -65,6 +71,11 @@ func CountVar(p *int, name string, usage string) {
 // CountVarP is like CountVar only take a shorthand for the flag name.
 func CountVarP(p *int, name, shorthand string, usage string) {
 	CommandLine.CountVarP(p, name, shorthand, usage)
+}
+
+// CountVarPF is like CountVarP,  but returns the created flag.
+func CountVarPF(p *int, name, shorthand string, usage string) *Flag {
+	return CommandLine.CountVarPF(p, name, shorthand, usage)
 }
 
 // Count defines a count flag with specified name, default value, and usage string.

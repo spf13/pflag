@@ -50,6 +50,11 @@ func (f *FlagSet) Uint32VarP(p *uint32, name, shorthand string, value uint32, us
 	f.VarP(newUint32Value(value, p), name, shorthand, usage)
 }
 
+// Uint32VarPF is like Uint32Var, but returns the created flag.
+func (f *FlagSet) Uint32VarPF(p *uint32, name, shorthand string, value uint32, usage string) *Flag {
+	return f.VarPF(newUint32Value(value, p), name, shorthand, usage)
+}
+
 // Uint32Var defines a uint32 flag with specified name, default value, and usage string.
 // The argument p points to a uint32  variable in which to store the value of the flag.
 func Uint32Var(p *uint32, name string, value uint32, usage string) {
@@ -59,6 +64,11 @@ func Uint32Var(p *uint32, name string, value uint32, usage string) {
 // Uint32VarP is like Uint32Var, but accepts a shorthand letter that can be used after a single dash.
 func Uint32VarP(p *uint32, name, shorthand string, value uint32, usage string) {
 	CommandLine.VarP(newUint32Value(value, p), name, shorthand, usage)
+}
+
+// Uint32VarPF is like Uint32VarP, but returns the created flag.
+func Uint32VarPF(p *uint32, name, shorthand string, value uint32, usage string) *Flag {
+	return CommandLine.VarPF(newUint32Value(value, p), name, shorthand, usage)
 }
 
 // Uint32 defines a uint32 flag with specified name, default value, and usage string.
