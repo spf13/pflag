@@ -926,7 +926,6 @@ func VarP(value Value, name, shorthand, usage string) {
 // returns the error.
 func (f *FlagSet) fail(err error) error {
 	if f.errorHandling != ContinueOnError {
-		fmt.Fprintln(f.Output(), err)
 		f.usage()
 	}
 	return err
