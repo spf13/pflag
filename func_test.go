@@ -112,9 +112,9 @@ func TestFuncCompat(t *testing.T) {
 		flagName := "fnflag"
 		args := []string{"--fnflag", "before", "--fnflag", "err", "--fnflag", "after"}
 
-		// test behavior of standard flag.Fset with an error triggere by the callback:
+		// test behavior of standard flag.Fset with an error triggered by the callback:
 		// (note: as can be seen in 'runCase()', if the callback sees "err" as a value
-		//  for the bool flag, it will return an error)
+		//  for the flag, it will return an error)
 		stdFSet := flag.NewFlagSet("std test", flag.ContinueOnError)
 		stdFSet.SetOutput(io.Discard) // suppress output
 
@@ -148,6 +148,36 @@ func TestFuncCompat(t *testing.T) {
 		// the callback should be called the same number of times, with the same values:
 		if !cmpLists(stdValues, pflagValues) {
 			t.Fatalf("pflag: expected %v, got %v", stdValues, pflagValues)
+		}
+	})
+}
+
+func TestFuncUsage(t *testing.T) {
+	t.Run("regular func flag", func(t *testing.T) {
+		// regular func flag:
+		// expect to see '--flag1 value' followed by the usageMessage, and no mention of a default value
+		fset := NewFlagSet("unittest", ContinueOnError)
+		fset.Func("flag1", "usage message", func(s string) error { return nil })
+		usage := fset.FlagUsagesWrapped(80)
+
+		usage = strings.TrimSpace(usage)
+		expected := "--flag1 value   usage message"
+		if usage != expected {
+			t.Fatalf("unexpected generated usage message\n  expected: %s\n       got: %s", expected, usage)
+		}
+	})
+
+	t.Run("func flag with placeholder name", func(t *testing.T) {
+		// func flag, with a placeholder name:
+		// if usageMesage contains a placeholder, expect that name; still expect no mention of a default value
+		fset := NewFlagSet("unittest", ContinueOnError)
+		fset.Func("flag2", "usage message with `name` placeholder", func(s string) error { return nil })
+		usage := fset.FlagUsagesWrapped(80)
+
+		usage = strings.TrimSpace(usage)
+		expected := "--flag2 name   usage message with name placeholder"
+		if usage != expected {
+			t.Fatalf("unexpected generated usage message\n  expected: %s\n       got: %s", expected, usage)
 		}
 	})
 }

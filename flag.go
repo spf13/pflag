@@ -549,7 +549,7 @@ func (f *FlagSet) PrintDefaults() {
 func (f *Flag) defaultIsZeroValue() bool {
 	switch f.Value.(type) {
 	case boolFlag:
-		return f.DefValue == "false"
+		return f.DefValue == "false" || f.DefValue == ""
 	case *durationValue:
 		// Beginning in Go 1.7, duration zero values are "0s"
 		return f.DefValue == "0" || f.DefValue == "0s"
@@ -599,8 +599,10 @@ func UnquoteUsage(flag *Flag) (name string, usage string) {
 
 	name = flag.Value.Type()
 	switch name {
-	case "bool":
+	case "bool", "boolfunc":
 		name = ""
+	case "func":
+		name = "value"
 	case "float64":
 		name = "float"
 	case "int64":
@@ -718,7 +720,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 			switch flag.Value.Type() {
 			case "string":
 				line += fmt.Sprintf("[=\"%s\"]", flag.NoOptDefVal)
-			case "bool":
+			case "bool", "boolfunc":
 				if flag.NoOptDefVal != "true" {
 					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
 				}

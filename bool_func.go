@@ -5,7 +5,7 @@ type boolfuncValue func(string) error
 
 func (f boolfuncValue) Set(s string) error { return f(s) }
 
-func (f boolfuncValue) Type() string { return "func" }
+func (f boolfuncValue) Type() string { return "boolfunc" }
 
 func (f boolfuncValue) String() string { return "" } // same behavior as stdlib 'flag' package
 
