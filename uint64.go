@@ -3,24 +3,24 @@ package pflag
 import "strconv"
 
 // -- uint64 Value
-type uint64Value uint64
+type Uint64Value uint64
 
-func newUint64Value(val uint64, p *uint64) *uint64Value {
+func NewUint64Value(val uint64, p *uint64) *Uint64Value {
 	*p = val
-	return (*uint64Value)(p)
+	return (*Uint64Value)(p)
 }
 
-func (i *uint64Value) Set(s string) error {
+func (i *Uint64Value) Set(s string) error {
 	v, err := strconv.ParseUint(s, 0, 64)
-	*i = uint64Value(v)
+	*i = Uint64Value(v)
 	return err
 }
 
-func (i *uint64Value) Type() string {
+func (i *Uint64Value) Type() string {
 	return "uint64"
 }
 
-func (i *uint64Value) String() string { return strconv.FormatUint(uint64(*i), 10) }
+func (i *Uint64Value) String() string { return strconv.FormatUint(uint64(*i), 10) }
 
 func uint64Conv(sval string) (interface{}, error) {
 	v, err := strconv.ParseUint(sval, 0, 64)
@@ -42,23 +42,23 @@ func (f *FlagSet) GetUint64(name string) (uint64, error) {
 // Uint64Var defines a uint64 flag with specified name, default value, and usage string.
 // The argument p points to a uint64 variable in which to store the value of the flag.
 func (f *FlagSet) Uint64Var(p *uint64, name string, value uint64, usage string) {
-	f.VarP(newUint64Value(value, p), name, "", usage)
+	f.VarP(NewUint64Value(value, p), name, "", usage)
 }
 
 // Uint64VarP is like Uint64Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Uint64VarP(p *uint64, name, shorthand string, value uint64, usage string) {
-	f.VarP(newUint64Value(value, p), name, shorthand, usage)
+	f.VarP(NewUint64Value(value, p), name, shorthand, usage)
 }
 
 // Uint64Var defines a uint64 flag with specified name, default value, and usage string.
 // The argument p points to a uint64 variable in which to store the value of the flag.
 func Uint64Var(p *uint64, name string, value uint64, usage string) {
-	CommandLine.VarP(newUint64Value(value, p), name, "", usage)
+	CommandLine.VarP(NewUint64Value(value, p), name, "", usage)
 }
 
 // Uint64VarP is like Uint64Var, but accepts a shorthand letter that can be used after a single dash.
 func Uint64VarP(p *uint64, name, shorthand string, value uint64, usage string) {
-	CommandLine.VarP(newUint64Value(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewUint64Value(value, p), name, shorthand, usage)
 }
 
 // Uint64 defines a uint64 flag with specified name, default value, and usage string.

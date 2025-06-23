@@ -3,24 +3,24 @@ package pflag
 import "strconv"
 
 // -- uint32 value
-type uint32Value uint32
+type Uint32Value uint32
 
-func newUint32Value(val uint32, p *uint32) *uint32Value {
+func NewUint32Value(val uint32, p *uint32) *Uint32Value {
 	*p = val
-	return (*uint32Value)(p)
+	return (*Uint32Value)(p)
 }
 
-func (i *uint32Value) Set(s string) error {
+func (i *Uint32Value) Set(s string) error {
 	v, err := strconv.ParseUint(s, 0, 32)
-	*i = uint32Value(v)
+	*i = Uint32Value(v)
 	return err
 }
 
-func (i *uint32Value) Type() string {
+func (i *Uint32Value) Type() string {
 	return "uint32"
 }
 
-func (i *uint32Value) String() string { return strconv.FormatUint(uint64(*i), 10) }
+func (i *Uint32Value) String() string { return strconv.FormatUint(uint64(*i), 10) }
 
 func uint32Conv(sval string) (interface{}, error) {
 	v, err := strconv.ParseUint(sval, 0, 32)
@@ -42,23 +42,23 @@ func (f *FlagSet) GetUint32(name string) (uint32, error) {
 // Uint32Var defines a uint32 flag with specified name, default value, and usage string.
 // The argument p points to a uint32 variable in which to store the value of the flag.
 func (f *FlagSet) Uint32Var(p *uint32, name string, value uint32, usage string) {
-	f.VarP(newUint32Value(value, p), name, "", usage)
+	f.VarP(NewUint32Value(value, p), name, "", usage)
 }
 
 // Uint32VarP is like Uint32Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Uint32VarP(p *uint32, name, shorthand string, value uint32, usage string) {
-	f.VarP(newUint32Value(value, p), name, shorthand, usage)
+	f.VarP(NewUint32Value(value, p), name, shorthand, usage)
 }
 
 // Uint32Var defines a uint32 flag with specified name, default value, and usage string.
 // The argument p points to a uint32  variable in which to store the value of the flag.
 func Uint32Var(p *uint32, name string, value uint32, usage string) {
-	CommandLine.VarP(newUint32Value(value, p), name, "", usage)
+	CommandLine.VarP(NewUint32Value(value, p), name, "", usage)
 }
 
 // Uint32VarP is like Uint32Var, but accepts a shorthand letter that can be used after a single dash.
 func Uint32VarP(p *uint32, name, shorthand string, value uint32, usage string) {
-	CommandLine.VarP(newUint32Value(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewUint32Value(value, p), name, shorthand, usage)
 }
 
 // Uint32 defines a uint32 flag with specified name, default value, and usage string.

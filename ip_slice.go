@@ -8,13 +8,13 @@ import (
 )
 
 // -- ipSlice Value
-type ipSliceValue struct {
+type IPSliceValue struct {
 	value   *[]net.IP
 	changed bool
 }
 
-func newIPSliceValue(val []net.IP, p *[]net.IP) *ipSliceValue {
-	ipsv := new(ipSliceValue)
+func NewIPSliceValue(val []net.IP, p *[]net.IP) *IPSliceValue {
+	ipsv := new(IPSliceValue)
 	ipsv.value = p
 	*ipsv.value = val
 	return ipsv
@@ -22,7 +22,7 @@ func newIPSliceValue(val []net.IP, p *[]net.IP) *ipSliceValue {
 
 // Set converts, and assigns, the comma-separated IP argument string representation as the []net.IP value of this flag.
 // If Set is called on a flag that already has a []net.IP assigned, the newly converted values will be appended.
-func (s *ipSliceValue) Set(val string) error {
+func (s *IPSliceValue) Set(val string) error {
 
 	// remove all quote characters
 	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
@@ -55,12 +55,12 @@ func (s *ipSliceValue) Set(val string) error {
 }
 
 // Type returns a string that uniquely represents this flag's type.
-func (s *ipSliceValue) Type() string {
+func (s *IPSliceValue) Type() string {
 	return "ipSlice"
 }
 
 // String defines a "native" format for this net.IP slice flag value.
-func (s *ipSliceValue) String() string {
+func (s *IPSliceValue) String() string {
 
 	ipStrSlice := make([]string, len(*s.value))
 	for i, ip := range *s.value {
@@ -72,15 +72,15 @@ func (s *ipSliceValue) String() string {
 	return "[" + out + "]"
 }
 
-func (s *ipSliceValue) fromString(val string) (net.IP, error) {
+func (s *IPSliceValue) fromString(val string) (net.IP, error) {
 	return net.ParseIP(strings.TrimSpace(val)), nil
 }
 
-func (s *ipSliceValue) toString(val net.IP) string {
+func (s *IPSliceValue) toString(val net.IP) string {
 	return val.String()
 }
 
-func (s *ipSliceValue) Append(val string) error {
+func (s *IPSliceValue) Append(val string) error {
 	i, err := s.fromString(val)
 	if err != nil {
 		return err
@@ -89,7 +89,7 @@ func (s *ipSliceValue) Append(val string) error {
 	return nil
 }
 
-func (s *ipSliceValue) Replace(val []string) error {
+func (s *IPSliceValue) Replace(val []string) error {
 	out := make([]net.IP, len(val))
 	for i, d := range val {
 		var err error
@@ -102,7 +102,7 @@ func (s *ipSliceValue) Replace(val []string) error {
 	return nil
 }
 
-func (s *ipSliceValue) GetSlice() []string {
+func (s *IPSliceValue) GetSlice() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = s.toString(d)
@@ -140,23 +140,23 @@ func (f *FlagSet) GetIPSlice(name string) ([]net.IP, error) {
 // IPSliceVar defines a ipSlice flag with specified name, default value, and usage string.
 // The argument p points to a []net.IP variable in which to store the value of the flag.
 func (f *FlagSet) IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string) {
-	f.VarP(newIPSliceValue(value, p), name, "", usage)
+	f.VarP(NewIPSliceValue(value, p), name, "", usage)
 }
 
 // IPSliceVarP is like IPSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) IPSliceVarP(p *[]net.IP, name, shorthand string, value []net.IP, usage string) {
-	f.VarP(newIPSliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewIPSliceValue(value, p), name, shorthand, usage)
 }
 
 // IPSliceVar defines a []net.IP flag with specified name, default value, and usage string.
 // The argument p points to a []net.IP variable in which to store the value of the flag.
 func IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string) {
-	CommandLine.VarP(newIPSliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewIPSliceValue(value, p), name, "", usage)
 }
 
 // IPSliceVarP is like IPSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func IPSliceVarP(p *[]net.IP, name, shorthand string, value []net.IP, usage string) {
-	CommandLine.VarP(newIPSliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewIPSliceValue(value, p), name, shorthand, usage)
 }
 
 // IPSlice defines a []net.IP flag with specified name, default value, and usage string.

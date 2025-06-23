@@ -3,24 +3,24 @@ package pflag
 import "strconv"
 
 // -- uint Value
-type uintValue uint
+type UintValue uint
 
-func newUintValue(val uint, p *uint) *uintValue {
+func NewUintValue(val uint, p *uint) *UintValue {
 	*p = val
-	return (*uintValue)(p)
+	return (*UintValue)(p)
 }
 
-func (i *uintValue) Set(s string) error {
+func (i *UintValue) Set(s string) error {
 	v, err := strconv.ParseUint(s, 0, 64)
-	*i = uintValue(v)
+	*i = UintValue(v)
 	return err
 }
 
-func (i *uintValue) Type() string {
+func (i *UintValue) Type() string {
 	return "uint"
 }
 
-func (i *uintValue) String() string { return strconv.FormatUint(uint64(*i), 10) }
+func (i *UintValue) String() string { return strconv.FormatUint(uint64(*i), 10) }
 
 func uintConv(sval string) (interface{}, error) {
 	v, err := strconv.ParseUint(sval, 0, 0)
@@ -42,23 +42,23 @@ func (f *FlagSet) GetUint(name string) (uint, error) {
 // UintVar defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint variable in which to store the value of the flag.
 func (f *FlagSet) UintVar(p *uint, name string, value uint, usage string) {
-	f.VarP(newUintValue(value, p), name, "", usage)
+	f.VarP(NewUintValue(value, p), name, "", usage)
 }
 
 // UintVarP is like UintVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) UintVarP(p *uint, name, shorthand string, value uint, usage string) {
-	f.VarP(newUintValue(value, p), name, shorthand, usage)
+	f.VarP(NewUintValue(value, p), name, shorthand, usage)
 }
 
 // UintVar defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint  variable in which to store the value of the flag.
 func UintVar(p *uint, name string, value uint, usage string) {
-	CommandLine.VarP(newUintValue(value, p), name, "", usage)
+	CommandLine.VarP(NewUintValue(value, p), name, "", usage)
 }
 
 // UintVarP is like UintVar, but accepts a shorthand letter that can be used after a single dash.
 func UintVarP(p *uint, name, shorthand string, value uint, usage string) {
-	CommandLine.VarP(newUintValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewUintValue(value, p), name, shorthand, usage)
 }
 
 // Uint defines a uint flag with specified name, default value, and usage string.

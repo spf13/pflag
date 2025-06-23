@@ -550,16 +550,16 @@ func (f *Flag) defaultIsZeroValue() bool {
 	switch f.Value.(type) {
 	case boolFlag:
 		return f.DefValue == "false"
-	case *durationValue:
+	case *DurationValue:
 		// Beginning in Go 1.7, duration zero values are "0s"
 		return f.DefValue == "0" || f.DefValue == "0s"
-	case *intValue, *int8Value, *int32Value, *int64Value, *uintValue, *uint8Value, *uint16Value, *uint32Value, *uint64Value, *countValue, *float32Value, *float64Value:
+	case *IntValue, *Int8Value, *Int32Value, *Int64Value, *UintValue, *Uint8Value, *Uint16Value, *Uint32Value, *Uint64Value, *CountValue, *Float32Value, *Float64Value:
 		return f.DefValue == "0"
-	case *stringValue:
+	case *StringValue:
 		return f.DefValue == ""
-	case *ipValue, *ipMaskValue, *ipNetValue:
+	case *IPValue, *IPMaskValue, *IPNetValue:
 		return f.DefValue == "<nil>"
-	case *intSliceValue, *stringSliceValue, *stringArrayValue:
+	case *IntSliceValue, *StringSliceValue, *StringArrayValue:
 		return f.DefValue == "[]"
 	default:
 		switch f.DefValue {

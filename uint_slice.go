@@ -7,19 +7,19 @@ import (
 )
 
 // -- uintSlice Value
-type uintSliceValue struct {
+type UintSliceValue struct {
 	value   *[]uint
 	changed bool
 }
 
-func newUintSliceValue(val []uint, p *[]uint) *uintSliceValue {
-	uisv := new(uintSliceValue)
+func NewUintSliceValue(val []uint, p *[]uint) *UintSliceValue {
+	uisv := new(UintSliceValue)
 	uisv.value = p
 	*uisv.value = val
 	return uisv
 }
 
-func (s *uintSliceValue) Set(val string) error {
+func (s *UintSliceValue) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make([]uint, len(ss))
 	for i, d := range ss {
@@ -38,11 +38,11 @@ func (s *uintSliceValue) Set(val string) error {
 	return nil
 }
 
-func (s *uintSliceValue) Type() string {
+func (s *UintSliceValue) Type() string {
 	return "uintSlice"
 }
 
-func (s *uintSliceValue) String() string {
+func (s *UintSliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = fmt.Sprintf("%d", d)
@@ -50,7 +50,7 @@ func (s *uintSliceValue) String() string {
 	return "[" + strings.Join(out, ",") + "]"
 }
 
-func (s *uintSliceValue) fromString(val string) (uint, error) {
+func (s *UintSliceValue) fromString(val string) (uint, error) {
 	t, err := strconv.ParseUint(val, 10, 0)
 	if err != nil {
 		return 0, err
@@ -58,11 +58,11 @@ func (s *uintSliceValue) fromString(val string) (uint, error) {
 	return uint(t), nil
 }
 
-func (s *uintSliceValue) toString(val uint) string {
+func (s *UintSliceValue) toString(val uint) string {
 	return fmt.Sprintf("%d", val)
 }
 
-func (s *uintSliceValue) Append(val string) error {
+func (s *UintSliceValue) Append(val string) error {
 	i, err := s.fromString(val)
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func (s *uintSliceValue) Append(val string) error {
 	return nil
 }
 
-func (s *uintSliceValue) Replace(val []string) error {
+func (s *UintSliceValue) Replace(val []string) error {
 	out := make([]uint, len(val))
 	for i, d := range val {
 		var err error
@@ -84,7 +84,7 @@ func (s *uintSliceValue) Replace(val []string) error {
 	return nil
 }
 
-func (s *uintSliceValue) GetSlice() []string {
+func (s *UintSliceValue) GetSlice() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = s.toString(d)
@@ -122,23 +122,23 @@ func (f *FlagSet) GetUintSlice(name string) ([]uint, error) {
 // UintSliceVar defines a uintSlice flag with specified name, default value, and usage string.
 // The argument p points to a []uint variable in which to store the value of the flag.
 func (f *FlagSet) UintSliceVar(p *[]uint, name string, value []uint, usage string) {
-	f.VarP(newUintSliceValue(value, p), name, "", usage)
+	f.VarP(NewUintSliceValue(value, p), name, "", usage)
 }
 
 // UintSliceVarP is like UintSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) UintSliceVarP(p *[]uint, name, shorthand string, value []uint, usage string) {
-	f.VarP(newUintSliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewUintSliceValue(value, p), name, shorthand, usage)
 }
 
 // UintSliceVar defines a uint[] flag with specified name, default value, and usage string.
 // The argument p points to a uint[] variable in which to store the value of the flag.
 func UintSliceVar(p *[]uint, name string, value []uint, usage string) {
-	CommandLine.VarP(newUintSliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewUintSliceValue(value, p), name, "", usage)
 }
 
 // UintSliceVarP is like the UintSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func UintSliceVarP(p *[]uint, name, shorthand string, value []uint, usage string) {
-	CommandLine.VarP(newUintSliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewUintSliceValue(value, p), name, shorthand, usage)
 }
 
 // UintSlice defines a []uint flag with specified name, default value, and usage string.
