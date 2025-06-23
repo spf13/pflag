@@ -7,19 +7,19 @@ import (
 )
 
 // -- int64Slice Value
-type int64SliceValue struct {
+type Int64SliceValue struct {
 	value   *[]int64
 	changed bool
 }
 
-func newInt64SliceValue(val []int64, p *[]int64) *int64SliceValue {
-	isv := new(int64SliceValue)
+func NewInt64SliceValue(val []int64, p *[]int64) *Int64SliceValue {
+	isv := new(Int64SliceValue)
 	isv.value = p
 	*isv.value = val
 	return isv
 }
 
-func (s *int64SliceValue) Set(val string) error {
+func (s *Int64SliceValue) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make([]int64, len(ss))
 	for i, d := range ss {
@@ -39,11 +39,11 @@ func (s *int64SliceValue) Set(val string) error {
 	return nil
 }
 
-func (s *int64SliceValue) Type() string {
+func (s *Int64SliceValue) Type() string {
 	return "int64Slice"
 }
 
-func (s *int64SliceValue) String() string {
+func (s *Int64SliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = fmt.Sprintf("%d", d)
@@ -51,15 +51,15 @@ func (s *int64SliceValue) String() string {
 	return "[" + strings.Join(out, ",") + "]"
 }
 
-func (s *int64SliceValue) fromString(val string) (int64, error) {
+func (s *Int64SliceValue) fromString(val string) (int64, error) {
 	return strconv.ParseInt(val, 0, 64)
 }
 
-func (s *int64SliceValue) toString(val int64) string {
+func (s *Int64SliceValue) toString(val int64) string {
 	return fmt.Sprintf("%d", val)
 }
 
-func (s *int64SliceValue) Append(val string) error {
+func (s *Int64SliceValue) Append(val string) error {
 	i, err := s.fromString(val)
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func (s *int64SliceValue) Append(val string) error {
 	return nil
 }
 
-func (s *int64SliceValue) Replace(val []string) error {
+func (s *Int64SliceValue) Replace(val []string) error {
 	out := make([]int64, len(val))
 	for i, d := range val {
 		var err error
@@ -81,7 +81,7 @@ func (s *int64SliceValue) Replace(val []string) error {
 	return nil
 }
 
-func (s *int64SliceValue) GetSlice() []string {
+func (s *Int64SliceValue) GetSlice() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = s.toString(d)
@@ -120,23 +120,23 @@ func (f *FlagSet) GetInt64Slice(name string) ([]int64, error) {
 // Int64SliceVar defines a int64Slice flag with specified name, default value, and usage string.
 // The argument p points to a []int64 variable in which to store the value of the flag.
 func (f *FlagSet) Int64SliceVar(p *[]int64, name string, value []int64, usage string) {
-	f.VarP(newInt64SliceValue(value, p), name, "", usage)
+	f.VarP(NewInt64SliceValue(value, p), name, "", usage)
 }
 
 // Int64SliceVarP is like Int64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Int64SliceVarP(p *[]int64, name, shorthand string, value []int64, usage string) {
-	f.VarP(newInt64SliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewInt64SliceValue(value, p), name, shorthand, usage)
 }
 
 // Int64SliceVar defines a int64[] flag with specified name, default value, and usage string.
 // The argument p points to a int64[] variable in which to store the value of the flag.
 func Int64SliceVar(p *[]int64, name string, value []int64, usage string) {
-	CommandLine.VarP(newInt64SliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewInt64SliceValue(value, p), name, "", usage)
 }
 
 // Int64SliceVarP is like Int64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Int64SliceVarP(p *[]int64, name, shorthand string, value []int64, usage string) {
-	CommandLine.VarP(newInt64SliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewInt64SliceValue(value, p), name, shorthand, usage)
 }
 
 // Int64Slice defines a []int64 flag with specified name, default value, and usage string.

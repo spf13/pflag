@@ -7,24 +7,24 @@ import (
 )
 
 // -- net.IPMask value
-type ipMaskValue net.IPMask
+type IPMaskValue net.IPMask
 
-func newIPMaskValue(val net.IPMask, p *net.IPMask) *ipMaskValue {
+func NewIPMaskValue(val net.IPMask, p *net.IPMask) *IPMaskValue {
 	*p = val
-	return (*ipMaskValue)(p)
+	return (*IPMaskValue)(p)
 }
 
-func (i *ipMaskValue) String() string { return net.IPMask(*i).String() }
-func (i *ipMaskValue) Set(s string) error {
+func (i *IPMaskValue) String() string { return net.IPMask(*i).String() }
+func (i *IPMaskValue) Set(s string) error {
 	ip := ParseIPv4Mask(s)
 	if ip == nil {
 		return fmt.Errorf("failed to parse IP mask: %q", s)
 	}
-	*i = ipMaskValue(ip)
+	*i = IPMaskValue(ip)
 	return nil
 }
 
-func (i *ipMaskValue) Type() string {
+func (i *IPMaskValue) Type() string {
 	return "ipMask"
 }
 
@@ -76,23 +76,23 @@ func (f *FlagSet) GetIPv4Mask(name string) (net.IPMask, error) {
 // IPMaskVar defines an net.IPMask flag with specified name, default value, and usage string.
 // The argument p points to an net.IPMask variable in which to store the value of the flag.
 func (f *FlagSet) IPMaskVar(p *net.IPMask, name string, value net.IPMask, usage string) {
-	f.VarP(newIPMaskValue(value, p), name, "", usage)
+	f.VarP(NewIPMaskValue(value, p), name, "", usage)
 }
 
 // IPMaskVarP is like IPMaskVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) IPMaskVarP(p *net.IPMask, name, shorthand string, value net.IPMask, usage string) {
-	f.VarP(newIPMaskValue(value, p), name, shorthand, usage)
+	f.VarP(NewIPMaskValue(value, p), name, shorthand, usage)
 }
 
 // IPMaskVar defines an net.IPMask flag with specified name, default value, and usage string.
 // The argument p points to an net.IPMask variable in which to store the value of the flag.
 func IPMaskVar(p *net.IPMask, name string, value net.IPMask, usage string) {
-	CommandLine.VarP(newIPMaskValue(value, p), name, "", usage)
+	CommandLine.VarP(NewIPMaskValue(value, p), name, "", usage)
 }
 
 // IPMaskVarP is like IPMaskVar, but accepts a shorthand letter that can be used after a single dash.
 func IPMaskVarP(p *net.IPMask, name, shorthand string, value net.IPMask, usage string) {
-	CommandLine.VarP(newIPMaskValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewIPMaskValue(value, p), name, shorthand, usage)
 }
 
 // IPMask defines an net.IPMask flag with specified name, default value, and usage string.

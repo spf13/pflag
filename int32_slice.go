@@ -7,19 +7,19 @@ import (
 )
 
 // -- int32Slice Value
-type int32SliceValue struct {
+type Int32SliceValue struct {
 	value   *[]int32
 	changed bool
 }
 
-func newInt32SliceValue(val []int32, p *[]int32) *int32SliceValue {
-	isv := new(int32SliceValue)
+func NewInt32SliceValue(val []int32, p *[]int32) *Int32SliceValue {
+	isv := new(Int32SliceValue)
 	isv.value = p
 	*isv.value = val
 	return isv
 }
 
-func (s *int32SliceValue) Set(val string) error {
+func (s *Int32SliceValue) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make([]int32, len(ss))
 	for i, d := range ss {
@@ -41,11 +41,11 @@ func (s *int32SliceValue) Set(val string) error {
 	return nil
 }
 
-func (s *int32SliceValue) Type() string {
+func (s *Int32SliceValue) Type() string {
 	return "int32Slice"
 }
 
-func (s *int32SliceValue) String() string {
+func (s *Int32SliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = fmt.Sprintf("%d", d)
@@ -53,7 +53,7 @@ func (s *int32SliceValue) String() string {
 	return "[" + strings.Join(out, ",") + "]"
 }
 
-func (s *int32SliceValue) fromString(val string) (int32, error) {
+func (s *Int32SliceValue) fromString(val string) (int32, error) {
 	t64, err := strconv.ParseInt(val, 0, 32)
 	if err != nil {
 		return 0, err
@@ -61,11 +61,11 @@ func (s *int32SliceValue) fromString(val string) (int32, error) {
 	return int32(t64), nil
 }
 
-func (s *int32SliceValue) toString(val int32) string {
+func (s *Int32SliceValue) toString(val int32) string {
 	return fmt.Sprintf("%d", val)
 }
 
-func (s *int32SliceValue) Append(val string) error {
+func (s *Int32SliceValue) Append(val string) error {
 	i, err := s.fromString(val)
 	if err != nil {
 		return err
@@ -74,7 +74,7 @@ func (s *int32SliceValue) Append(val string) error {
 	return nil
 }
 
-func (s *int32SliceValue) Replace(val []string) error {
+func (s *Int32SliceValue) Replace(val []string) error {
 	out := make([]int32, len(val))
 	for i, d := range val {
 		var err error
@@ -87,7 +87,7 @@ func (s *int32SliceValue) Replace(val []string) error {
 	return nil
 }
 
-func (s *int32SliceValue) GetSlice() []string {
+func (s *Int32SliceValue) GetSlice() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = s.toString(d)
@@ -128,23 +128,23 @@ func (f *FlagSet) GetInt32Slice(name string) ([]int32, error) {
 // Int32SliceVar defines a int32Slice flag with specified name, default value, and usage string.
 // The argument p points to a []int32 variable in which to store the value of the flag.
 func (f *FlagSet) Int32SliceVar(p *[]int32, name string, value []int32, usage string) {
-	f.VarP(newInt32SliceValue(value, p), name, "", usage)
+	f.VarP(NewInt32SliceValue(value, p), name, "", usage)
 }
 
 // Int32SliceVarP is like Int32SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Int32SliceVarP(p *[]int32, name, shorthand string, value []int32, usage string) {
-	f.VarP(newInt32SliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewInt32SliceValue(value, p), name, shorthand, usage)
 }
 
 // Int32SliceVar defines a int32[] flag with specified name, default value, and usage string.
 // The argument p points to a int32[] variable in which to store the value of the flag.
 func Int32SliceVar(p *[]int32, name string, value []int32, usage string) {
-	CommandLine.VarP(newInt32SliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewInt32SliceValue(value, p), name, "", usage)
 }
 
 // Int32SliceVarP is like Int32SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Int32SliceVarP(p *[]int32, name, shorthand string, value []int32, usage string) {
-	CommandLine.VarP(newInt32SliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewInt32SliceValue(value, p), name, shorthand, usage)
 }
 
 // Int32Slice defines a []int32 flag with specified name, default value, and usage string.

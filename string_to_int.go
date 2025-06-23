@@ -8,20 +8,20 @@ import (
 )
 
 // -- stringToInt Value
-type stringToIntValue struct {
+type StringToIntValue struct {
 	value   *map[string]int
 	changed bool
 }
 
-func newStringToIntValue(val map[string]int, p *map[string]int) *stringToIntValue {
-	ssv := new(stringToIntValue)
+func NewStringToIntValue(val map[string]int, p *map[string]int) *StringToIntValue {
+	ssv := new(StringToIntValue)
 	ssv.value = p
 	*ssv.value = val
 	return ssv
 }
 
 // Format: a=1,b=2
-func (s *stringToIntValue) Set(val string) error {
+func (s *StringToIntValue) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make(map[string]int, len(ss))
 	for _, pair := range ss {
@@ -46,11 +46,11 @@ func (s *stringToIntValue) Set(val string) error {
 	return nil
 }
 
-func (s *stringToIntValue) Type() string {
+func (s *StringToIntValue) Type() string {
 	return "stringToInt"
 }
 
-func (s *stringToIntValue) String() string {
+func (s *StringToIntValue) String() string {
 	var buf bytes.Buffer
 	i := 0
 	for k, v := range *s.value {
@@ -100,24 +100,24 @@ func (f *FlagSet) GetStringToInt(name string) (map[string]int, error) {
 // The argument p points to a map[string]int variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma
 func (f *FlagSet) StringToIntVar(p *map[string]int, name string, value map[string]int, usage string) {
-	f.VarP(newStringToIntValue(value, p), name, "", usage)
+	f.VarP(NewStringToIntValue(value, p), name, "", usage)
 }
 
 // StringToIntVarP is like StringToIntVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) StringToIntVarP(p *map[string]int, name, shorthand string, value map[string]int, usage string) {
-	f.VarP(newStringToIntValue(value, p), name, shorthand, usage)
+	f.VarP(NewStringToIntValue(value, p), name, shorthand, usage)
 }
 
 // StringToIntVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a map[string]int variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma
 func StringToIntVar(p *map[string]int, name string, value map[string]int, usage string) {
-	CommandLine.VarP(newStringToIntValue(value, p), name, "", usage)
+	CommandLine.VarP(NewStringToIntValue(value, p), name, "", usage)
 }
 
 // StringToIntVarP is like StringToIntVar, but accepts a shorthand letter that can be used after a single dash.
 func StringToIntVarP(p *map[string]int, name, shorthand string, value map[string]int, usage string) {
-	CommandLine.VarP(newStringToIntValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewStringToIntValue(value, p), name, shorthand, usage)
 }
 
 // StringToInt defines a string flag with specified name, default value, and usage string.

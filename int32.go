@@ -3,24 +3,24 @@ package pflag
 import "strconv"
 
 // -- int32 Value
-type int32Value int32
+type Int32Value int32
 
-func newInt32Value(val int32, p *int32) *int32Value {
+func NewInt32Value(val int32, p *int32) *Int32Value {
 	*p = val
-	return (*int32Value)(p)
+	return (*Int32Value)(p)
 }
 
-func (i *int32Value) Set(s string) error {
+func (i *Int32Value) Set(s string) error {
 	v, err := strconv.ParseInt(s, 0, 32)
-	*i = int32Value(v)
+	*i = Int32Value(v)
 	return err
 }
 
-func (i *int32Value) Type() string {
+func (i *Int32Value) Type() string {
 	return "int32"
 }
 
-func (i *int32Value) String() string { return strconv.FormatInt(int64(*i), 10) }
+func (i *Int32Value) String() string { return strconv.FormatInt(int64(*i), 10) }
 
 func int32Conv(sval string) (interface{}, error) {
 	v, err := strconv.ParseInt(sval, 0, 32)
@@ -42,23 +42,23 @@ func (f *FlagSet) GetInt32(name string) (int32, error) {
 // Int32Var defines an int32 flag with specified name, default value, and usage string.
 // The argument p points to an int32 variable in which to store the value of the flag.
 func (f *FlagSet) Int32Var(p *int32, name string, value int32, usage string) {
-	f.VarP(newInt32Value(value, p), name, "", usage)
+	f.VarP(NewInt32Value(value, p), name, "", usage)
 }
 
 // Int32VarP is like Int32Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Int32VarP(p *int32, name, shorthand string, value int32, usage string) {
-	f.VarP(newInt32Value(value, p), name, shorthand, usage)
+	f.VarP(NewInt32Value(value, p), name, shorthand, usage)
 }
 
 // Int32Var defines an int32 flag with specified name, default value, and usage string.
 // The argument p points to an int32 variable in which to store the value of the flag.
 func Int32Var(p *int32, name string, value int32, usage string) {
-	CommandLine.VarP(newInt32Value(value, p), name, "", usage)
+	CommandLine.VarP(NewInt32Value(value, p), name, "", usage)
 }
 
 // Int32VarP is like Int32Var, but accepts a shorthand letter that can be used after a single dash.
 func Int32VarP(p *int32, name, shorthand string, value int32, usage string) {
-	CommandLine.VarP(newInt32Value(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewInt32Value(value, p), name, shorthand, usage)
 }
 
 // Int32 defines an int32 flag with specified name, default value, and usage string.

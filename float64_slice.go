@@ -7,19 +7,19 @@ import (
 )
 
 // -- float64Slice Value
-type float64SliceValue struct {
+type Float64SliceValue struct {
 	value   *[]float64
 	changed bool
 }
 
-func newFloat64SliceValue(val []float64, p *[]float64) *float64SliceValue {
-	isv := new(float64SliceValue)
+func NewFloat64SliceValue(val []float64, p *[]float64) *Float64SliceValue {
+	isv := new(Float64SliceValue)
 	isv.value = p
 	*isv.value = val
 	return isv
 }
 
-func (s *float64SliceValue) Set(val string) error {
+func (s *Float64SliceValue) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make([]float64, len(ss))
 	for i, d := range ss {
@@ -39,11 +39,11 @@ func (s *float64SliceValue) Set(val string) error {
 	return nil
 }
 
-func (s *float64SliceValue) Type() string {
+func (s *Float64SliceValue) Type() string {
 	return "float64Slice"
 }
 
-func (s *float64SliceValue) String() string {
+func (s *Float64SliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = fmt.Sprintf("%f", d)
@@ -51,15 +51,15 @@ func (s *float64SliceValue) String() string {
 	return "[" + strings.Join(out, ",") + "]"
 }
 
-func (s *float64SliceValue) fromString(val string) (float64, error) {
+func (s *Float64SliceValue) fromString(val string) (float64, error) {
 	return strconv.ParseFloat(val, 64)
 }
 
-func (s *float64SliceValue) toString(val float64) string {
+func (s *Float64SliceValue) toString(val float64) string {
 	return fmt.Sprintf("%f", val)
 }
 
-func (s *float64SliceValue) Append(val string) error {
+func (s *Float64SliceValue) Append(val string) error {
 	i, err := s.fromString(val)
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func (s *float64SliceValue) Append(val string) error {
 	return nil
 }
 
-func (s *float64SliceValue) Replace(val []string) error {
+func (s *Float64SliceValue) Replace(val []string) error {
 	out := make([]float64, len(val))
 	for i, d := range val {
 		var err error
@@ -81,7 +81,7 @@ func (s *float64SliceValue) Replace(val []string) error {
 	return nil
 }
 
-func (s *float64SliceValue) GetSlice() []string {
+func (s *Float64SliceValue) GetSlice() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = s.toString(d)
@@ -120,23 +120,23 @@ func (f *FlagSet) GetFloat64Slice(name string) ([]float64, error) {
 // Float64SliceVar defines a float64Slice flag with specified name, default value, and usage string.
 // The argument p points to a []float64 variable in which to store the value of the flag.
 func (f *FlagSet) Float64SliceVar(p *[]float64, name string, value []float64, usage string) {
-	f.VarP(newFloat64SliceValue(value, p), name, "", usage)
+	f.VarP(NewFloat64SliceValue(value, p), name, "", usage)
 }
 
 // Float64SliceVarP is like Float64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Float64SliceVarP(p *[]float64, name, shorthand string, value []float64, usage string) {
-	f.VarP(newFloat64SliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewFloat64SliceValue(value, p), name, shorthand, usage)
 }
 
 // Float64SliceVar defines a float64[] flag with specified name, default value, and usage string.
 // The argument p points to a float64[] variable in which to store the value of the flag.
 func Float64SliceVar(p *[]float64, name string, value []float64, usage string) {
-	CommandLine.VarP(newFloat64SliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewFloat64SliceValue(value, p), name, "", usage)
 }
 
 // Float64SliceVarP is like Float64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Float64SliceVarP(p *[]float64, name, shorthand string, value []float64, usage string) {
-	CommandLine.VarP(newFloat64SliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewFloat64SliceValue(value, p), name, shorthand, usage)
 }
 
 // Float64Slice defines a []float64 flag with specified name, default value, and usage string.

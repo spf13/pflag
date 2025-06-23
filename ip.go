@@ -7,15 +7,15 @@ import (
 )
 
 // -- net.IP value
-type ipValue net.IP
+type IPValue net.IP
 
-func newIPValue(val net.IP, p *net.IP) *ipValue {
+func NewIPValue(val net.IP, p *net.IP) *IPValue {
 	*p = val
-	return (*ipValue)(p)
+	return (*IPValue)(p)
 }
 
-func (i *ipValue) String() string { return net.IP(*i).String() }
-func (i *ipValue) Set(s string) error {
+func (i *IPValue) String() string { return net.IP(*i).String() }
+func (i *IPValue) Set(s string) error {
 	if s == "" {
 		return nil
 	}
@@ -23,11 +23,11 @@ func (i *ipValue) Set(s string) error {
 	if ip == nil {
 		return fmt.Errorf("failed to parse IP: %q", s)
 	}
-	*i = ipValue(ip)
+	*i = IPValue(ip)
 	return nil
 }
 
-func (i *ipValue) Type() string {
+func (i *IPValue) Type() string {
 	return "ip"
 }
 
@@ -51,23 +51,23 @@ func (f *FlagSet) GetIP(name string) (net.IP, error) {
 // IPVar defines an net.IP flag with specified name, default value, and usage string.
 // The argument p points to an net.IP variable in which to store the value of the flag.
 func (f *FlagSet) IPVar(p *net.IP, name string, value net.IP, usage string) {
-	f.VarP(newIPValue(value, p), name, "", usage)
+	f.VarP(NewIPValue(value, p), name, "", usage)
 }
 
 // IPVarP is like IPVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) IPVarP(p *net.IP, name, shorthand string, value net.IP, usage string) {
-	f.VarP(newIPValue(value, p), name, shorthand, usage)
+	f.VarP(NewIPValue(value, p), name, shorthand, usage)
 }
 
 // IPVar defines an net.IP flag with specified name, default value, and usage string.
 // The argument p points to an net.IP variable in which to store the value of the flag.
 func IPVar(p *net.IP, name string, value net.IP, usage string) {
-	CommandLine.VarP(newIPValue(value, p), name, "", usage)
+	CommandLine.VarP(NewIPValue(value, p), name, "", usage)
 }
 
 // IPVarP is like IPVar, but accepts a shorthand letter that can be used after a single dash.
 func IPVarP(p *net.IP, name, shorthand string, value net.IP, usage string) {
-	CommandLine.VarP(newIPValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewIPValue(value, p), name, shorthand, usage)
 }
 
 // IP defines an net.IP flag with specified name, default value, and usage string.

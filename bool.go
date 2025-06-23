@@ -10,26 +10,26 @@ type boolFlag interface {
 }
 
 // -- bool Value
-type boolValue bool
+type BoolValue bool
 
-func newBoolValue(val bool, p *bool) *boolValue {
+func NewBoolValue(val bool, p *bool) *BoolValue {
 	*p = val
-	return (*boolValue)(p)
+	return (*BoolValue)(p)
 }
 
-func (b *boolValue) Set(s string) error {
+func (b *BoolValue) Set(s string) error {
 	v, err := strconv.ParseBool(s)
-	*b = boolValue(v)
+	*b = BoolValue(v)
 	return err
 }
 
-func (b *boolValue) Type() string {
+func (b *BoolValue) Type() string {
 	return "bool"
 }
 
-func (b *boolValue) String() string { return strconv.FormatBool(bool(*b)) }
+func (b *BoolValue) String() string { return strconv.FormatBool(bool(*b)) }
 
-func (b *boolValue) IsBoolFlag() bool { return true }
+func (b *BoolValue) IsBoolFlag() bool { return true }
 
 func boolConv(sval string) (interface{}, error) {
 	return strconv.ParseBool(sval)
@@ -52,7 +52,7 @@ func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string) {
 
 // BoolVarP is like BoolVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
-	flag := f.VarPF(newBoolValue(value, p), name, shorthand, usage)
+	flag := f.VarPF(NewBoolValue(value, p), name, shorthand, usage)
 	flag.NoOptDefVal = "true"
 }
 
@@ -64,7 +64,7 @@ func BoolVar(p *bool, name string, value bool, usage string) {
 
 // BoolVarP is like BoolVar, but accepts a shorthand letter that can be used after a single dash.
 func BoolVarP(p *bool, name, shorthand string, value bool, usage string) {
-	flag := CommandLine.VarPF(newBoolValue(value, p), name, shorthand, usage)
+	flag := CommandLine.VarPF(NewBoolValue(value, p), name, shorthand, usage)
 	flag.NoOptDefVal = "true"
 }
 
