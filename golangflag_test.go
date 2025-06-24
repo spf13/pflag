@@ -12,11 +12,14 @@ import (
 func TestGoflags(t *testing.T) {
 	goflag.String("stringFlag", "stringFlag", "stringFlag")
 	goflag.Bool("boolFlag", false, "boolFlag")
+	var testxxxValue string
+	goflag.StringVar(&testxxxValue, "test.xxx", "test.xxx", "it is a test flag")
 
 	f := NewFlagSet("test", ContinueOnError)
 
 	f.AddGoFlagSet(goflag.CommandLine)
-	err := f.Parse([]string{"--stringFlag=bob", "--boolFlag"})
+	args := []string{"--stringFlag=bob", "--boolFlag", "-test.xxx=testvalue"}
+	err := f.Parse(args)
 	if err != nil {
 		t.Fatal("expected no error; get", err)
 	}
@@ -38,6 +41,17 @@ func TestGoflags(t *testing.T) {
 	}
 	if !f.Parsed() {
 		t.Fatal("f.Parsed() return false after f.Parse() called")
+	}
+
+	if testxxxValue != "test.xxx" {
+		t.Fatalf("expected testxxxValue to be test.xxx but got %v", testxxxValue)
+	}
+	err = ParseSkippedFlags(args, goflag.CommandLine)
+	if err != nil {
+		t.Fatal("expected no error; ParseSkippedFlags", err)
+	}
+	if testxxxValue != "testvalue" {
+		t.Fatalf("expected testxxxValue to be testvalue but got %v", testxxxValue)
 	}
 
 	// in fact it is useless. because `go test` called flag.Parse()
