@@ -16,7 +16,7 @@ pflag is a drop-in replacement of Go's native flag package. If you import
 pflag under the name "flag" then all code should continue to function
 with no changes.
 
-	import flag "github.com/spf13/pflag"
+	import flag "github.com/opencoff/pflag"
 
 There is one exception to this: if you directly instantiate the Flag struct
 there is one more field "Shorthand" that you will need to set.
@@ -96,6 +96,26 @@ letters for flags. All but the last shorthand letter must be boolean flags.
 Flag parsing stops after the terminator "--". Unlike the flag package,
 flags can be interspersed with arguments anywhere on the command line
 before this terminator.
+
+Long form flags can also be abbreviated - so long as it is a unique
+abbreviation. eg given this:
+
+	var ip = flag.IntP("flagname", "f", 1234, "help message")
+	var op = flag.IntP("fluid-level", "F", 99, "fluid message")
+
+The following abbreviations will all resolve to "flagname":
+
+	--flagname=33
+	--flag=33
+	--fla=33
+	-f 33
+
+And the following abbreviations will all resolve to "fluid-level":
+
+	--fluid-level=20
+	--fluid=20
+	--flu=20
+	-F 20
 
 Integer flags accept 1234, 0664, 0x1234 and may be negative.
 Boolean flags (in their long form) accept 1, 0, t, f, true, false,
@@ -178,6 +198,11 @@ type FlagSet struct {
 	normalizeNameFunc func(f *FlagSet, name string) NormalizedName
 
 	addedGoFlagSets []*goflag.FlagSet
+
+	// map to hold unambiguous, abbreviated long-name
+	// key = abbreviation;
+	// value = full arg name
+	abbrev map[string]string
 }
 
 // A Flag represents the state of a flag.
@@ -378,7 +403,7 @@ func (f *FlagSet) ShorthandLookup(name string) *Flag {
 	}
 	if len(name) > 1 {
 		msg := fmt.Sprintf("can not look up shorthand which is more than one ASCII character: %q", name)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	c := name[0]
@@ -880,7 +905,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	}
 	if len(flag.Shorthand) > 1 {
 		msg := fmt.Sprintf("%q shorthand is more than one ASCII character", flag.Shorthand)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	if f.shorthands == nil {
@@ -890,7 +915,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	used, alreadyThere := f.shorthands[c]
 	if alreadyThere {
 		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	f.shorthands[c] = flag
@@ -977,7 +1002,15 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	}
 
 	split := strings.SplitN(name, "=", 2)
-	name = split[0]
+	ab := split[0]
+	name, ok := f.abbrev[ab]
+	if !ok {
+		if ab == "help" {
+			f.usage()
+			return a, ErrHelp
+		}
+		name = ab
+	}
 	flag, exists := f.formal[f.normalizeFlagName(name)]
 
 	if !exists {
@@ -1146,6 +1179,16 @@ func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 	return
 }
 
+// setup abbreviations for long args
+func (f *FlagSet) setupAbbrev() {
+	// create unique shortcuts for the long args
+	words := make([]string, 0, len(f.formal))
+	for k := range f.formal {
+		words = append(words, string(k))
+	}
+	f.abbrev = abbrev(words)
+}
+
 // Parse parses flag definitions from the argument list, which should not
 // include the command name.  Must be called after all flags in the FlagSet
 // are defined and before flags are accessed by the program.
@@ -1162,6 +1205,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 		return nil
 	}
 
+	f.setupAbbrev()
 	f.args = make([]string, 0, len(arguments))
 
 	set := func(flag *Flag, value string) error {
@@ -1191,6 +1235,7 @@ type parseFunc func(flag *Flag, value string) error
 // accessed by the program. The return value will be ErrHelp if -help was set
 // but not defined.
 func (f *FlagSet) ParseAll(arguments []string, fn func(flag *Flag, value string) error) error {
+	f.setupAbbrev()
 	f.parsed = true
 	f.args = make([]string, 0, len(arguments))
 
