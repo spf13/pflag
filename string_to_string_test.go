@@ -160,3 +160,34 @@ func TestS2SCalledTwice(t *testing.T) {
 		}
 	}
 }
+
+// Regression test for a parsing bug triggered when [] 
+// was the last item processed in (random order) map iteration
+// Using [] as the only value makes he bug reproducible
+func TestS2SBracketValue(t *testing.T) {
+	var s2s map[string]string
+	f := setUpS2SFlagSet(&s2s)
+
+	vals := map[string]string{"a": "[]"}
+	arg := fmt.Sprintf("--s2s=%s", createS2SFlag(vals))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	for k, v := range s2s {
+		if vals[k] != v {
+			t.Fatalf("expected s2s[%s] to be %s but got: %s", k, vals[k], v)
+		}
+	}
+
+	getS2S, err := f.GetStringToString("s2s")
+	if err != nil {
+		t.Fatal("got an error from GetStringToString():", err)
+	}
+	for k, v := range getS2S {
+		if vals[k] != v {
+			t.Fatalf("expected s2s[%s] to be %s from GetStringToString but got: %s", k, vals[k], v)
+		}
+	}
+}
