@@ -137,11 +137,15 @@ flag.Lookup("flagname").NoOptDefVal = "4321"
 
 Would result in something like
 
-| Parsed Arguments | Resulting Value |
-| -------------    | -------------   |
-| --flagname=1357  | ip=1357         |
-| --flagname       | ip=4321         |
-| [nothing]        | ip=1234         |
+| Parsed Arguments | Resulting Value   |
+| -------------    | ----------------- |
+| --flagname=1357  | ip=1357           |
+| --flagname       | ip=4321           |
+| [nothing]        | ip=1234           |
+| --flagname 22    | ip=1234 arg: {22} |
+
+It is recommended to avoid the usage of NoOptDefVal, since users might get confused if the
+equal sign gets omitted. Then the `22` in above example is considered an argument.
 
 ## Command line flag syntax
 
