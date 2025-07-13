@@ -63,23 +63,23 @@ func (f *FlagSet) GetBytesHex(name string) ([]byte, error) {
 // BytesHexVar defines an []byte flag with specified name, default value, and usage string.
 // The argument p points to an []byte variable in which to store the value of the flag.
 func (f *FlagSet) BytesHexVar(p *[]byte, name string, value []byte, usage string) {
-	f.VarP(newBytesHexValue(value, p), name, "", usage)
+	f.Var(newBytesHexValue(value, p), name, usage)
 }
 
 // BytesHexVarP is like BytesHexVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) BytesHexVarP(p *[]byte, name, shorthand string, value []byte, usage string) {
-	f.VarP(newBytesHexValue(value, p), name, shorthand, usage)
+	f.Var(newBytesHexValue(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // BytesHexVar defines an []byte flag with specified name, default value, and usage string.
 // The argument p points to an []byte variable in which to store the value of the flag.
 func BytesHexVar(p *[]byte, name string, value []byte, usage string) {
-	CommandLine.VarP(newBytesHexValue(value, p), name, "", usage)
+	CommandLine.Var(newBytesHexValue(value, p), name, usage)
 }
 
 // BytesHexVarP is like BytesHexVar, but accepts a shorthand letter that can be used after a single dash.
 func BytesHexVarP(p *[]byte, name, shorthand string, value []byte, usage string) {
-	CommandLine.VarP(newBytesHexValue(value, p), name, shorthand, usage)
+	CommandLine.Var(newBytesHexValue(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // BytesHex defines an []byte flag with specified name, default value, and usage string.
@@ -163,23 +163,23 @@ func (f *FlagSet) GetBytesBase64(name string) ([]byte, error) {
 // BytesBase64Var defines an []byte flag with specified name, default value, and usage string.
 // The argument p points to an []byte variable in which to store the value of the flag.
 func (f *FlagSet) BytesBase64Var(p *[]byte, name string, value []byte, usage string) {
-	f.VarP(newBytesBase64Value(value, p), name, "", usage)
+	f.Var(newBytesBase64Value(value, p), name, usage)
 }
 
 // BytesBase64VarP is like BytesBase64Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) BytesBase64VarP(p *[]byte, name, shorthand string, value []byte, usage string) {
-	f.VarP(newBytesBase64Value(value, p), name, shorthand, usage)
+	f.Var(newBytesBase64Value(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // BytesBase64Var defines an []byte flag with specified name, default value, and usage string.
 // The argument p points to an []byte variable in which to store the value of the flag.
 func BytesBase64Var(p *[]byte, name string, value []byte, usage string) {
-	CommandLine.VarP(newBytesBase64Value(value, p), name, "", usage)
+	CommandLine.Var(newBytesBase64Value(value, p), name, usage)
 }
 
 // BytesBase64VarP is like BytesBase64Var, but accepts a shorthand letter that can be used after a single dash.
 func BytesBase64VarP(p *[]byte, name, shorthand string, value []byte, usage string) {
-	CommandLine.VarP(newBytesBase64Value(value, p), name, shorthand, usage)
+	CommandLine.Var(newBytesBase64Value(value, p), name, usage)
 }
 
 // BytesBase64 defines an []byte flag with specified name, default value, and usage string.

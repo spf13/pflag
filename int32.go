@@ -42,23 +42,23 @@ func (f *FlagSet) GetInt32(name string) (int32, error) {
 // Int32Var defines an int32 flag with specified name, default value, and usage string.
 // The argument p points to an int32 variable in which to store the value of the flag.
 func (f *FlagSet) Int32Var(p *int32, name string, value int32, usage string) {
-	f.VarP(newInt32Value(value, p), name, "", usage)
+	f.Var(newInt32Value(value, p), name, usage)
 }
 
 // Int32VarP is like Int32Var, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Int32VarP(p *int32, name, shorthand string, value int32, usage string) {
-	f.VarP(newInt32Value(value, p), name, shorthand, usage)
+	f.Var(newInt32Value(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // Int32Var defines an int32 flag with specified name, default value, and usage string.
 // The argument p points to an int32 variable in which to store the value of the flag.
 func Int32Var(p *int32, name string, value int32, usage string) {
-	CommandLine.VarP(newInt32Value(value, p), name, "", usage)
+	CommandLine.Var(newInt32Value(value, p), name, usage)
 }
 
 // Int32VarP is like Int32Var, but accepts a shorthand letter that can be used after a single dash.
 func Int32VarP(p *int32, name, shorthand string, value int32, usage string) {
-	CommandLine.VarP(newInt32Value(value, p), name, shorthand, usage)
+	CommandLine.Var(newInt32Value(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // Int32 defines an int32 flag with specified name, default value, and usage string.
