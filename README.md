@@ -321,3 +321,12 @@ installation.
 
 [2]: http://localhost:6060/pkg/github.com/spf13/pflag
 [3]: http://godoc.org/github.com/spf13/pflag
+
+## Contributing
+
+Is `pflag` not doing all you think it should? Or did you find a bug just now? We welcome contributions of all kinds - a well-written issue is just as
+valuable as a pull request! If you're uncertain whether a feature addition would be accepted, you can always file an issue to discuss it, before you
+start working on the implementation.
+
+Reviewing, merging and releasing new versions is done by a group of co-maintainers in our spare time, so response times might be erratic. Long response
+times do *not* signal that we do not value your contribution.
