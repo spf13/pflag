@@ -200,6 +200,15 @@ type Flag struct {
 type Value interface {
 	String() string
 	Set(string) error
+}
+
+// TypedValue wraps Value but adds an additional Type() string, which
+// can be used to special-case things like usage instructions, error
+// messages, parsing, etc.
+// Its value should be a constant string that identifies the type of
+// the underlying flag value.
+type TypedValue interface {
+	Value
 	Type() string
 }
 
@@ -398,8 +407,8 @@ func (f *FlagSet) getFlagType(name string, ftype string, convFunc func(sval stri
 		return nil, err
 	}
 
-	if flag.Value.Type() != ftype {
-		err := fmt.Errorf("trying to get %s value of flag of type %s", ftype, flag.Value.Type())
+	if tvalue, ok := flag.Value.(TypedValue); ok && tvalue.Type() != ftype {
+		err := fmt.Errorf("trying to get %s value of flag of type %s", ftype, tvalue.Type())
 		return nil, err
 	}
 
@@ -597,7 +606,10 @@ func UnquoteUsage(flag *Flag) (name string, usage string) {
 		}
 	}
 
-	name = flag.Value.Type()
+	name = "value"
+	if tvalue, ok := flag.Value.(TypedValue); ok {
+		name = tvalue.Type()
+	}
 	switch name {
 	case "bool", "boolfunc":
 		name = ""
@@ -716,8 +728,14 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		if varname != "" {
 			line += " " + varname
 		}
+		tvalue, tvalueOk := flag.Value.(TypedValue)
 		if flag.NoOptDefVal != "" {
-			switch flag.Value.Type() {
+			if !tvalueOk {
+				line += fmt.Sprintf(" [=%s]", flag.NoOptDefVal)
+				return
+			}
+
+			switch tvalue.Type() {
 			case "string":
 				line += fmt.Sprintf("[=\"%s\"]", flag.NoOptDefVal)
 			case "bool", "boolfunc":
@@ -742,7 +760,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 
 		line += usage
 		if !flag.defaultIsZeroValue() {
-			if flag.Value.Type() == "string" {
+			if tvalueOk && tvalue.Type() == "string" {
 				line += fmt.Sprintf(" (default %q)", flag.DefValue)
 			} else {
 				line += fmt.Sprintf(" (default %s)", flag.DefValue)

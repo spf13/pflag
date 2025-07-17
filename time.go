@@ -58,8 +58,8 @@ func (f *FlagSet) GetTime(name string) (time.Time, error) {
 		return time.Time{}, err
 	}
 
-	if flag.Value.Type() != "time" {
-		err := fmt.Errorf("trying to get %s value of flag of type %s", "time", flag.Value.Type())
+	if tvalue, ok := flag.Value.(TypedValue); ok && tvalue.Type() != "time" {
+		err := fmt.Errorf("trying to get %s value of flag of type %s", "time", tvalue.Type())
 		return time.Time{}, err
 	}
 
