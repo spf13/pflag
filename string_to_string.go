@@ -8,20 +8,20 @@ import (
 )
 
 // -- stringToString Value
-type stringToStringValue struct {
+type StringToStringValue struct {
 	value   *map[string]string
 	changed bool
 }
 
-func newStringToStringValue(val map[string]string, p *map[string]string) *stringToStringValue {
-	ssv := new(stringToStringValue)
+func newStringToStringValue(val map[string]string, p *map[string]string) *StringToStringValue {
+	ssv := new(StringToStringValue)
 	ssv.value = p
 	*ssv.value = val
 	return ssv
 }
 
 // Format: a=1,b=2
-func (s *stringToStringValue) Set(val string) error {
+func (s *StringToStringValue) Set(val string) error {
 	var ss []string
 	n := strings.Count(val, "=")
 	switch n {
@@ -57,11 +57,11 @@ func (s *stringToStringValue) Set(val string) error {
 	return nil
 }
 
-func (s *stringToStringValue) Type() string {
+func (s *StringToStringValue) Type() string {
 	return "stringToString"
 }
 
-func (s *stringToStringValue) String() string {
+func (s *StringToStringValue) String() string {
 	records := make([]string, 0, len(*s.value)>>1)
 	for k, v := range *s.value {
 		records = append(records, k+"="+v)

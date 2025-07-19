@@ -7,13 +7,13 @@ import (
 )
 
 // -- boolSlice Value
-type boolSliceValue struct {
+type BoolSliceValue struct {
 	value   *[]bool
 	changed bool
 }
 
-func newBoolSliceValue(val []bool, p *[]bool) *boolSliceValue {
-	bsv := new(boolSliceValue)
+func newBoolSliceValue(val []bool, p *[]bool) *BoolSliceValue {
+	bsv := new(BoolSliceValue)
 	bsv.value = p
 	*bsv.value = val
 	return bsv
@@ -21,7 +21,7 @@ func newBoolSliceValue(val []bool, p *[]bool) *boolSliceValue {
 
 // Set converts, and assigns, the comma-separated boolean argument string representation as the []bool value of this flag.
 // If Set is called on a flag that already has a []bool assigned, the newly converted values will be appended.
-func (s *boolSliceValue) Set(val string) error {
+func (s *BoolSliceValue) Set(val string) error {
 
 	// remove all quote characters
 	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
@@ -54,12 +54,12 @@ func (s *boolSliceValue) Set(val string) error {
 }
 
 // Type returns a string that uniquely represents this flag's type.
-func (s *boolSliceValue) Type() string {
+func (s *BoolSliceValue) Type() string {
 	return "boolSlice"
 }
 
 // String defines a "native" format for this boolean slice flag value.
-func (s *boolSliceValue) String() string {
+func (s *BoolSliceValue) String() string {
 
 	boolStrSlice := make([]string, len(*s.value))
 	for i, b := range *s.value {
@@ -71,15 +71,15 @@ func (s *boolSliceValue) String() string {
 	return "[" + out + "]"
 }
 
-func (s *boolSliceValue) fromString(val string) (bool, error) {
+func (s *BoolSliceValue) fromString(val string) (bool, error) {
 	return strconv.ParseBool(val)
 }
 
-func (s *boolSliceValue) toString(val bool) string {
+func (s *BoolSliceValue) toString(val bool) string {
 	return strconv.FormatBool(val)
 }
 
-func (s *boolSliceValue) Append(val string) error {
+func (s *BoolSliceValue) Append(val string) error {
 	i, err := s.fromString(val)
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func (s *boolSliceValue) Append(val string) error {
 	return nil
 }
 
-func (s *boolSliceValue) Replace(val []string) error {
+func (s *BoolSliceValue) Replace(val []string) error {
 	out := make([]bool, len(val))
 	for i, d := range val {
 		var err error
@@ -101,7 +101,7 @@ func (s *boolSliceValue) Replace(val []string) error {
 	return nil
 }
 
-func (s *boolSliceValue) GetSlice() []string {
+func (s *BoolSliceValue) GetSlice() []string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
 		out[i] = s.toString(d)
