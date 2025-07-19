@@ -1144,14 +1144,14 @@ func (f *FlagSet) parseShortArg(s string, args []string, fn parseFunc) (a []stri
 			if errUnknownFlag, ok := err.(*unknownFlagError); ok {
 				// this means f.ParseErrorsAllowlist.UnknownFlags
 				// and f.ParseErrorsAllowlist.PassUnknownFlagsToArgs are set.
-				if errUnknownFlagAll != nil {
-					errUnknownFlagAll.UnknownFlags = errUnknownFlagAll.UnknownFlags +
-						errUnknownFlag.UnknownFlags
-				} else {
+				if errUnknownFlagAll == nil {
 					errUnknownFlagAll = &unknownFlagError{
-						UnknownFlags: "-" + errUnknownFlag.UnknownFlags,
+						UnknownFlags: "-",
 					}
 				}
+
+				errUnknownFlagAll.UnknownFlags = errUnknownFlagAll.UnknownFlags +
+					errUnknownFlag.UnknownFlags
 				err = nil
 			} else {
 				return
