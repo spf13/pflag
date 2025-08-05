@@ -3,7 +3,8 @@ package pflag
 // -- string Value
 type stringValue string
 
-func newStringValue(val string, p *string) *stringValue {
+// NewStringValue creates string adapted to be used as flag (with Value interface implementation)
+func NewStringValue(val string, p *string) *stringValue {
 	*p = val
 	return (*stringValue)(p)
 }
@@ -34,23 +35,23 @@ func (f *FlagSet) GetString(name string) (string, error) {
 // StringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
 func (f *FlagSet) StringVar(p *string, name string, value string, usage string) {
-	f.VarP(newStringValue(value, p), name, "", usage)
+	f.VarP(NewStringValue(value, p), name, "", usage)
 }
 
 // StringVarP is like StringVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) StringVarP(p *string, name, shorthand string, value string, usage string) {
-	f.VarP(newStringValue(value, p), name, shorthand, usage)
+	f.VarP(NewStringValue(value, p), name, shorthand, usage)
 }
 
 // StringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
 func StringVar(p *string, name string, value string, usage string) {
-	CommandLine.VarP(newStringValue(value, p), name, "", usage)
+	CommandLine.VarP(NewStringValue(value, p), name, "", usage)
 }
 
 // StringVarP is like StringVar, but accepts a shorthand letter that can be used after a single dash.
 func StringVarP(p *string, name, shorthand string, value string, usage string) {
-	CommandLine.VarP(newStringValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewStringValue(value, p), name, shorthand, usage)
 }
 
 // String defines a string flag with specified name, default value, and usage string.

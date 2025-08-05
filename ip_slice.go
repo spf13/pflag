@@ -13,7 +13,8 @@ type ipSliceValue struct {
 	changed bool
 }
 
-func newIPSliceValue(val []net.IP, p *[]net.IP) *ipSliceValue {
+// NewIPSliceValue creates []net.IP adapted to be used as flag (with Value interface implementation)
+func NewIPSliceValue(val []net.IP, p *[]net.IP) *ipSliceValue {
 	ipsv := new(ipSliceValue)
 	ipsv.value = p
 	*ipsv.value = val
@@ -140,23 +141,23 @@ func (f *FlagSet) GetIPSlice(name string) ([]net.IP, error) {
 // IPSliceVar defines a ipSlice flag with specified name, default value, and usage string.
 // The argument p points to a []net.IP variable in which to store the value of the flag.
 func (f *FlagSet) IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string) {
-	f.VarP(newIPSliceValue(value, p), name, "", usage)
+	f.VarP(NewIPSliceValue(value, p), name, "", usage)
 }
 
 // IPSliceVarP is like IPSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) IPSliceVarP(p *[]net.IP, name, shorthand string, value []net.IP, usage string) {
-	f.VarP(newIPSliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewIPSliceValue(value, p), name, shorthand, usage)
 }
 
 // IPSliceVar defines a []net.IP flag with specified name, default value, and usage string.
 // The argument p points to a []net.IP variable in which to store the value of the flag.
 func IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string) {
-	CommandLine.VarP(newIPSliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewIPSliceValue(value, p), name, "", usage)
 }
 
 // IPSliceVarP is like IPSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func IPSliceVarP(p *[]net.IP, name, shorthand string, value []net.IP, usage string) {
-	CommandLine.VarP(newIPSliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewIPSliceValue(value, p), name, shorthand, usage)
 }
 
 // IPSlice defines a []net.IP flag with specified name, default value, and usage string.

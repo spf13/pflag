@@ -12,7 +12,8 @@ type int32SliceValue struct {
 	changed bool
 }
 
-func newInt32SliceValue(val []int32, p *[]int32) *int32SliceValue {
+// NewInt32SliceValue creates []int32 adapted to be used as flag (with Value interface implementation)
+func NewInt32SliceValue(val []int32, p *[]int32) *int32SliceValue {
 	isv := new(int32SliceValue)
 	isv.value = p
 	*isv.value = val
@@ -128,23 +129,23 @@ func (f *FlagSet) GetInt32Slice(name string) ([]int32, error) {
 // Int32SliceVar defines a int32Slice flag with specified name, default value, and usage string.
 // The argument p points to a []int32 variable in which to store the value of the flag.
 func (f *FlagSet) Int32SliceVar(p *[]int32, name string, value []int32, usage string) {
-	f.VarP(newInt32SliceValue(value, p), name, "", usage)
+	f.VarP(NewInt32SliceValue(value, p), name, "", usage)
 }
 
 // Int32SliceVarP is like Int32SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Int32SliceVarP(p *[]int32, name, shorthand string, value []int32, usage string) {
-	f.VarP(newInt32SliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewInt32SliceValue(value, p), name, shorthand, usage)
 }
 
 // Int32SliceVar defines a int32[] flag with specified name, default value, and usage string.
 // The argument p points to a int32[] variable in which to store the value of the flag.
 func Int32SliceVar(p *[]int32, name string, value []int32, usage string) {
-	CommandLine.VarP(newInt32SliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewInt32SliceValue(value, p), name, "", usage)
 }
 
 // Int32SliceVarP is like Int32SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Int32SliceVarP(p *[]int32, name, shorthand string, value []int32, usage string) {
-	CommandLine.VarP(newInt32SliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewInt32SliceValue(value, p), name, shorthand, usage)
 }
 
 // Int32Slice defines a []int32 flag with specified name, default value, and usage string.

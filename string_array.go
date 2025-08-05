@@ -6,7 +6,8 @@ type stringArrayValue struct {
 	changed bool
 }
 
-func newStringArrayValue(val []string, p *[]string) *stringArrayValue {
+// NewStringArrayValue creates []string adapted to be used as flag (with Value interface implementation)
+func NewStringArrayValue(val []string, p *[]string) *stringArrayValue {
 	ssv := new(stringArrayValue)
 	ssv.value = p
 	*ssv.value = val
@@ -76,24 +77,24 @@ func (f *FlagSet) GetStringArray(name string) ([]string, error) {
 // The argument p points to a []string variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
 func (f *FlagSet) StringArrayVar(p *[]string, name string, value []string, usage string) {
-	f.VarP(newStringArrayValue(value, p), name, "", usage)
+	f.VarP(NewStringArrayValue(value, p), name, "", usage)
 }
 
 // StringArrayVarP is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) StringArrayVarP(p *[]string, name, shorthand string, value []string, usage string) {
-	f.VarP(newStringArrayValue(value, p), name, shorthand, usage)
+	f.VarP(NewStringArrayValue(value, p), name, shorthand, usage)
 }
 
 // StringArrayVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
 func StringArrayVar(p *[]string, name string, value []string, usage string) {
-	CommandLine.VarP(newStringArrayValue(value, p), name, "", usage)
+	CommandLine.VarP(NewStringArrayValue(value, p), name, "", usage)
 }
 
 // StringArrayVarP is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash.
 func StringArrayVarP(p *[]string, name, shorthand string, value []string, usage string) {
-	CommandLine.VarP(newStringArrayValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewStringArrayValue(value, p), name, shorthand, usage)
 }
 
 // StringArray defines a string flag with specified name, default value, and usage string.

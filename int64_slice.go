@@ -12,7 +12,8 @@ type int64SliceValue struct {
 	changed bool
 }
 
-func newInt64SliceValue(val []int64, p *[]int64) *int64SliceValue {
+// NewInt64SliceValue creates []int64 adapted to be used as flag (with Value interface implementation)
+func NewInt64SliceValue(val []int64, p *[]int64) *int64SliceValue {
 	isv := new(int64SliceValue)
 	isv.value = p
 	*isv.value = val
@@ -120,23 +121,23 @@ func (f *FlagSet) GetInt64Slice(name string) ([]int64, error) {
 // Int64SliceVar defines a int64Slice flag with specified name, default value, and usage string.
 // The argument p points to a []int64 variable in which to store the value of the flag.
 func (f *FlagSet) Int64SliceVar(p *[]int64, name string, value []int64, usage string) {
-	f.VarP(newInt64SliceValue(value, p), name, "", usage)
+	f.VarP(NewInt64SliceValue(value, p), name, "", usage)
 }
 
 // Int64SliceVarP is like Int64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Int64SliceVarP(p *[]int64, name, shorthand string, value []int64, usage string) {
-	f.VarP(newInt64SliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewInt64SliceValue(value, p), name, shorthand, usage)
 }
 
 // Int64SliceVar defines a int64[] flag with specified name, default value, and usage string.
 // The argument p points to a int64[] variable in which to store the value of the flag.
 func Int64SliceVar(p *[]int64, name string, value []int64, usage string) {
-	CommandLine.VarP(newInt64SliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewInt64SliceValue(value, p), name, "", usage)
 }
 
 // Int64SliceVarP is like Int64SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Int64SliceVarP(p *[]int64, name, shorthand string, value []int64, usage string) {
-	CommandLine.VarP(newInt64SliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewInt64SliceValue(value, p), name, shorthand, usage)
 }
 
 // Int64Slice defines a []int64 flag with specified name, default value, and usage string.

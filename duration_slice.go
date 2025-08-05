@@ -12,7 +12,8 @@ type durationSliceValue struct {
 	changed bool
 }
 
-func newDurationSliceValue(val []time.Duration, p *[]time.Duration) *durationSliceValue {
+// NewDurationSliceValue creates []time.Duration adapted to be used as flag (with Value interface implementation)
+func NewDurationSliceValue(val []time.Duration, p *[]time.Duration) *durationSliceValue {
 	dsv := new(durationSliceValue)
 	dsv.value = p
 	*dsv.value = val
@@ -120,23 +121,23 @@ func (f *FlagSet) GetDurationSlice(name string) ([]time.Duration, error) {
 // DurationSliceVar defines a durationSlice flag with specified name, default value, and usage string.
 // The argument p points to a []time.Duration variable in which to store the value of the flag.
 func (f *FlagSet) DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string) {
-	f.VarP(newDurationSliceValue(value, p), name, "", usage)
+	f.VarP(NewDurationSliceValue(value, p), name, "", usage)
 }
 
 // DurationSliceVarP is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) DurationSliceVarP(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) {
-	f.VarP(newDurationSliceValue(value, p), name, shorthand, usage)
+	f.VarP(NewDurationSliceValue(value, p), name, shorthand, usage)
 }
 
 // DurationSliceVar defines a duration[] flag with specified name, default value, and usage string.
 // The argument p points to a duration[] variable in which to store the value of the flag.
 func DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string) {
-	CommandLine.VarP(newDurationSliceValue(value, p), name, "", usage)
+	CommandLine.VarP(NewDurationSliceValue(value, p), name, "", usage)
 }
 
 // DurationSliceVarP is like DurationSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func DurationSliceVarP(p *[]time.Duration, name, shorthand string, value []time.Duration, usage string) {
-	CommandLine.VarP(newDurationSliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewDurationSliceValue(value, p), name, shorthand, usage)
 }
 
 // DurationSlice defines a []time.Duration flag with specified name, default value, and usage string.
