@@ -1,3 +1,3 @@
-module github.com/spf13/pflag
+module github.com/opencoff/pflag
 
-go 1.12
+go 1.24.3
