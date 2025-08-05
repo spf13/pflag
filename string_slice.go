@@ -102,12 +102,12 @@ func (f *FlagSet) GetStringSlice(name string) ([]string, error) {
 // will result in
 //   []string{"v1", "v2", "v3"}
 func (f *FlagSet) StringSliceVar(p *[]string, name string, value []string, usage string) {
-	f.VarP(newStringSliceValue(value, p), name, "", usage)
+	f.VarPF(newStringSliceValue(value, p), name, "", usage).AllowingMultipleSet()
 }
 
 // StringSliceVarP is like StringSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) StringSliceVarP(p *[]string, name, shorthand string, value []string, usage string) {
-	f.VarP(newStringSliceValue(value, p), name, shorthand, usage)
+	f.VarPF(newStringSliceValue(value, p), name, shorthand, usage).AllowingMultipleSet()
 }
 
 // StringSliceVar defines a string flag with specified name, default value, and usage string.
@@ -118,12 +118,12 @@ func (f *FlagSet) StringSliceVarP(p *[]string, name, shorthand string, value []s
 // will result in
 //   []string{"v1", "v2", "v3"}
 func StringSliceVar(p *[]string, name string, value []string, usage string) {
-	CommandLine.VarP(newStringSliceValue(value, p), name, "", usage)
+	CommandLine.VarPF(newStringSliceValue(value, p), name, "", usage).AllowingMultipleSet()
 }
 
 // StringSliceVarP is like StringSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func StringSliceVarP(p *[]string, name, shorthand string, value []string, usage string) {
-	CommandLine.VarP(newStringSliceValue(value, p), name, shorthand, usage)
+	CommandLine.VarPF(newStringSliceValue(value, p), name, shorthand, usage).AllowingMultipleSet()
 }
 
 // StringSlice defines a string flag with specified name, default value, and usage string.

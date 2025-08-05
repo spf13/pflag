@@ -193,6 +193,12 @@ type Flag struct {
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
 	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+	allowMultipleSet    bool                // whether to allow multiple sets, default to be false for non-sliced types
+}
+
+// AllowingMultipleSet allow this flag to be set multiple times
+func (f *Flag) AllowingMultipleSet() {
+	f.allowMultipleSet = true
 }
 
 // Value is the interface to the dynamic value stored in a flag.
@@ -480,6 +486,10 @@ func (f *FlagSet) Set(name, value string) error {
 		return &NotExistError{name: name, messageType: flagNoSuchFlagMessage}
 	}
 
+	if flag.Changed && !flag.allowMultipleSet {
+		fmt.Fprintf(f.out(), "Flag --%s has been set multiple times\n", name)
+	}
+
 	err := flag.Value.Set(value)
 	if err != nil {
 		return &InvalidValueError{
@@ -495,7 +505,6 @@ func (f *FlagSet) Set(name, value string) error {
 		}
 		f.actual[normalName] = flag
 		f.orderedActual = append(f.orderedActual, flag)
-
 		flag.Changed = true
 	}
 
