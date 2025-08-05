@@ -8,20 +8,20 @@ import (
 )
 
 // -- stringToInt64 Value
-type stringToInt64Value struct {
+type StringToInt64Value struct {
 	value   *map[string]int64
 	changed bool
 }
 
-func newStringToInt64Value(val map[string]int64, p *map[string]int64) *stringToInt64Value {
-	ssv := new(stringToInt64Value)
+func newStringToInt64Value(val map[string]int64, p *map[string]int64) *StringToInt64Value {
+	ssv := new(StringToInt64Value)
 	ssv.value = p
 	*ssv.value = val
 	return ssv
 }
 
 // Format: a=1,b=2
-func (s *stringToInt64Value) Set(val string) error {
+func (s *StringToInt64Value) Set(val string) error {
 	ss := strings.Split(val, ",")
 	out := make(map[string]int64, len(ss))
 	for _, pair := range ss {
@@ -46,11 +46,11 @@ func (s *stringToInt64Value) Set(val string) error {
 	return nil
 }
 
-func (s *stringToInt64Value) Type() string {
+func (s *StringToInt64Value) Type() string {
 	return "stringToInt64"
 }
 
-func (s *stringToInt64Value) String() string {
+func (s *StringToInt64Value) String() string {
 	var buf bytes.Buffer
 	i := 0
 	for k, v := range *s.value {

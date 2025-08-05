@@ -1,22 +1,22 @@
 package pflag
 
 // -- string Value
-type stringValue string
+type StringValue string
 
-func newStringValue(val string, p *string) *stringValue {
+func newStringValue(val string, p *string) *StringValue {
 	*p = val
-	return (*stringValue)(p)
+	return (*StringValue)(p)
 }
 
-func (s *stringValue) Set(val string) error {
-	*s = stringValue(val)
+func (s *StringValue) Set(val string) error {
+	*s = StringValue(val)
 	return nil
 }
-func (s *stringValue) Type() string {
+func (s *StringValue) Type() string {
 	return "string"
 }
 
-func (s *stringValue) String() string { return string(*s) }
+func (s *StringValue) String() string { return string(*s) }
 
 func stringConv(sval string) (interface{}, error) {
 	return sval, nil

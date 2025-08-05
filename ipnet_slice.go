@@ -8,13 +8,13 @@ import (
 )
 
 // -- ipNetSlice Value
-type ipNetSliceValue struct {
+type IpNetSliceValue struct {
 	value   *[]net.IPNet
 	changed bool
 }
 
-func newIPNetSliceValue(val []net.IPNet, p *[]net.IPNet) *ipNetSliceValue {
-	ipnsv := new(ipNetSliceValue)
+func newIPNetSliceValue(val []net.IPNet, p *[]net.IPNet) *IpNetSliceValue {
+	ipnsv := new(IpNetSliceValue)
 	ipnsv.value = p
 	*ipnsv.value = val
 	return ipnsv
@@ -22,7 +22,7 @@ func newIPNetSliceValue(val []net.IPNet, p *[]net.IPNet) *ipNetSliceValue {
 
 // Set converts, and assigns, the comma-separated IPNet argument string representation as the []net.IPNet value of this flag.
 // If Set is called on a flag that already has a []net.IPNet assigned, the newly converted values will be appended.
-func (s *ipNetSliceValue) Set(val string) error {
+func (s *IpNetSliceValue) Set(val string) error {
 
 	// remove all quote characters
 	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
@@ -55,12 +55,12 @@ func (s *ipNetSliceValue) Set(val string) error {
 }
 
 // Type returns a string that uniquely represents this flag's type.
-func (s *ipNetSliceValue) Type() string {
+func (s *IpNetSliceValue) Type() string {
 	return "ipNetSlice"
 }
 
 // String defines a "native" format for this net.IPNet slice flag value.
-func (s *ipNetSliceValue) String() string {
+func (s *IpNetSliceValue) String() string {
 
 	ipNetStrSlice := make([]string, len(*s.value))
 	for i, n := range *s.value {
