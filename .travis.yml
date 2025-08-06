@@ -14,6 +14,7 @@ matrix:
 
 install:
   - go get golang.org/x/lint/golint
+  - go get github.com/docker/go-units
   - export PATH=$GOPATH/bin:$PATH
   - go install ./...
 
