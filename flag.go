@@ -192,7 +192,7 @@ type Flag struct {
 	Deprecated          string              // If this flag is deprecated, this string is the new or now thing to use
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
-	Annotations         map[string][]string // used by cobra.Command bash autocomple code
+	Annotations         map[string][]string // used by cobra.Command bash autocompletion code
 }
 
 // Value is the interface to the dynamic value stored in a flag.
