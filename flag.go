@@ -714,7 +714,11 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 
 		varname, usage := UnquoteUsage(flag)
 		if varname != "" {
-			line += " " + varname
+			if flag.Value.Type() == "count" {
+				line += "=" + varname
+			} else {
+				line += " " + varname
+			}
 		}
 		if flag.NoOptDefVal != "" {
 			switch flag.Value.Type() {
