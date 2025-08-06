@@ -1311,6 +1311,108 @@ func TestPrintDefaults(t *testing.T) {
 	}
 }
 
+const defaultOutputWithZeroValue = `      --A                          for bootstrapping, allow 'any' type
+      --Alongflagname              disable bounds checking (default false)
+  -C, --CCC                        a boolean defaulting to true (default true)
+      --D path                     set relative path for local imports
+      --DD path                    set relative path for local imports (default "")
+  -E, --EEE num[=1234]             a num with NoOptDefVal (default 4321)
+      --F number                   a non-zero number (default 2.7)
+      --G float                    a float that defaults to zero
+      --GG float                   a float that defaults to zero (default 0)
+      --IP ip                      IP address with no default
+      --IPMask ipMask              Netmask address with no default
+      --IPNet ipNet                IP network with no default
+      --Ints ints                  int slice with zero default
+      --Ints2 ints                 int slice with zero default (default [])
+      --N int                      a non-zero int (default 27)
+      --ND1 string[="bar"]         a string with NoOptDefVal (default "foo")
+      --ND2 num[=4321]             a num with NoOptDefVal (default 1234)
+      --ND3 int[=9876]             a zero default value with NoOptDefVal
+      --ND4 int[=6543]             show zero default value with NoOptDefVal (default 0)
+      --StringArray stringArray    string array with zero default
+      --StringArray2 stringArray   string array with zero default (default [])
+      --StringSlice strings        string slice with zero default
+      --StringSlice2 strings       string slice with zero default (default [])
+      --Z int                      an int that defaults to zero
+      --ZZ int                     an int that defaults to zero (default 0)
+      --custom custom              custom Value implementation
+      --customP custom             a VarP with default (default 10)
+      --customPP custom            a VarP showing zero value default (default 0)
+      --maxT timeout               set timeout for dial
+      --maxTT timeout              set timeout for dial (default 0s)
+  -v, --verbose count              verbosity
+  -V, --verbose2 count             verbosity (default 0)
+`
+
+func TestPrintDefaultsWithZeroValue(t *testing.T) {
+	fs := NewFlagSet("print defaults test", ContinueOnError)
+	var buf bytes.Buffer
+	fs.SetOutput(&buf)
+	fs.Bool("A", false, "for bootstrapping, allow 'any' type")
+	fs.Bool("Alongflagname", false, "disable bounds checking")
+	fs.Lookup("Alongflagname").ShowZeroValue = true
+	fs.BoolP("CCC", "C", true, "a boolean defaulting to true")
+	fs.String("D", "", "set relative `path` for local imports")
+	fs.String("DD", "", "set relative `path` for local imports")
+	fs.Lookup("DD").ShowZeroValue = true
+	fs.Float64("F", 2.7, "a non-zero `number`")
+	fs.Float64("G", 0, "a float that defaults to zero")
+	fs.Float64("GG", 0, "a float that defaults to zero")
+	fs.Lookup("GG").ShowZeroValue = true
+	fs.Int("N", 27, "a non-zero int")
+	fs.IntSlice("Ints", []int{}, "int slice with zero default")
+	fs.IntSlice("Ints2", []int{}, "int slice with zero default")
+	fs.Lookup("Ints2").ShowZeroValue = true
+	fs.IP("IP", nil, "IP address with no default")
+	fs.IPMask("IPMask", nil, "Netmask address with no default")
+	fs.IPNet("IPNet", net.IPNet{}, "IP network with no default")
+	fs.Int("Z", 0, "an int that defaults to zero")
+	fs.Int("ZZ", 0, "an int that defaults to zero")
+	fs.Lookup("ZZ").ShowZeroValue = true
+	fs.Duration("maxT", 0, "set `timeout` for dial")
+	fs.Duration("maxTT", 0, "set `timeout` for dial")
+	fs.Lookup("maxTT").ShowZeroValue = true
+	fs.String("ND1", "foo", "a string with NoOptDefVal")
+	fs.Lookup("ND1").NoOptDefVal = "bar"
+	fs.Int("ND2", 1234, "a `num` with NoOptDefVal")
+	fs.Lookup("ND2").NoOptDefVal = "4321"
+	fs.Int("ND3", 0, "a zero default value with NoOptDefVal")
+	fs.Lookup("ND3").NoOptDefVal = "9876"
+	fs.Int("ND4", 0, "show zero default value with NoOptDefVal")
+	fs.Lookup("ND4").NoOptDefVal = "6543"
+	fs.Lookup("ND4").ShowZeroValue = true
+	fs.IntP("EEE", "E", 4321, "a `num` with NoOptDefVal")
+	fs.ShorthandLookup("E").NoOptDefVal = "1234"
+	fs.StringSlice("StringSlice", []string{}, "string slice with zero default")
+	fs.StringSlice("StringSlice2", []string{}, "string slice with zero default")
+	fs.Lookup("StringSlice2").ShowZeroValue = true
+	fs.StringArray("StringArray", []string{}, "string array with zero default")
+	fs.StringArray("StringArray2", []string{}, "string array with zero default")
+	fs.Lookup("StringArray2").ShowZeroValue = true
+	fs.CountP("verbose", "v", "verbosity")
+	fs.CountP("verbose2", "V", "verbosity")
+	fs.Lookup("verbose2").ShowZeroValue = true
+
+	var cv customValue
+	fs.Var(&cv, "custom", "custom Value implementation")
+
+	cv2 := customValue(10)
+	fs.VarP(&cv2, "customP", "", "a VarP with default")
+
+	cv3 := customValue(0)
+	fs.VarP(&cv3, "customPP", "", "a VarP showing zero value default")
+	fs.Lookup("customPP").ShowZeroValue = true
+
+	fs.PrintDefaults()
+	got := buf.String()
+	if got != defaultOutputWithZeroValue {
+		fmt.Println("\n" + got)
+		fmt.Println("\n" + defaultOutputWithZeroValue)
+		t.Errorf("got %q want %q\n", got, defaultOutputWithZeroValue)
+	}
+}
+
 func TestVisitAllFlagOrder(t *testing.T) {
 	fs := NewFlagSet("TestVisitAllFlagOrder", ContinueOnError)
 	fs.SortFlags = false
