@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- int64 Value
 type int64Value int64
@@ -81,4 +84,24 @@ func Int64(name string, value int64, usage string) *int64 {
 // Int64P is like Int64, but accepts a shorthand letter that can be used after a single dash.
 func Int64P(name, shorthand string, value int64, usage string) *int64 {
 	return CommandLine.Int64P(name, shorthand, value, usage)
+}
+
+// Set int64 flag to flagSet
+func setInt64Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := int64Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Int64P(name, shorthand, defVal.(int64), usage)
+	return nil
+}
+
+// Set int64 value from flagSet
+func setInt64Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetInt64(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

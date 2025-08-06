@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"reflect"
 	"strings"
 )
 
@@ -183,4 +184,24 @@ func IPSlice(name string, value []net.IP, usage string) *[]net.IP {
 // IPSliceP is like IPSlice, but accepts a shorthand letter that can be used after a single dash.
 func IPSliceP(name, shorthand string, value []net.IP, usage string) *[]net.IP {
 	return CommandLine.IPSliceP(name, shorthand, value, usage)
+}
+
+// Set net.IP slice flag to flagSet
+func setIPSliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := ipSliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IPSliceP(name, shorthand, defVal.([]net.IP), usage)
+	return nil
+}
+
+// Set net.IP slice value from flagSet
+func setIPSliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetIPSlice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

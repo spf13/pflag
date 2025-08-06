@@ -3,6 +3,7 @@ package pflag
 import (
 	"fmt"
 	"net"
+	"reflect"
 	"strings"
 )
 
@@ -95,4 +96,24 @@ func IPNet(name string, value net.IPNet, usage string) *net.IPNet {
 // IPNetP is like IPNet, but accepts a shorthand letter that can be used after a single dash.
 func IPNetP(name, shorthand string, value net.IPNet, usage string) *net.IPNet {
 	return CommandLine.IPNetP(name, shorthand, value, usage)
+}
+
+// Set net.IPNet flag to flagSet
+func setIPNetFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := ipNetConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.IPNetP(name, shorthand, defVal.(net.IPNet), usage)
+	return nil
+}
+
+// Set net.IPNet value from flagSet
+func setIPNetValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetIPNet(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }
