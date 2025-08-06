@@ -23,6 +23,18 @@ func (ipnet *ipNetValue) Set(value string) error {
 	return nil
 }
 
+func (ipnet *ipNetValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case net.IPNet:
+		*ipnet = ipNetValue(tv)
+	case string:
+		return ipnet.Set(tv)
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (*ipNetValue) Type() string {
 	return "ipNet"
 }

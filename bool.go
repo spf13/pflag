@@ -23,6 +23,18 @@ func (b *boolValue) Set(s string) error {
 	return err
 }
 
+func (b *boolValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case bool:
+		*b = boolValue(tv)
+	case string:
+		return b.Set(tv)
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (b *boolValue) Type() string {
 	return "bool"
 }

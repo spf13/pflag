@@ -54,6 +54,18 @@ func (s *ipSliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *ipSliceValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case []net.IP:
+		*s.value = tv
+	case string:
+		return s.Set(tv)
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 // Type returns a string that uniquely represents this flag's type.
 func (s *ipSliceValue) Type() string {
 	return "ipSlice"
