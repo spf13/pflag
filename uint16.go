@@ -50,6 +50,11 @@ func (f *FlagSet) Uint16VarP(p *uint16, name, shorthand string, value uint16, us
 	f.VarP(newUint16Value(value, p), name, shorthand, usage)
 }
 
+// Uint16VarPF is like Uint16VarP, but returns the created flag.
+func (f *FlagSet) Uint16VarPF(p *uint16, name, shorthand string, value uint16, usage string) *Flag {
+	return f.VarPF(newUint16Value(value, p), name, shorthand, usage)
+}
+
 // Uint16Var defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint  variable in which to store the value of the flag.
 func Uint16Var(p *uint16, name string, value uint16, usage string) {
@@ -59,6 +64,11 @@ func Uint16Var(p *uint16, name string, value uint16, usage string) {
 // Uint16VarP is like Uint16Var, but accepts a shorthand letter that can be used after a single dash.
 func Uint16VarP(p *uint16, name, shorthand string, value uint16, usage string) {
 	CommandLine.VarP(newUint16Value(value, p), name, shorthand, usage)
+}
+
+// Uint16VarPF is like Uint16VarP, but returns the created flag.
+func Uint16VarPF(p *uint16, name, shorthand string, value uint16, usage string) *Flag {
+	return CommandLine.VarPF(newUint16Value(value, p), name, shorthand, usage)
 }
 
 // Uint16 defines a uint flag with specified name, default value, and usage string.

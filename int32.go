@@ -50,6 +50,11 @@ func (f *FlagSet) Int32VarP(p *int32, name, shorthand string, value int32, usage
 	f.VarP(newInt32Value(value, p), name, shorthand, usage)
 }
 
+// Int32VarPF is like Int32VarP, but returns the created flag.
+func (f *FlagSet) Int32VarPF(p *int32, name, shorthand string, value int32, usage string) *Flag {
+	return f.VarPF(newInt32Value(value, p), name, shorthand, usage)
+}
+
 // Int32Var defines an int32 flag with specified name, default value, and usage string.
 // The argument p points to an int32 variable in which to store the value of the flag.
 func Int32Var(p *int32, name string, value int32, usage string) {
@@ -59,6 +64,11 @@ func Int32Var(p *int32, name string, value int32, usage string) {
 // Int32VarP is like Int32Var, but accepts a shorthand letter that can be used after a single dash.
 func Int32VarP(p *int32, name, shorthand string, value int32, usage string) {
 	CommandLine.VarP(newInt32Value(value, p), name, shorthand, usage)
+}
+
+// Int32VarPF is like Int32VarP, but returns the created flag.
+func Int32VarPF(p *int32, name, shorthand string, value int32, usage string) *Flag {
+	return CommandLine.VarPF(newInt32Value(value, p), name, shorthand, usage)
 }
 
 // Int32 defines an int32 flag with specified name, default value, and usage string.

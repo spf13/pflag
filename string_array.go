@@ -84,6 +84,11 @@ func (f *FlagSet) StringArrayVarP(p *[]string, name, shorthand string, value []s
 	f.VarP(newStringArrayValue(value, p), name, shorthand, usage)
 }
 
+// StringArrayVarPF is like StringArrayVarP, but returns the created flag.
+func (f *FlagSet) StringArrayVarPF(p *[]string, name, shorthand string, value []string, usage string) *Flag {
+	return f.VarPF(newStringArrayValue(value, p), name, shorthand, usage)
+}
+
 // StringArrayVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma. Use a StringSlice for that.
@@ -94,6 +99,11 @@ func StringArrayVar(p *[]string, name string, value []string, usage string) {
 // StringArrayVarP is like StringArrayVar, but accepts a shorthand letter that can be used after a single dash.
 func StringArrayVarP(p *[]string, name, shorthand string, value []string, usage string) {
 	CommandLine.VarP(newStringArrayValue(value, p), name, shorthand, usage)
+}
+
+// StringArrayVarPF is like StringArrayVarP, but returns the created flag.
+func StringArrayVarPF(p *[]string, name, shorthand string, value []string, usage string) *Flag {
+	return CommandLine.VarPF(newStringArrayValue(value, p), name, shorthand, usage)
 }
 
 // StringArray defines a string flag with specified name, default value, and usage string.
