@@ -419,9 +419,9 @@ func (f *FlagSet) ArgsLenAtDash() int {
 }
 
 // MarkDeprecated indicated that a flag is deprecated in your program. It will
-// continue to function but will not show up in help or usage messages. Using
-// this flag will also print the given usageMessage.
-func (f *FlagSet) MarkDeprecated(name string, usageMessage string) error {
+// continue to function. Flag will show up in the help or usage messages only if
+// it is not specified to be hidden. Using this flag will also print the given usageMessage.
+func (f *FlagSet) MarkDeprecated(name string, usageMessage string, hidden bool) error {
 	flag := f.Lookup(name)
 	if flag == nil {
 		return &NotExistError{name: name, messageType: flagNotExistMessage}
@@ -430,7 +430,7 @@ func (f *FlagSet) MarkDeprecated(name string, usageMessage string) error {
 		return fmt.Errorf("deprecated message for flag %q must be set", name)
 	}
 	flag.Deprecated = usageMessage
-	flag.Hidden = true
+	flag.Hidden = hidden
 	return nil
 }
 
