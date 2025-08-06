@@ -136,6 +136,15 @@ func (f *FlagSet) GetBoolSlice(name string) ([]bool, error) {
 	return val.([]bool), nil
 }
 
+// MustGetBoolSlice is like GetBoolSlice, but panics on error.
+func (f *FlagSet) MustGetBoolSlice(name string) []bool {
+	val, err := f.GetBoolSlice(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // BoolSliceVar defines a boolSlice flag with specified name, default value, and usage string.
 // The argument p points to a []bool variable in which to store the value of the flag.
 func (f *FlagSet) BoolSliceVar(p *[]bool, name string, value []bool, usage string) {

@@ -39,6 +39,15 @@ func (f *FlagSet) GetUint(name string) (uint, error) {
 	return val.(uint), nil
 }
 
+// MustGetUint is like GetUint, but panics on error.
+func (f *FlagSet) MustGetUint(name string) uint {
+	val, err := f.GetUint(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // UintVar defines a uint flag with specified name, default value, and usage string.
 // The argument p points to a uint variable in which to store the value of the flag.
 func (f *FlagSet) UintVar(p *uint, name string, value uint, usage string) {

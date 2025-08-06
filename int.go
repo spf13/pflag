@@ -35,6 +35,15 @@ func (f *FlagSet) GetInt(name string) (int, error) {
 	return val.(int), nil
 }
 
+// MustGetInt is like GetInt, but panics on error.
+func (f *FlagSet) MustGetInt(name string) int {
+	val, err := f.GetInt(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // IntVar defines an int flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
 func (f *FlagSet) IntVar(p *int, name string, value int, usage string) {

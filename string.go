@@ -31,6 +31,15 @@ func (f *FlagSet) GetString(name string) (string, error) {
 	return val.(string), nil
 }
 
+// MustGetString is like GetString, but panics on error.
+func (f *FlagSet) MustGetString(name string) string {
+	val, err := f.GetString(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // StringVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a string variable in which to store the value of the flag.
 func (f *FlagSet) StringVar(p *string, name string, value string, usage string) {

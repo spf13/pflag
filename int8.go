@@ -39,6 +39,15 @@ func (f *FlagSet) GetInt8(name string) (int8, error) {
 	return val.(int8), nil
 }
 
+// MustGetInt8 is like GetInt8, but panics on error.
+func (f *FlagSet) MustGetInt8(name string) int8 {
+	val, err := f.GetInt8(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // Int8Var defines an int8 flag with specified name, default value, and usage string.
 // The argument p points to an int8 variable in which to store the value of the flag.
 func (f *FlagSet) Int8Var(p *int8, name string, value int8, usage string) {

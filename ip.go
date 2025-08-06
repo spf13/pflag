@@ -48,6 +48,15 @@ func (f *FlagSet) GetIP(name string) (net.IP, error) {
 	return val.(net.IP), nil
 }
 
+// MustGetIP is like GetIP, but panics on error.
+func (f *FlagSet) MustGetIP(name string) net.IP {
+	val, err := f.GetIP(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // IPVar defines an net.IP flag with specified name, default value, and usage string.
 // The argument p points to an net.IP variable in which to store the value of the flag.
 func (f *FlagSet) IPVar(p *net.IP, name string, value net.IP, usage string) {
