@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- float32 Value
 type float32Value float32
@@ -85,4 +88,24 @@ func Float32(name string, value float32, usage string) *float32 {
 // Float32P is like Float32, but accepts a shorthand letter that can be used after a single dash.
 func Float32P(name, shorthand string, value float32, usage string) *float32 {
 	return CommandLine.Float32P(name, shorthand, value, usage)
+}
+
+// Set float32 flag to flagSet
+func setFloat32Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := float32Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Float32P(name, shorthand, defVal.(float32), usage)
+	return nil
+}
+
+// Set float32 value from flagSet
+func setFloat32Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetFloat32(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

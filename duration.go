@@ -1,6 +1,7 @@
 package pflag
 
 import (
+	"reflect"
 	"time"
 )
 
@@ -83,4 +84,24 @@ func Duration(name string, value time.Duration, usage string) *time.Duration {
 // DurationP is like Duration, but accepts a shorthand letter that can be used after a single dash.
 func DurationP(name, shorthand string, value time.Duration, usage string) *time.Duration {
 	return CommandLine.DurationP(name, shorthand, value, usage)
+}
+
+// Set time.Duration flag to flagSet
+func setDurationFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := durationConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.DurationP(name, shorthand, defVal.(time.Duration), usage)
+	return nil
+}
+
+// Set duration value from flagSet
+func setDurationValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetDuration(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }
