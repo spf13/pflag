@@ -656,6 +656,46 @@ func TestFlagSetParse(t *testing.T) {
 	testParse(NewFlagSet("test", ContinueOnError), t)
 }
 
+func TestParseRepeated(t *testing.T) {
+	fs := NewFlagSet("test repeated", ContinueOnError)
+
+	t.Run("first parse", func(t *testing.T) {
+		err := fs.Parse([]string{"foo", "bar"})
+		if err != nil {
+			t.Fatal("expected no error, got ", err)
+		}
+
+		argsAfterFirst := fs.Args()
+		if !reflect.DeepEqual(argsAfterFirst, []string{"foo", "bar"}) {
+			t.Fatalf("expected args [foo bar], got %v", argsAfterFirst)
+		}
+	})
+
+	t.Run("re-parse with fewer args", func(t *testing.T) {
+		err := fs.Parse([]string{"baz"})
+		if err != nil {
+			t.Fatal("expected no error, got ", err)
+		}
+
+		argsAfterSecond := fs.Args()
+		if !reflect.DeepEqual(argsAfterSecond, []string{"baz"}) {
+			t.Fatalf("expected args [baz], got %v", argsAfterSecond)
+		}
+	})
+
+	t.Run("re-parse with no args", func(t *testing.T) {
+		err := fs.Parse([]string{})
+		if err != nil {
+			t.Fatal("expected no error, got ", err)
+		}
+
+		argsAfterThird := fs.Args()
+		if !reflect.DeepEqual(argsAfterThird, []string{}) {
+			t.Fatalf("expected args [], got %v", argsAfterThird)
+		}
+	})
+}
+
 func TestChangedHelper(t *testing.T) {
 	f := NewFlagSet("changedtest", ContinueOnError)
 	f.Bool("changed", false, "changed bool")

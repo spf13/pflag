@@ -1157,11 +1157,11 @@ func (f *FlagSet) Parse(arguments []string) error {
 	}
 	f.parsed = true
 
+	f.args = make([]string, 0, len(arguments))
+
 	if len(arguments) == 0 {
 		return nil
 	}
-
-	f.args = make([]string, 0, len(arguments))
 
 	set := func(flag *Flag, value string) error {
 		return f.Set(flag.Name, value)
