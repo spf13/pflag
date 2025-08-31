@@ -909,6 +909,19 @@ func (f *FlagSet) AddFlagSet(newSet *FlagSet) {
 	})
 }
 
+// AddParentFlagSet adds parent FlagSet to f. If a flag and shorthand is already present in f
+// the flag from parentSet will be ignored.
+func (f *FlagSet) AddParentFlagSet(parentSet *FlagSet) {
+	if parentSet == nil {
+		return
+	}
+	parentSet.VisitAll(func(flag *Flag) {
+		if f.Lookup(flag.Name) == nil && f.ShorthandLookup(flag.Shorthand) == nil {
+			f.AddFlag(flag)
+		}
+	})
+}
+
 // Var defines a flag with the specified name and usage string. The type and
 // value of the flag are represented by the first argument, of type Value, which
 // typically holds a user-defined implementation of Value. For instance, the
