@@ -27,7 +27,7 @@ func uint64Conv(sval string) (interface{}, error) {
 	if err != nil {
 		return 0, err
 	}
-	return uint64(v), nil
+	return v, nil
 }
 
 // GetUint64 return the uint64 value of a flag with the given name
