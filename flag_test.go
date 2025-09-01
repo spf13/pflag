@@ -639,7 +639,7 @@ func TestShorthandLookup(t *testing.T) {
 	}
 	flag := f.ShorthandLookup("a")
 	if flag == nil {
-		t.Errorf("f.ShorthandLookup(\"a\") returned nil")
+		t.Fatal("f.ShorthandLookup(\"a\") returned nil")
 	}
 	if flag.Name != "boola" {
 		t.Errorf("f.ShorthandLookup(\"a\") found %q instead of \"boola\"", flag.Name)
@@ -651,7 +651,7 @@ func TestShorthandLookup(t *testing.T) {
 	defer func() {
 		_ = recover()
 	}()
-	flag = f.ShorthandLookup("ab")
+	_ = f.ShorthandLookup("ab")
 	// should NEVER get here. lookup should panic. defer'd func should recover it.
 	t.Errorf("f.ShorthandLookup(\"ab\") did not panic")
 }
@@ -754,7 +754,7 @@ func TestChangedHelper(t *testing.T) {
 func replaceSeparators(name string, from []string, to string) string {
 	result := name
 	for _, sep := range from {
-		result = strings.Replace(result, sep, to, -1)
+		result = strings.ReplaceAll(result, sep, to)
 	}
 	// Type convert to indicate normalization has been done.
 	return result
