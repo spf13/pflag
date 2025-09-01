@@ -760,7 +760,7 @@ func toDotSeparated(name string, from []string) string {
 	return result
 }
 
-func wordSepNormalizeFunc(f *FlagSet, name string) NormalizedName {
+func wordSepNormalizeFunc(_ *FlagSet, name string) NormalizedName {
 	seps := []string{"-", "_"}
 	name = toDotSeparated(name, seps)
 	normalizeFlagNameInvocations++
@@ -818,7 +818,7 @@ func TestWordSepNormalizedNames(t *testing.T) {
 	testWordSepNormalizedNames(args, t)
 }
 
-func aliasAndWordSepFlagNames(f *FlagSet, name string) NormalizedName {
+func aliasAndWordSepFlagNames(_ *FlagSet, name string) NormalizedName {
 	seps := []string{"-", "_"}
 
 	oldName := toDotSeparated("old-valid_flag", seps)
@@ -1387,7 +1387,7 @@ func TestVisitAllFlagOrder(t *testing.T) {
 	fs := NewFlagSet("TestVisitAllFlagOrder", ContinueOnError)
 	fs.SortFlags = false
 	// https://github.com/spf13/pflag/issues/120
-	fs.SetNormalizeFunc(func(f *FlagSet, name string) NormalizedName {
+	fs.SetNormalizeFunc(func(_ *FlagSet, name string) NormalizedName {
 		return NormalizedName(name)
 	})
 

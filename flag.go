@@ -270,7 +270,7 @@ func (f *FlagSet) GetNormalizeFunc() func(f *FlagSet, name string) NormalizedNam
 	if f.normalizeNameFunc != nil {
 		return f.normalizeNameFunc
 	}
-	return func(f *FlagSet, name string) NormalizedName { return NormalizedName(name) }
+	return func(_ *FlagSet, name string) NormalizedName { return NormalizedName(name) }
 }
 
 func (f *FlagSet) normalizeFlagName(name string) NormalizedName {

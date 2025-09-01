@@ -64,7 +64,7 @@ func TestFuncUsage(t *testing.T) {
 		// regular func flag:
 		// expect to see '--flag1 value' followed by the usageMessage, and no mention of a default value
 		fset := NewFlagSet("unittest", ContinueOnError)
-		fset.Func("flag1", "usage message", func(s string) error { return nil })
+		fset.Func("flag1", "usage message", func(string) error { return nil })
 		usage := fset.FlagUsagesWrapped(80)
 
 		usage = strings.TrimSpace(usage)
@@ -78,7 +78,7 @@ func TestFuncUsage(t *testing.T) {
 		// func flag, with a placeholder name:
 		// if usageMesage contains a placeholder, expect that name; still expect no mention of a default value
 		fset := NewFlagSet("unittest", ContinueOnError)
-		fset.Func("flag2", "usage message with `name` placeholder", func(s string) error { return nil })
+		fset.Func("flag2", "usage message with `name` placeholder", func(string) error { return nil })
 		usage := fset.FlagUsagesWrapped(80)
 
 		usage = strings.TrimSpace(usage)
