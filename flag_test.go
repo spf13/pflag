@@ -523,6 +523,112 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T, setUnknownFlags func(f 
 	}
 }
 
+func testParseWithUnknownFlagsAndPassToArgs(f *FlagSet, t *testing.T) {
+	if f.Parsed() {
+		t.Fatal("f.Parse() = true before Parse")
+	}
+	f.ParseErrorsAllowlist.UnknownFlags = true
+	f.ParseErrorsAllowlist.PassUnknownFlagsToArgs = true
+	f.SetInterspersed(true)
+
+	f.BoolP("boola", "a", false, "bool value")
+	f.BoolP("boolb", "b", false, "bool2 value")
+	f.BoolP("boolc", "c", false, "bool3 value")
+	f.BoolP("boold", "d", false, "bool4 value")
+	f.BoolP("boole", "e", false, "bool4 value")
+	f.StringP("stringa", "s", "0", "string value")
+	f.StringP("stringz", "z", "0", "string value")
+	f.StringP("stringx", "x", "0", "string value")
+	f.StringP("stringy", "y", "0", "string value")
+	f.StringP("stringo", "o", "0", "string value")
+	f.Lookup("stringx").NoOptDefVal = "1"
+	args := []string{
+		"-ab",
+		// -f and -g is unknown
+		"-fcgs=xx",
+		"--stringz=something",
+		"--unknown1",
+		"unknown1Value",
+		"-d=true",
+		"-x",
+		"--unknown2=unknown2Value",
+		"-u=unknown3Value",
+		"-p",
+		"unknown4Value",
+		"-q", //another unknown with bool value
+		"-y",
+		"ee",
+		"--unknown7=unknown7value",
+		"--stringo=ovalue",
+		"--unknown8=unknown8value",
+		"--boole",
+		"--unknown6",
+		"",
+		"-uuuuu",
+		"",
+		"--unknown10",
+		"--unknown11",
+		"arg0",
+		"arg1",
+	}
+	want := []string{
+		"boola", "true",
+		"boolb", "true",
+		"boolc", "true",
+		"stringa", "xx",
+		"stringz", "something",
+		"boold", "true",
+		"stringx", "1",
+		"stringy", "ee",
+		"stringo", "ovalue",
+		"boole", "true",
+	}
+	wantArgs := []string{
+		"-fg",
+		"--unknown1",
+		"unknown1Value",
+		"--unknown2=unknown2Value",
+		"-u=unknown3Value",
+		"-p",
+		"unknown4Value",
+		"-q", //another unknown with bool value
+		"--unknown7=unknown7value",
+		"--unknown8=unknown8value",
+		"--unknown6",
+		"",
+		"-uuuuu",
+		"",
+		"--unknown10",
+		"--unknown11",
+		"arg0",
+		"arg1",
+	}
+	got := []string{}
+	store := func(flag *Flag, value string) error {
+		got = append(got, flag.Name)
+		if len(value) > 0 {
+			got = append(got, value)
+		}
+		return nil
+	}
+	if err := f.ParseAll(args, store); err != nil {
+		t.Errorf("expected no error, got %s", err)
+	}
+	if !f.Parsed() {
+		t.Errorf("f.Parse() = false after Parse")
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("f.ParseAll() fail to restore the args")
+		t.Errorf("Got:  %v", got)
+		t.Errorf("Want: %v", want)
+	}
+	if !reflect.DeepEqual(f.Args(), wantArgs) {
+		t.Errorf("f.ParseAll() fail to restore the args")
+		t.Errorf("Got:  %v", f.Args())
+		t.Errorf("Want: %v", wantArgs)
+	}
+}
+
 func TestShorthand(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
 	if f.Parsed() {
@@ -657,6 +763,10 @@ func TestIgnoreUnknownFlagsBackwardsCompat(t *testing.T) {
 	testParseWithUnknownFlags(GetCommandLine(), t, func(f *FlagSet) { f.ParseErrorsWhitelist.UnknownFlags = true })
 }
 
+func TestIgnoreUnknownFlagsAndPassToArgs(t *testing.T) {
+	ResetForTesting(func() { t.Error("bad parse") })
+	testParseWithUnknownFlagsAndPassToArgs(GetCommandLine(), t)
+}
 func TestFlagSetParse(t *testing.T) {
 	testParse(NewFlagSet("test", ContinueOnError), t)
 }
