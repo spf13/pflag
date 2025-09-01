@@ -751,10 +751,10 @@ func TestChangedHelper(t *testing.T) {
 	}
 }
 
-func replaceSeparators(name string, from []string, to string) string {
+func toDotSeparated(name string, from []string) string {
 	result := name
 	for _, sep := range from {
-		result = strings.ReplaceAll(result, sep, to)
+		result = strings.ReplaceAll(result, sep, ".")
 	}
 	// Type convert to indicate normalization has been done.
 	return result
@@ -762,7 +762,7 @@ func replaceSeparators(name string, from []string, to string) string {
 
 func wordSepNormalizeFunc(f *FlagSet, name string) NormalizedName {
 	seps := []string{"-", "_"}
-	name = replaceSeparators(name, seps, ".")
+	name = toDotSeparated(name, seps)
 	normalizeFlagNameInvocations++
 
 	return NormalizedName(name)
@@ -821,10 +821,10 @@ func TestWordSepNormalizedNames(t *testing.T) {
 func aliasAndWordSepFlagNames(f *FlagSet, name string) NormalizedName {
 	seps := []string{"-", "_"}
 
-	oldName := replaceSeparators("old-valid_flag", seps, ".")
-	newName := replaceSeparators("valid-flag", seps, ".")
+	oldName := toDotSeparated("old-valid_flag", seps)
+	newName := toDotSeparated("valid-flag", seps)
 
-	name = replaceSeparators(name, seps, ".")
+	name = toDotSeparated(name, seps)
 	switch name {
 	case oldName:
 		name = newName
@@ -1180,6 +1180,7 @@ func TestDeprecatedFlagShorthandInDocs(t *testing.T) {
 }
 
 func parseReturnStderr(t *testing.T, f *FlagSet, args []string) (string, error) {
+	t.Helper()
 	oldStderr := os.Stderr
 	r, w, _ := os.Pipe()
 	os.Stderr = w
