@@ -26,7 +26,7 @@ func (v *triStateValue) IsBoolFlag() bool {
 }
 
 func (v *triStateValue) Get() interface{} {
-	return triStateValue(*v)
+	return *v
 }
 
 func (v *triStateValue) Set(s string) error {
