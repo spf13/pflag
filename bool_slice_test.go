@@ -184,7 +184,6 @@ func TestBSAsSliceValue(t *testing.T) {
 }
 
 func TestBSBadQuoting(t *testing.T) {
-
 	tests := []struct {
 		Want    []bool
 		FlagArg []string
