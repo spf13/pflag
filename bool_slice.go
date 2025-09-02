@@ -27,7 +27,7 @@ func (s *boolSliceValue) Set(val string) error {
 	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
 
 	// read flag arguments with CSV parser
-	boolStrSlice, err := readAsCSV(rmQuote.Replace(val))
+	boolStrSlice, err := readAsCSV(rmQuote.Replace(val), false)
 	if err != nil && err != io.EOF {
 		return err
 	}
