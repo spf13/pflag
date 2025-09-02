@@ -899,7 +899,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	c := flag.Shorthand[0]
 	used, alreadyThere := f.shorthands[c]
 	if alreadyThere {
-		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
+		msg := fmt.Sprintf("unable to define %q shorthand for %q flag: it's already used for %q flag", c, flag.Name, used.Name)
 		fmt.Fprintf(f.Output(), msg)
 		panic(msg)
 	}
