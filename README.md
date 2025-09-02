@@ -1,6 +1,7 @@
-[![Build Status](https://travis-ci.org/spf13/pflag.svg?branch=master)](https://travis-ci.org/spf13/pflag)
+[![Build Status](https://github.com/spf13/pflag/actions/workflows/ci.yaml/badge.svg)](https://github.com/spf13/pflag/actions/workflows/ci.yaml)
+![GitHub License](https://img.shields.io/github/license/spf13/pflag)
 [![Go Report Card](https://goreportcard.com/badge/github.com/spf13/pflag)](https://goreportcard.com/report/github.com/spf13/pflag)
-[![GoDoc](https://godoc.org/github.com/spf13/pflag?status.svg)](https://godoc.org/github.com/spf13/pflag)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/spf13/pflag)](https://pkg.go.dev/github.com/spf13/pflag)
 
 ## Description
 
@@ -22,7 +23,7 @@ pflag is available using the standard `go get` command.
 
 Install by running:
 
-    go get github.com/spf13/pflag
+    go get github.com/spf13/pflag@latest
 
 Run tests by running:
 
@@ -271,12 +272,15 @@ to support flags defined by third-party dependencies (e.g. `golang/glog`).
 
 **Example**: You want to add the Go flags to the `CommandLine` flagset
 ```go
+package main
+
 import (
 	goflag "flag"
+
 	flag "github.com/spf13/pflag"
 )
 
-var ip *int = flag.Int("flagname", 1234, "help message for flagname")
+var ip = flag.Int("flagname", 1234, "help message for flagname")
 
 func main() {
 	flag.CommandLine.AddGoFlagSet(goflag.CommandLine)
@@ -296,17 +300,22 @@ will result in the `-v` flag being ignored. This happens because of the way pfla
 To work around this, you can use the `ParseSkippedFlags` function, which ensures that go test's flags are parsed separately using the standard flag package.
 
 **Example**: You want to parse go test flags that are otherwise ignore by `pflag.Parse()`
+
 ```go
+package main
+
 import (
 	goflag "flag"
+    "os"
+
 	flag "github.com/spf13/pflag"
 )
 
-var ip *int = flag.Int("flagname", 1234, "help message for flagname")
+var ip = flag.Int("flagname", 1234, "help message for flagname")
 
 func main() {
 	flag.CommandLine.AddGoFlagSet(goflag.CommandLine)
-    flag.ParseSkippedFlags(os.Args[1:], goflag.CommandLine)
+	flag.ParseSkippedFlags(os.Args[1:], goflag.CommandLine)
 	flag.Parse()
 }
 ```
