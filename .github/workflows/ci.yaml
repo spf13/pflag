@@ -12,14 +12,21 @@ permissions:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.platform }}
     timeout-minutes: 20 # guardrails timeout
 
     strategy:
       fail-fast: false
       matrix:
-        go: ["1.12", "1.21", "1.22", "1.23", "oldstable", "stable"]
-
+        # Oldest supported + currently supported Go versions
+        go: ["1.12.x", "oldstable", "stable"]
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+        exclude:
+          # go1.12 is not available for windows and macos on GitHub actions.
+          - go: "1.12.x"
+            platform: windows-latest
+          - go: "1.12.x"
+            platform: macos-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
@@ -33,20 +40,6 @@ jobs:
         # Cannot enable shuffle for now because some tests rely on global state and order
         # run: go test -race -v -shuffle=on ./...
         run: go test -race -v ./...
-
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    timeout-minutes: 20 # guardrails timeout
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Set up Go
-        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
-        with:
-          go-version: "stable"
 
       - name: Lint
         uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
