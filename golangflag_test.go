@@ -74,7 +74,7 @@ func TestToGoflags(t *testing.T) {
 	pfs.Duration("DurationFlag", time.Second, "Duration flag usage")
 	pfs.Bool("BoolFlag", true, "Bool flag usage")
 	pfs.String("deprecated", "Deprecated value", "Deprecated flag usage")
-	pfs.MarkDeprecated("deprecated", "obsolete")
+	_ = pfs.MarkDeprecated("deprecated", "obsolete")
 
 	pfs.CopyToGoFlagSet(&gfs)
 
