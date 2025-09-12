@@ -5,7 +5,7 @@ import "strconv"
 // -- int Value
 type intValue int
 
-func newIntValue(val int, p *int) *intValue {
+func NewIntValue(val int, p *int) *intValue {
 	*p = val
 	return (*intValue)(p)
 }
@@ -38,23 +38,23 @@ func (f *FlagSet) GetInt(name string) (int, error) {
 // IntVar defines an int flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
 func (f *FlagSet) IntVar(p *int, name string, value int, usage string) {
-	f.VarP(newIntValue(value, p), name, "", usage)
+	f.VarP(NewIntValue(value, p), name, "", usage)
 }
 
 // IntVarP is like IntVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) IntVarP(p *int, name, shorthand string, value int, usage string) {
-	f.VarP(newIntValue(value, p), name, shorthand, usage)
+	f.VarP(NewIntValue(value, p), name, shorthand, usage)
 }
 
 // IntVar defines an int flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
 func IntVar(p *int, name string, value int, usage string) {
-	CommandLine.VarP(newIntValue(value, p), name, "", usage)
+	CommandLine.VarP(NewIntValue(value, p), name, "", usage)
 }
 
 // IntVarP is like IntVar, but accepts a shorthand letter that can be used after a single dash.
 func IntVarP(p *int, name, shorthand string, value int, usage string) {
-	CommandLine.VarP(newIntValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewIntValue(value, p), name, shorthand, usage)
 }
 
 // Int defines an int flag with specified name, default value, and usage string.
