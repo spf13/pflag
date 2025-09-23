@@ -128,23 +128,23 @@ func (f *FlagSet) GetInt32Slice(name string) ([]int32, error) {
 // Int32SliceVar defines a int32Slice flag with specified name, default value, and usage string.
 // The argument p points to a []int32 variable in which to store the value of the flag.
 func (f *FlagSet) Int32SliceVar(p *[]int32, name string, value []int32, usage string) {
-	f.VarP(newInt32SliceValue(value, p), name, "", usage)
+	f.Var(newInt32SliceValue(value, p), name, usage)
 }
 
 // Int32SliceVarP is like Int32SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) Int32SliceVarP(p *[]int32, name, shorthand string, value []int32, usage string) {
-	f.VarP(newInt32SliceValue(value, p), name, shorthand, usage)
+	f.Var(newInt32SliceValue(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // Int32SliceVar defines a int32[] flag with specified name, default value, and usage string.
 // The argument p points to a int32[] variable in which to store the value of the flag.
 func Int32SliceVar(p *[]int32, name string, value []int32, usage string) {
-	CommandLine.VarP(newInt32SliceValue(value, p), name, "", usage)
+	CommandLine.Var(newInt32SliceValue(value, p), name, usage)
 }
 
 // Int32SliceVarP is like Int32SliceVar, but accepts a shorthand letter that can be used after a single dash.
 func Int32SliceVarP(p *[]int32, name, shorthand string, value []int32, usage string) {
-	CommandLine.VarP(newInt32SliceValue(value, p), name, shorthand, usage)
+	CommandLine.Var(newInt32SliceValue(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // Int32Slice defines a []int32 flag with specified name, default value, and usage string.

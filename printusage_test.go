@@ -18,8 +18,8 @@ func setUpPFlagSet(buf io.Writer) *FlagSet {
 	f := NewFlagSet("test", ExitOnError)
 	f.Bool("long-form", false, "Some description")
 	f.Bool("long-form2", false, "Some description\n  with multiline")
-	f.BoolP("long-name", "s", false, "Some description")
-	f.BoolP("long-name2", "t", false, "Some description with\n  multiline")
+	f.Bool("long-name", false, "Some description", WithShorthand("s"))
+	f.Bool("long-name2", false, "Some description with\n  multiline", WithShorthand("t"))
 	f.SetOutput(buf)
 	return f
 }
@@ -38,8 +38,8 @@ func setUpPFlagSet2(buf io.Writer) *FlagSet {
 	f := NewFlagSet("test", ExitOnError)
 	f.Bool("long-form", false, "Some description")
 	f.Bool("long-form2", false, "Some description\n  with multiline")
-	f.BoolP("long-name", "s", false, "Some description")
-	f.BoolP("long-name2", "t", false, "Some description with\n  multiline")
+	f.Bool("long-name", false, "Some description", WithShorthand("s"))
+	f.Bool("long-name2", false, "Some description with\n  multiline", WithShorthand("t"))
 	f.StringP("some-very-long-arg", "l", "test", "Some very long description having break the limit")
 	f.StringP("other-very-long-arg", "o", "long-default-value", "Some very long description having break the limit")
 	f.String("some-very-long-arg2", "very long default value", "Some very long description\nwith line break\nmultiple")

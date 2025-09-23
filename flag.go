@@ -838,31 +838,49 @@ func (f *FlagSet) Args() []string { return f.args }
 // Args returns the non-flag command-line arguments.
 func Args() []string { return CommandLine.args }
 
+// FlagOption represents an option that can be applied to a flag
+type FlagOption func(*Flag)
+
+// WithShorthand returns an option for adding a shorthand letter that can be
+// used after a single dash to a flag
+func WithShorthand(shorthand string) FlagOption {
+	return func(f *Flag) {
+		f.Shorthand = shorthand
+	}
+}
+
 // Var defines a flag with the specified name and usage string. The type and
 // value of the flag are represented by the first argument, of type Value, which
 // typically holds a user-defined implementation of Value. For instance, the
 // caller could create a flag that turns a comma-separated string into a slice
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
-func (f *FlagSet) Var(value Value, name string, usage string) {
-	f.VarP(value, name, "", usage)
+func (f *FlagSet) Var(value Value, name string, usage string, opts ...FlagOption) *Flag {
+	return f.VarPF(value, name, "", usage, opts...)
 }
 
-// VarPF is like VarP, but returns the flag created
-func (f *FlagSet) VarPF(value Value, name, shorthand, usage string) *Flag {
+// VarPF is like Var, but returns the flag created
+//
+// Deprecated: Use Var instead
+func (f *FlagSet) VarPF(value Value, name, shorthand, usage string, opts ...FlagOption) *Flag {
 	// Remember the default value as a string; it won't change.
 	flag := &Flag{
 		Name:      name,
-		Shorthand: shorthand,
 		Usage:     usage,
+		Shorthand: shorthand,
 		Value:     value,
 		DefValue:  value.String(),
+	}
+	for _, opt := range opts {
+		opt(flag)
 	}
 	f.AddFlag(flag)
 	return flag
 }
 
 // VarP is like Var, but accepts a shorthand letter that can be used after a single dash.
+//
+// Deprecated: Use Var with the WithShorthand option instead
 func (f *FlagSet) VarP(value Value, name, shorthand, usage string) {
 	f.VarPF(value, name, shorthand, usage)
 }
@@ -926,12 +944,12 @@ func (f *FlagSet) AddFlagSet(newSet *FlagSet) {
 // of strings by giving the slice the methods of Value; in particular, Set would
 // decompose the comma-separated string into the slice.
 func Var(value Value, name string, usage string) {
-	CommandLine.VarP(value, name, "", usage)
+	CommandLine.Var(value, name, usage)
 }
 
 // VarP is like Var, but accepts a shorthand letter that can be used after a single dash.
 func VarP(value Value, name, shorthand, usage string) {
-	CommandLine.VarP(value, name, shorthand, usage)
+	CommandLine.Var(value, name, usage, WithShorthand(shorthand))
 }
 
 // fail prints an error message and usage message to standard error and
