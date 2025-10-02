@@ -723,9 +723,12 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		}
 
 		varname, usage := UnquoteUsage(flag)
-		if varname != "" {
+		if flag.Value.Type() == "bool" {
+			line += "[=true|false]"
+		} else if varname != "" {
 			line += " " + varname
 		}
+
 		if flag.NoOptDefVal != "" {
 			switch flag.Value.Type() {
 			case "string":
