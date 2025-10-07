@@ -202,6 +202,7 @@ type Flag struct {
 	Deprecated          string              // If this flag is deprecated, this string is the new or now thing to use
 	Hidden              bool                // used by cobra.Command to allow flags to be hidden from help/usage text
 	ShorthandDeprecated string              // If the shorthand of this flag is deprecated, this string is the new or now thing to use
+	Group               string              // flag group
 	Annotations         map[string][]string // used by cobra.Command bash autocomple code
 }
 
@@ -470,6 +471,16 @@ func (f *FlagSet) MarkHidden(name string) error {
 	return nil
 }
 
+// SetGroup assigns a flag to a group.
+func (f *FlagSet) SetGroup(name, group string) error {
+	flag := f.Lookup(name)
+	if flag == nil {
+		return fmt.Errorf("flag %q does not exist", name)
+	}
+	flag.Group = group
+	return nil
+}
+
 // Lookup returns the Flag structure of the named command-line flag,
 // returning nil if none exists.
 func Lookup(name string) *Flag {
@@ -705,9 +716,16 @@ func wrap(i, w int, s string) string {
 // for all flags in the FlagSet. Wrapped to `cols` columns (0 for no
 // wrapping)
 func (f *FlagSet) FlagUsagesWrapped(cols int) string {
+	return f.FlagUsagesForGroupWrapped("", cols)
+}
+
+// FlagUsagesForGroupWrapped returns a string containing the usage information
+// for all flags in the FlagSet for group. Wrapped to `cols` columns (0 for no
+// wrapping)
+func (f *FlagSet) FlagUsagesForGroupWrapped(group string, cols int) string {
 	buf := new(bytes.Buffer)
 
-	lines := make([]string, 0, len(f.formal))
+	lines := make(map[string][]string)
 
 	maxlen := 0
 	f.VisitAll(func(flag *Flag) {
@@ -765,10 +783,14 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 			line += fmt.Sprintf(" (DEPRECATED: %s)", flag.Deprecated)
 		}
 
-		lines = append(lines, line)
+		group := flag.Group
+		if _, ok := lines[group]; !ok {
+			lines[group] = make([]string, 0)
+		}
+		lines[group] = append(lines[group], line)
 	})
 
-	for _, line := range lines {
+	for _, line := range lines[group] {
 		sidx := strings.Index(line, "\x00")
 		spacing := strings.Repeat(" ", maxlen-sidx)
 		// maxlen + 2 comes from + 1 for the \x00 and + 1 for the (deliberate) off-by-one in maxlen-sidx
@@ -782,6 +804,30 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 // the FlagSet
 func (f *FlagSet) FlagUsages() string {
 	return f.FlagUsagesWrapped(0)
+}
+
+// FlagUsagesForGroup returns a string containing the usage information for all flags in
+// the FlagSet for group
+func (f *FlagSet) FlagUsagesForGroup(group string) string {
+	return f.FlagUsagesForGroupWrapped(group, 0)
+}
+
+// Groups return an array of unique flag groups sorted in the same order
+// as flags. Empty group (unassigned) is always placed last.
+func (f *FlagSet) Groups() []string {
+	groupsMap := make(map[string]bool)
+	groups := make([]string, 0)
+	f.VisitAll(func(flag *Flag) {
+		if flag.Group == "" {
+			return
+		}
+		if _, ok := groupsMap[flag.Group]; !ok {
+			groupsMap[flag.Group] = true
+			groups = append(groups, flag.Group)
+		}
+	})
+	sort.Strings(groups)
+	return append(groups, "")
 }
 
 // PrintDefaults prints to standard error the default values of all defined command-line flags.
