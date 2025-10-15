@@ -100,11 +100,22 @@ func TestEverything(t *testing.T) {
 	}
 }
 
+func TestNoArgument(t *testing.T) {
+	if GetCommandLine().Parse([]string{}) != nil {
+		t.Error("parse failed for empty argument list")
+	}
+}
+
 func TestUsage(t *testing.T) {
 	called := false
 	ResetForTesting(func() { called = true })
-	if GetCommandLine().Parse([]string{"--x"}) == nil {
+	err := GetCommandLine().Parse([]string{"--x"})
+	expectedErr := "unknown flag: --x"
+	if err == nil {
 		t.Error("parse did not fail for unknown flag")
+	}
+	if err.Error() != expectedErr {
+		t.Errorf("expected error %q, got %q", expectedErr, err.Error())
 	}
 	if called {
 		t.Error("did call Usage while using ContinueOnError")
@@ -131,8 +142,13 @@ func TestAddFlagSet(t *testing.T) {
 func TestAnnotation(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
 
-	if err := f.SetAnnotation("missing-flag", "key", nil); err == nil {
+	err := f.SetAnnotation("missing-flag", "key", nil)
+	expectedErr := "no such flag -missing-flag"
+	if err == nil {
 		t.Errorf("Expected error setting annotation on non-existent flag")
+	}
+	if err.Error() != expectedErr {
+		t.Errorf("expected error %q, got %q", expectedErr, err.Error())
 	}
 
 	f.StringP("stringa", "a", "", "string value")
@@ -349,6 +365,33 @@ func testParse(f *FlagSet, t *testing.T) {
 	} else if f.Args()[0] != extra {
 		t.Errorf("expected argument %q got %q", extra, f.Args()[0])
 	}
+	// Test unknown
+	err := f.Parse([]string{"--unknown"})
+	expectedErr := "unknown flag: --unknown"
+	if err == nil {
+		t.Error("parse did not fail for unknown flag")
+	}
+	if err.Error() != expectedErr {
+		t.Errorf("expected error %q, got %q", expectedErr, err.Error())
+	}
+	// Test invalid
+	err = f.Parse([]string{"--bool=abcdefg"})
+	expectedErr = `invalid argument "abcdefg" for "--bool" flag: strconv.ParseBool: parsing "abcdefg": invalid syntax`
+	if err == nil {
+		t.Error("parse did not fail for invalid argument")
+	}
+	if err.Error() != expectedErr {
+		t.Errorf("expected error %q, got %q", expectedErr, err.Error())
+	}
+	// Test required
+	err = f.Parse([]string{"--int"})
+	expectedErr = `flag needs an argument: --int`
+	if err == nil {
+		t.Error("parse did not fail for missing argument")
+	}
+	if err.Error() != expectedErr {
+		t.Errorf("expected error %q, got %q", expectedErr, err.Error())
+	}
 }
 
 func testParseAll(f *FlagSet, t *testing.T) {
@@ -404,11 +447,11 @@ func testParseAll(f *FlagSet, t *testing.T) {
 	}
 }
 
-func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
+func testParseWithUnknownFlags(f *FlagSet, t *testing.T, setUnknownFlags func(f *FlagSet)) {
 	if f.Parsed() {
 		t.Error("f.Parse() = true before Parse")
 	}
-	f.ParseErrorsWhitelist.UnknownFlags = true
+	setUnknownFlags(f)
 
 	f.BoolP("boola", "a", false, "bool value")
 	f.BoolP("boolb", "b", false, "bool2 value")
@@ -433,7 +476,7 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T) {
 		"-u=unknown3Value",
 		"-p",
 		"unknown4Value",
-		"-q", //another unknown with bool value
+		"-q", // another unknown with bool value
 		"-y",
 		"ee",
 		"--unknown7=unknown7value",
@@ -538,6 +581,24 @@ func TestShorthand(t *testing.T) {
 	if f.ArgsLenAtDash() != 1 {
 		t.Errorf("expected argsLenAtDash %d got %d", f.ArgsLenAtDash(), 1)
 	}
+	// Test unknown
+	err := f.Parse([]string{"-ukn"})
+	expectedErr := "unknown shorthand flag: 'u' in -ukn"
+	if err == nil {
+		t.Error("parse did not fail for unknown shorthand flag")
+	}
+	if err.Error() != expectedErr {
+		t.Errorf("expected error %q, got %q", expectedErr, err.Error())
+	}
+	// Test required
+	err = f.Parse([]string{"-as"})
+	expectedErr = `flag needs an argument: 's' in -s`
+	if err == nil {
+		t.Error("parse did not fail for missing argument")
+	}
+	if err.Error() != expectedErr {
+		t.Errorf("expected error %q, got %q", expectedErr, err.Error())
+	}
 }
 
 func TestShorthandLookup(t *testing.T) {
@@ -588,11 +649,56 @@ func TestParseAll(t *testing.T) {
 
 func TestIgnoreUnknownFlags(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
-	testParseWithUnknownFlags(GetCommandLine(), t)
+	testParseWithUnknownFlags(GetCommandLine(), t, func(f *FlagSet) { f.ParseErrorsAllowlist.UnknownFlags = true })
+}
+
+func TestIgnoreUnknownFlagsBackwardsCompat(t *testing.T) {
+	ResetForTesting(func() { t.Error("bad parse") })
+	testParseWithUnknownFlags(GetCommandLine(), t, func(f *FlagSet) { f.ParseErrorsWhitelist.UnknownFlags = true })
 }
 
 func TestFlagSetParse(t *testing.T) {
 	testParse(NewFlagSet("test", ContinueOnError), t)
+}
+
+func TestParseRepeated(t *testing.T) {
+	fs := NewFlagSet("test repeated", ContinueOnError)
+
+	t.Run("first parse", func(t *testing.T) {
+		err := fs.Parse([]string{"foo", "bar"})
+		if err != nil {
+			t.Fatal("expected no error, got ", err)
+		}
+
+		argsAfterFirst := fs.Args()
+		if !reflect.DeepEqual(argsAfterFirst, []string{"foo", "bar"}) {
+			t.Fatalf("expected args [foo bar], got %v", argsAfterFirst)
+		}
+	})
+
+	t.Run("re-parse with fewer args", func(t *testing.T) {
+		err := fs.Parse([]string{"baz"})
+		if err != nil {
+			t.Fatal("expected no error, got ", err)
+		}
+
+		argsAfterSecond := fs.Args()
+		if !reflect.DeepEqual(argsAfterSecond, []string{"baz"}) {
+			t.Fatalf("expected args [baz], got %v", argsAfterSecond)
+		}
+	})
+
+	t.Run("re-parse with no args", func(t *testing.T) {
+		err := fs.Parse([]string{})
+		if err != nil {
+			t.Fatal("expected no error, got ", err)
+		}
+
+		argsAfterThird := fs.Args()
+		if !reflect.DeepEqual(argsAfterThird, []string{}) {
+			t.Fatalf("expected args [], got %v", argsAfterThird)
+		}
+	})
 }
 
 func TestChangedHelper(t *testing.T) {
@@ -899,7 +1005,7 @@ func TestChangingArgs(t *testing.T) {
 
 // Test that -help invokes the usage message and returns ErrHelp.
 func TestHelp(t *testing.T) {
-	var helpCalled = false
+	helpCalled := false
 	fs := NewFlagSet("help test", ContinueOnError)
 	fs.Usage = func() { helpCalled = true }
 	var flag bool
@@ -998,6 +1104,7 @@ func getDeprecatedFlagSet() *FlagSet {
 	f.MarkDeprecated("badflag", "use --good-flag instead")
 	return f
 }
+
 func TestDeprecatedFlagInDocs(t *testing.T) {
 	f := getDeprecatedFlagSet()
 
@@ -1134,7 +1241,6 @@ func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagInUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1149,7 +1255,6 @@ func TestHiddenFlagInUsage(t *testing.T) {
 	}
 }
 
-//
 func TestHiddenFlagUsage(t *testing.T) {
 	f := NewFlagSet("bob", ContinueOnError)
 	f.Bool("secretFlag", true, "shhh")
@@ -1166,27 +1271,28 @@ func TestHiddenFlagUsage(t *testing.T) {
 	}
 }
 
-const defaultOutput = `      --A                         for bootstrapping, allow 'any' type
-      --Alongflagname             disable bounds checking
-  -C, --CCC                       a boolean defaulting to true (default true)
-      --D path                    set relative path for local imports
-  -E, --EEE num[=1234]            a num with NoOptDefVal (default 4321)
-      --F number                  a non-zero number (default 2.7)
-      --G float                   a float that defaults to zero
-      --IP ip                     IP address with no default
-      --IPMask ipMask             Netmask address with no default
-      --IPNet ipNet               IP network with no default
-      --Ints ints                 int slice with zero default
-      --N int                     a non-zero int (default 27)
-      --ND1 string[="bar"]        a string with NoOptDefVal (default "foo")
-      --ND2 num[=4321]            a num with NoOptDefVal (default 1234)
-      --StringArray stringArray   string array with zero default
-      --StringSlice strings       string slice with zero default
-      --Z int                     an int that defaults to zero
-      --custom custom             custom Value implementation
-      --customP custom            a VarP with default (default 10)
-      --maxT timeout              set timeout for dial
-  -v, --verbose count             verbosity
+const defaultOutput = `      --A[=true|false]               for bootstrapping, allow 'any' type
+      --Alongflagname[=true|false]   disable bounds checking
+  -C, --CCC[=true|false]             a boolean defaulting to true (default true)
+      --D path                       set relative path for local imports
+  -E, --EEE num[=1234]               a num with NoOptDefVal (default 4321)
+      --F number                     a non-zero number (default 2.7)
+      --G float                      a float that defaults to zero
+      --IP ip                        IP address with no default
+      --IPMask ipMask                Netmask address with no default
+      --IPNet ipNet                  IP network with no default
+      --Ints ints                    int slice with zero default
+      --N int                        a non-zero int (default 27)
+      --ND1 string[="bar"]           a string with NoOptDefVal (default "foo")
+      --ND2 num[=4321]               a num with NoOptDefVal (default 1234)
+      --StringArray stringArray      string array with zero default
+      --StringSlice strings          string slice with zero default
+      --Z int                        an int that defaults to zero
+      --custom custom                custom Value implementation
+      --custom-with-val custom       custom value which has been set from command line while help is shown
+      --customP custom               a VarP with default (default 10)
+      --maxT timeout                 set timeout for dial
+  -v, --verbose count                verbosity
 `
 
 // Custom value that satisfies the Value interface.
@@ -1235,12 +1341,18 @@ func TestPrintDefaults(t *testing.T) {
 	cv2 := customValue(10)
 	fs.VarP(&cv2, "customP", "", "a VarP with default")
 
+	// Simulate case where a value has been provided and the help screen is shown
+	var cv3 customValue
+	fs.Var(&cv3, "custom-with-val", "custom value which has been set from command line while help is shown")
+	err := fs.Parse([]string{"--custom-with-val", "3"})
+	if err != nil {
+		t.Error("Parsing flags failed:", err)
+	}
+
 	fs.PrintDefaults()
 	got := buf.String()
 	if got != defaultOutput {
-		fmt.Println("\n" + got)
-		fmt.Println("\n" + defaultOutput)
-		t.Errorf("got %q want %q\n", got, defaultOutput)
+		t.Errorf("\n--- Got:\n%s--- Wanted:\n%s\n", got, defaultOutput)
 	}
 }
 
