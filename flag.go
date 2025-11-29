@@ -400,7 +400,12 @@ func (f *FlagSet) lookup(name NormalizedName) *Flag {
 	return f.formal[name]
 }
 
-// func to return a given type for a given flag name
+// getFlagType performs a lookup of a flag with the given name and ftype. The flag is stringified and passed through
+// convFunc before being returned to enforce flag immutablility.
+//
+// convFunc may be nil, in which case the raw flag value is returned directly and no immutability is enforced. This is
+// particularly useful when users need to access the pointer of the underlying flag value for manipulation (e.g.
+// resetting flag values in tests).
 func (f *FlagSet) getFlagType(name string, ftype string, convFunc func(sval string) (interface{}, error)) (interface{}, error) {
 	flag := f.Lookup(name)
 	if flag == nil {
@@ -411,6 +416,10 @@ func (f *FlagSet) getFlagType(name string, ftype string, convFunc func(sval stri
 	if flag.Value.Type() != ftype {
 		err := fmt.Errorf("trying to get %s value of flag of type %s", ftype, flag.Value.Type())
 		return nil, err
+	}
+
+	if convFunc == nil {
+		return flag.Value, nil
 	}
 
 	sval := flag.Value.String()

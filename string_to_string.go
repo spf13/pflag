@@ -21,7 +21,7 @@ func newStringToStringValue(val map[string]string, p *map[string]string) *string
 	return ssv
 }
 
-// Format: a=1,b=2
+// Set updates the flag value from the given string, adding additional mappings or updating existing ones.
 func (s *stringToStringValue) Set(val string) error {
 	var ss []string
 	n := strings.Count(val, "=")
@@ -47,12 +47,16 @@ func (s *stringToStringValue) Set(val string) error {
 		}
 		out[kv[0]] = kv[1]
 	}
+
+	// clear out any default flag values
 	if !s.changed {
-		*s.value = out
-	} else {
-		for k, v := range out {
-			(*s.value)[k] = v
+		for k := range *s.value {
+			delete(*s.value, k)
 		}
+	}
+
+	for k, v := range out {
+		(*s.value)[k] = v
 	}
 	s.changed = true
 	return nil
@@ -84,85 +88,100 @@ func (s *stringToStringValue) String() string {
 	return "[" + strings.TrimSpace(buf.String()) + "]"
 }
 
-func stringToStringConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
-	// An empty string would cause an empty map
-	if len(val) == 0 {
-		return map[string]string{}, nil
-	}
-	r := csv.NewReader(strings.NewReader(val))
-	ss, err := r.Read()
-	if err != nil {
-		return nil, err
-	}
-	out := make(map[string]string, len(ss))
-	for _, pair := range ss {
-		kv := strings.SplitN(pair, "=", 2)
-		if len(kv) != 2 {
-			return nil, fmt.Errorf("%s must be formatted as key=value", pair)
-		}
-		out[kv[0]] = kv[1]
-	}
-	return out, nil
-}
-
-// GetStringToString return the map[string]string value of a flag with the given name
+// GetStringToString return the map value of a flag with the given name from f. The returned map shares memory with the
+// internal flag value [Flag.Value].
 func (f *FlagSet) GetStringToString(name string) (map[string]string, error) {
-	val, err := f.getFlagType(name, "stringToString", stringToStringConv)
+	val, err := f.getFlagType(name, "stringToString", nil)
 	if err != nil {
 		return map[string]string{}, err
 	}
-	return val.(map[string]string), nil
+
+	fv, ok := val.(*stringToStringValue)
+	if !ok {
+		panic(fmt.Errorf("illegal state: unspected internal type for stringToString flag '%s'", name))
+	}
+	if fv.value == nil {
+		return nil, nil
+	}
+
+	return *fv.value, nil
 }
 
-// StringToStringVar defines a string flag with specified name, default value, and usage string.
-// The argument p points to a map[string]string variable in which to store the values of the multiple flags.
-// The value of each argument will not try to be separated by comma
-func (f *FlagSet) StringToStringVar(p *map[string]string, name string, value map[string]string, usage string) {
-	f.VarP(newStringToStringValue(value, p), name, "", usage)
-}
-
-// StringToStringVarP is like StringToStringVar, but accepts a shorthand letter that can be used after a single dash.
-func (f *FlagSet) StringToStringVarP(p *map[string]string, name, shorthand string, value map[string]string, usage string) {
-	f.VarP(newStringToStringValue(value, p), name, shorthand, usage)
-}
-
-// StringToStringVar defines a string flag with specified name, default value, and usage string.
-// The argument p points to a map[string]string variable in which to store the value of the flag.
-// The value of each argument will not try to be separated by comma
-func StringToStringVar(p *map[string]string, name string, value map[string]string, usage string) {
-	CommandLine.VarP(newStringToStringValue(value, p), name, "", usage)
-}
-
-// StringToStringVarP is like StringToStringVar, but accepts a shorthand letter that can be used after a single dash.
-func StringToStringVarP(p *map[string]string, name, shorthand string, value map[string]string, usage string) {
-	CommandLine.VarP(newStringToStringValue(value, p), name, shorthand, usage)
-}
-
-// StringToString defines a string flag with specified name, default value, and usage string.
-// The return value is the address of a map[string]string variable that stores the value of the flag.
-// The value of each argument will not try to be separated by comma
+// StringToString defines a map flag with specified name, default value, and usage string.
+//
+// StringToString flags are used to pass key=value pairs to applications. The same flag can be provided more than once
+// with all key=value pairs being merged into a final map. Multiple key=value pairs may be provided in a single arg,
+// separated by commas. A few simple examples include:
+//
+//	--arg a=1           -> map[string]string{ "a": "1" }
+//	--arg a=1 --arg b=2 -> map[string]string{ "a": "1", "b": "2" }
+//	--arg a=1,b=2       -> map[string]string{ "a": "1", "b": "2" }
+//	--arg=a=1           -> map[string]string{ "a": "1" }
+//
+// As a special case, a single key=value pair whose value contains a comma will be interpreted as shown below:
+//
+//	--arg a=1,2         -> map[string]string{ "a": "1,2" }
+//
+// Returns a pointer to the map which will be updated upon invocation of [FlagSet.Parse], [Flag.Value.Set], and others.
 func (f *FlagSet) StringToString(name string, value map[string]string, usage string) *map[string]string {
 	p := map[string]string{}
 	f.StringToStringVarP(&p, name, "", value, usage)
 	return &p
 }
 
-// StringToStringP is like StringToString, but accepts a shorthand letter that can be used after a single dash.
+// StringToStringP is like [FlagSet.StringToString], but also accepts a shorthand letter that can be used after a single
+// dash.
+//
+// See [FlagSet.StringToString].
 func (f *FlagSet) StringToStringP(name, shorthand string, value map[string]string, usage string) *map[string]string {
 	p := map[string]string{}
 	f.StringToStringVarP(&p, name, shorthand, value, usage)
 	return &p
 }
 
+// StringToStringVar is like [FlagSet.StringToString], but also accepts a map pointer argument p which is updated with
+// the parsed key-value pairs.
+//
+// See [FlagSet.StringToString].
+func (f *FlagSet) StringToStringVar(p *map[string]string, name string, value map[string]string, usage string) {
+	f.VarP(newStringToStringValue(value, p), name, "", usage)
+}
+
+// StringToStringVarP is like [FlagSet.StringToString], but also accepts a map pointer argument p which is updated with
+// the parsed key-value pairs, and a shorthand letter that can be used after a single dash.
+//
+// See [FlagSet.StringToString].
+func (f *FlagSet) StringToStringVarP(p *map[string]string, name, shorthand string, value map[string]string, usage string) {
+	f.VarP(newStringToStringValue(value, p), name, shorthand, usage)
+}
+
 // StringToString defines a string flag with specified name, default value, and usage string.
-// The return value is the address of a map[string]string variable that stores the value of the flag.
-// The value of each argument will not try to be separated by comma
+//
+// See [FlagSet.StringToString].
 func StringToString(name string, value map[string]string, usage string) *map[string]string {
 	return CommandLine.StringToStringP(name, "", value, usage)
 }
 
-// StringToStringP is like StringToString, but accepts a shorthand letter that can be used after a single dash.
+// StringToStringP is like [FlagSet.StringToString], but also accepts a shorthand letter that can be used after a single
+// dash.
+//
+// See [FlagSet.StringToString].
 func StringToStringP(name, shorthand string, value map[string]string, usage string) *map[string]string {
 	return CommandLine.StringToStringP(name, shorthand, value, usage)
+}
+
+// StringToStringVar is like [FlagSet.StringToString], but also accepts a map pointer argument p which is updated with
+// the parsed key-value pairs.
+//
+// See [FlagSet.StringToString].
+func StringToStringVar(p *map[string]string, name string, value map[string]string, usage string) {
+	CommandLine.VarP(newStringToStringValue(value, p), name, "", usage)
+}
+
+// StringToStringVarP is like [FlagSet.StringToString], but also accepts a map pointer argument p which is updated with
+// the parsed key-value pairs, and a shorthand letter that can be used after a single dash.
+//
+// See [FlagSet.StringToString].
+func StringToStringVarP(p *map[string]string, name, shorthand string, value map[string]string, usage string) {
+	CommandLine.VarP(newStringToStringValue(value, p), name, shorthand, usage)
 }
