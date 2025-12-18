@@ -142,7 +142,7 @@ func (e *InvalidSyntaxError) Error() string {
 	return fmt.Sprintf("bad flag syntax: %s", e.specifiedFlag)
 }
 
-// GetSpecifiedName returns the exact flag (with dashes) as it
+// GetSpecifiedFlag returns the exact flag (with dashes) as it
 // appeared in the parsed arguments.
 func (e *InvalidSyntaxError) GetSpecifiedFlag() string {
 	return e.specifiedFlag
