@@ -20,7 +20,7 @@ func TestText(t *testing.T) {
 		expected time.Time
 	}{
 		{"2003-01-02T15:04:05Z", true, time.Date(2003, 1, 2, 15, 04, 05, 0, time.UTC)},
-		{"2003-01-02 15:05:01", false, time.Time{}}, //negative case, invalid layout
+		{"2003-01-02 15:05:01", false, time.Time{}}, // negative case, invalid layout
 		{"2024-11-22T03:01:02Z", true, time.Date(2024, 11, 22, 3, 1, 02, 0, time.UTC)},
 		{"2006-01-02T15:04:05+07:00", true, time.Date(2006, 1, 2, 15, 4, 5, 0, time.FixedZone("UTC+7", 7*60*60))},
 	}

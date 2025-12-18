@@ -23,13 +23,12 @@ func newIPSliceValue(val []net.IP, p *[]net.IP) *ipSliceValue {
 // Set converts, and assigns, the comma-separated IP argument string representation as the []net.IP value of this flag.
 // If Set is called on a flag that already has a []net.IP assigned, the newly converted values will be appended.
 func (s *ipSliceValue) Set(val string) error {
-
 	// remove all quote characters
 	rmQuote := strings.NewReplacer(`"`, "", `'`, "", "`", "")
 
 	// read flag arguments with CSV parser
 	ipStrSlice, err := readAsCSV(rmQuote.Replace(val))
-	if err != nil && err != io.EOF {
+	if err != nil && err != io.EOF { //nolint:errorlint // not using errors.Is for compatibility with go1.12
 		return err
 	}
 
@@ -61,7 +60,6 @@ func (s *ipSliceValue) Type() string {
 
 // String defines a "native" format for this net.IP slice flag value.
 func (s *ipSliceValue) String() string {
-
 	ipStrSlice := make([]string, len(*s.value))
 	for i, ip := range *s.value {
 		ipStrSlice[i] = ip.String()
@@ -72,8 +70,8 @@ func (s *ipSliceValue) String() string {
 	return "[" + out + "]"
 }
 
-func (s *ipSliceValue) fromString(val string) (net.IP, error) {
-	return net.ParseIP(strings.TrimSpace(val)), nil
+func (s *ipSliceValue) fromString(val string) net.IP {
+	return net.ParseIP(strings.TrimSpace(val))
 }
 
 func (s *ipSliceValue) toString(val net.IP) string {
@@ -81,22 +79,14 @@ func (s *ipSliceValue) toString(val net.IP) string {
 }
 
 func (s *ipSliceValue) Append(val string) error {
-	i, err := s.fromString(val)
-	if err != nil {
-		return err
-	}
-	*s.value = append(*s.value, i)
+	*s.value = append(*s.value, s.fromString(val))
 	return nil
 }
 
 func (s *ipSliceValue) Replace(val []string) error {
 	out := make([]net.IP, len(val))
 	for i, d := range val {
-		var err error
-		out[i], err = s.fromString(d)
-		if err != nil {
-			return err
-		}
+		out[i] = s.fromString(d)
 	}
 	*s.value = out
 	return nil
