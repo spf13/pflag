@@ -388,7 +388,7 @@ func (f *FlagSet) ShorthandLookup(name string) *Flag {
 	}
 	if len(name) > 1 {
 		msg := fmt.Sprintf("can not look up shorthand which is more than one ASCII character: %q", name)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprintln(f.Output(), msg)
 		panic(msg)
 	}
 	c := name[0]
@@ -893,7 +893,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	}
 	if len(flag.Shorthand) > 1 {
 		msg := fmt.Sprintf("%q shorthand is more than one ASCII character", flag.Shorthand)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprintln(f.Output(), msg)
 		panic(msg)
 	}
 	if f.shorthands == nil {
@@ -903,7 +903,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	used, alreadyThere := f.shorthands[c]
 	if alreadyThere {
 		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
-		fmt.Fprintf(f.Output(), msg)
+		fmt.Fprintln(f.Output(), msg)
 		panic(msg)
 	}
 	f.shorthands[c] = flag
