@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -163,4 +164,24 @@ func Int64Slice(name string, value []int64, usage string) *[]int64 {
 // Int64SliceP is like Int64Slice, but accepts a shorthand letter that can be used after a single dash.
 func Int64SliceP(name, shorthand string, value []int64, usage string) *[]int64 {
 	return CommandLine.Int64SliceP(name, shorthand, value, usage)
+}
+
+// Set int64 slice flag to flagSet
+func setInt64SliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := int64SliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Int64SliceP(name, shorthand, defVal.([]int64), usage)
+	return nil
+}
+
+// Set int64 slice value from flagSet
+func setInt64SliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetInt64Slice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

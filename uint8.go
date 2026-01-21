@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- uint8 Value
 type uint8Value uint8
@@ -85,4 +88,24 @@ func Uint8(name string, value uint8, usage string) *uint8 {
 // Uint8P is like Uint8, but accepts a shorthand letter that can be used after a single dash.
 func Uint8P(name, shorthand string, value uint8, usage string) *uint8 {
 	return CommandLine.Uint8P(name, shorthand, value, usage)
+}
+
+// Set uint8 flag to flagSet
+func setUint8Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := uint8Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Uint8P(name, shorthand, defVal.(uint8), usage)
+	return nil
+}
+
+// Set uint8 value from flagSet
+func setUint8Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetUint8(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }
