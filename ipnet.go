@@ -27,7 +27,8 @@ func (*ipNetValue) Type() string {
 	return "ipNet"
 }
 
-func newIPNetValue(val net.IPNet, p *net.IPNet) *ipNetValue {
+// NewIPNetValue creates net.IPNet adapted to be used as flag (with Value interface implementation)
+func NewIPNetValue(val net.IPNet, p *net.IPNet) *ipNetValue {
 	*p = val
 	return (*ipNetValue)(p)
 }
@@ -52,23 +53,23 @@ func (f *FlagSet) GetIPNet(name string) (net.IPNet, error) {
 // IPNetVar defines an net.IPNet flag with specified name, default value, and usage string.
 // The argument p points to an net.IPNet variable in which to store the value of the flag.
 func (f *FlagSet) IPNetVar(p *net.IPNet, name string, value net.IPNet, usage string) {
-	f.VarP(newIPNetValue(value, p), name, "", usage)
+	f.VarP(NewIPNetValue(value, p), name, "", usage)
 }
 
 // IPNetVarP is like IPNetVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) IPNetVarP(p *net.IPNet, name, shorthand string, value net.IPNet, usage string) {
-	f.VarP(newIPNetValue(value, p), name, shorthand, usage)
+	f.VarP(NewIPNetValue(value, p), name, shorthand, usage)
 }
 
 // IPNetVar defines an net.IPNet flag with specified name, default value, and usage string.
 // The argument p points to an net.IPNet variable in which to store the value of the flag.
 func IPNetVar(p *net.IPNet, name string, value net.IPNet, usage string) {
-	CommandLine.VarP(newIPNetValue(value, p), name, "", usage)
+	CommandLine.VarP(NewIPNetValue(value, p), name, "", usage)
 }
 
 // IPNetVarP is like IPNetVar, but accepts a shorthand letter that can be used after a single dash.
 func IPNetVarP(p *net.IPNet, name, shorthand string, value net.IPNet, usage string) {
-	CommandLine.VarP(newIPNetValue(value, p), name, shorthand, usage)
+	CommandLine.VarP(NewIPNetValue(value, p), name, shorthand, usage)
 }
 
 // IPNet defines an net.IPNet flag with specified name, default value, and usage string.
