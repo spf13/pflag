@@ -117,6 +117,15 @@ func (f *FlagSet) GetDurationSlice(name string) ([]time.Duration, error) {
 	return val.([]time.Duration), nil
 }
 
+// MustGetDurationSlice is like GetDurationSlice, but panics on error.
+func (f *FlagSet) MustGetDurationSlice(name string) []time.Duration {
+	val, err := f.GetDurationSlice(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // DurationSliceVar defines a durationSlice flag with specified name, default value, and usage string.
 // The argument p points to a []time.Duration variable in which to store the value of the flag.
 func (f *FlagSet) DurationSliceVar(p *[]time.Duration, name string, value []time.Duration, usage string) {

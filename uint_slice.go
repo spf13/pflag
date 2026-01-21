@@ -119,6 +119,15 @@ func (f *FlagSet) GetUintSlice(name string) ([]uint, error) {
 	return val.([]uint), nil
 }
 
+// MustGetUintSlice is like GetUintSlice, but panics on error.
+func (f *FlagSet) MustGetUintSlice(name string) []uint {
+	val, err := f.GetUintSlice(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // UintSliceVar defines a uintSlice flag with specified name, default value, and usage string.
 // The argument p points to a []uint variable in which to store the value of the flag.
 func (f *FlagSet) UintSliceVar(p *[]uint, name string, value []uint, usage string) {

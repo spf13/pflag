@@ -44,6 +44,15 @@ func (f *FlagSet) GetBool(name string) (bool, error) {
 	return val.(bool), nil
 }
 
+// MustGetBool is like GetBool, but panics on error.
+func (f *FlagSet) MustGetBool(name string) bool {
+	val, err := f.GetBool(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // BoolVar defines a bool flag with specified name, default value, and usage string.
 // The argument p points to a bool variable in which to store the value of the flag.
 func (f *FlagSet) BoolVar(p *bool, name string, value bool, usage string) {

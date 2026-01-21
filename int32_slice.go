@@ -125,6 +125,15 @@ func (f *FlagSet) GetInt32Slice(name string) ([]int32, error) {
 	return val.([]int32), nil
 }
 
+// MustGetInt32Slice is like GetInt32Slice, but panics on error.
+func (f *FlagSet) MustGetInt32Slice(name string) []int32 {
+	val, err := f.GetInt32Slice(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // Int32SliceVar defines a int32Slice flag with specified name, default value, and usage string.
 // The argument p points to a []int32 variable in which to store the value of the flag.
 func (f *FlagSet) Int32SliceVar(p *[]int32, name string, value []int32, usage string) {

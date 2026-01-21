@@ -137,6 +137,15 @@ func (f *FlagSet) GetIPSlice(name string) ([]net.IP, error) {
 	return val.([]net.IP), nil
 }
 
+// MustGetIPSlice is like GetIPSlice, but panics on error.
+func (f *FlagSet) MustGetIPSlice(name string) []net.IP {
+	val, err := f.GetIPSlice(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // IPSliceVar defines a ipSlice flag with specified name, default value, and usage string.
 // The argument p points to a []net.IP variable in which to store the value of the flag.
 func (f *FlagSet) IPSliceVar(p *[]net.IP, name string, value []net.IP, usage string) {

@@ -44,6 +44,15 @@ func (f *FlagSet) GetCount(name string) (int, error) {
 	return val.(int), nil
 }
 
+// MustGetCount is like GetCount, but panics on error.
+func (f *FlagSet) MustGetCount(name string) int {
+	val, err := f.GetCount(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // CountVar defines a count flag with specified name, default value, and usage string.
 // The argument p points to an int variable in which to store the value of the flag.
 // A count flag will add 1 to its value every time it is found on the command line

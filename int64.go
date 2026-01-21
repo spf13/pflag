@@ -35,6 +35,15 @@ func (f *FlagSet) GetInt64(name string) (int64, error) {
 	return val.(int64), nil
 }
 
+// MustGetInt64 is like GetInt64, but panics on error.
+func (f *FlagSet) MustGetInt64(name string) int64 {
+	val, err := f.GetInt64(name)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
+
 // Int64Var defines an int64 flag with specified name, default value, and usage string.
 // The argument p points to an int64 variable in which to store the value of the flag.
 func (f *FlagSet) Int64Var(p *int64, name string, value int64, usage string) {
