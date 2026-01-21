@@ -85,7 +85,10 @@ func (s *stringToStringValue) String() string {
 }
 
 func stringToStringConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
+	if strings.HasPrefix(val, "[") && strings.HasSuffix(val, "]") {
+		val = strings.TrimPrefix(val, "[")
+		val = strings.TrimSuffix(val, "]")
+	}
 	// An empty string would cause an empty map
 	if len(val) == 0 {
 		return map[string]string{}, nil
