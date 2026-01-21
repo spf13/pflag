@@ -577,6 +577,8 @@ func (f *Flag) defaultIsZeroValue() bool {
 			return true
 		case "<nil>":
 			return true
+		case "[]":
+			return true
 		case "":
 			return true
 		case "0":
