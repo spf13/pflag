@@ -39,6 +39,16 @@ func (s *durationSliceValue) Set(val string) error {
 	return nil
 }
 
+func (s *durationSliceValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case []time.Duration:
+		*s.value = tv
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (s *durationSliceValue) Type() string {
 	return "durationSlice"
 }

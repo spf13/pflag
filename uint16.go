@@ -16,6 +16,30 @@ func (i *uint16Value) Set(s string) error {
 	return err
 }
 
+func (i *uint16Value) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case uint16:
+		*i = uint16Value(tv)
+	case uint8:
+		*i = uint16Value(tv)
+	case int16:
+		if tv < 0 {
+			return ErrSetv
+		}
+		*i = uint16Value(tv)
+	case int8:
+		if tv < 0 {
+			return ErrSetv
+		}
+		*i = uint16Value(tv)
+	case string:
+		return i.Set(tv)
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (i *uint16Value) Type() string {
 	return "uint16"
 }

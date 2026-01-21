@@ -18,6 +18,18 @@ func (d *durationValue) Set(s string) error {
 	return err
 }
 
+func (d *durationValue) Setv(v interface{}) error {
+	switch tv := v.(type) {
+	case time.Duration:
+		*d = durationValue(tv)
+	case string:
+		return d.Set(tv)
+	default:
+		return ErrSetv
+	}
+	return nil
+}
+
 func (d *durationValue) Type() string {
 	return "duration"
 }
