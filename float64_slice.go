@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -163,4 +164,24 @@ func Float64Slice(name string, value []float64, usage string) *[]float64 {
 // Float64SliceP is like Float64Slice, but accepts a shorthand letter that can be used after a single dash.
 func Float64SliceP(name, shorthand string, value []float64, usage string) *[]float64 {
 	return CommandLine.Float64SliceP(name, shorthand, value, usage)
+}
+
+// Set float64 slice flag to flagSet
+func setFloat64SliceFlag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := float64SliceConv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Float64SliceP(name, shorthand, defVal.([]float64), usage)
+	return nil
+}
+
+// Set float64 slice value from flagSet
+func setFloat64SliceValue(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetFloat64Slice(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }

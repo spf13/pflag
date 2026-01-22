@@ -1,6 +1,9 @@
 package pflag
 
-import "strconv"
+import (
+	"reflect"
+	"strconv"
+)
 
 // -- uint16 value
 type uint16Value uint16
@@ -85,4 +88,24 @@ func Uint16(name string, value uint16, usage string) *uint16 {
 // Uint16P is like Uint16, but accepts a shorthand letter that can be used after a single dash.
 func Uint16P(name, shorthand string, value uint16, usage string) *uint16 {
 	return CommandLine.Uint16P(name, shorthand, value, usage)
+}
+
+// Set uint16 flag to flagSet
+func setUint16Flag(flagSet *FlagSet, name, shorthand, value, usage string) error {
+	defVal, err := uint16Conv(value)
+	if err != nil {
+		return err
+	}
+	flagSet.Uint16P(name, shorthand, defVal.(uint16), usage)
+	return nil
+}
+
+// Set uint16 value from flagSet
+func setUint16Value(flagSet *FlagSet, name string, fieldV reflect.Value) error {
+	val, err := flagSet.GetUint16(name)
+	if err != nil {
+		return err
+	}
+	fieldV.Set(reflect.ValueOf(val))
+	return nil
 }
