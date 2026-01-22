@@ -122,23 +122,23 @@ func (f *FlagSet) GetUintSlice(name string) ([]uint, error) {
 // UintSliceVar defines a uintSlice flag with specified name, default value, and usage string.
 // The argument p points to a []uint variable in which to store the value of the flag.
 func (f *FlagSet) UintSliceVar(p *[]uint, name string, value []uint, usage string) {
-	f.VarP(newUintSliceValue(value, p), name, "", usage)
+	f.Var(newUintSliceValue(value, p), name, usage)
 }
 
 // UintSliceVarP is like UintSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func (f *FlagSet) UintSliceVarP(p *[]uint, name, shorthand string, value []uint, usage string) {
-	f.VarP(newUintSliceValue(value, p), name, shorthand, usage)
+	f.Var(newUintSliceValue(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // UintSliceVar defines a uint[] flag with specified name, default value, and usage string.
 // The argument p points to a uint[] variable in which to store the value of the flag.
 func UintSliceVar(p *[]uint, name string, value []uint, usage string) {
-	CommandLine.VarP(newUintSliceValue(value, p), name, "", usage)
+	CommandLine.Var(newUintSliceValue(value, p), name, usage)
 }
 
 // UintSliceVarP is like the UintSliceVar, but accepts a shorthand letter that can be used after a single dash.
 func UintSliceVarP(p *[]uint, name, shorthand string, value []uint, usage string) {
-	CommandLine.VarP(newUintSliceValue(value, p), name, shorthand, usage)
+	CommandLine.Var(newUintSliceValue(value, p), name, usage, WithShorthand(shorthand))
 }
 
 // UintSlice defines a []uint flag with specified name, default value, and usage string.

@@ -53,7 +53,7 @@ func (f *FlagSet) CountVar(p *int, name string, usage string) {
 
 // CountVarP is like CountVar only take a shorthand for the flag name.
 func (f *FlagSet) CountVarP(p *int, name, shorthand string, usage string) {
-	flag := f.VarPF(newCountValue(0, p), name, shorthand, usage)
+	flag := f.Var(newCountValue(0, p), name, usage, WithShorthand(shorthand))
 	flag.NoOptDefVal = "+1"
 }
 
