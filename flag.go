@@ -404,7 +404,7 @@ func (f *FlagSet) lookup(name NormalizedName) *Flag {
 func (f *FlagSet) getFlagType(name string, ftype string, convFunc func(sval string) (interface{}, error)) (interface{}, error) {
 	flag := f.Lookup(name)
 	if flag == nil {
-		err := &NotExistError{name: name, messageType: flagNotDefinedMessage}
+		err := &NotExistError{name: name, messageType: flagNotExistMessage}
 		return nil, err
 	}
 
