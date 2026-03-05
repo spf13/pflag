@@ -524,6 +524,25 @@ func (f *FlagSet) Set(name, value string) error {
 	return nil
 }
 
+// MustSetAnnotation sets arbitrary annotations on a flag in the FlagSet. It
+// is similar to [FlagSet.SetAnnotation], but panics if the given flag does
+// not exist or if the given annotation is already set.
+func (f *FlagSet) MustSetAnnotation(name, key string, values []string) {
+	normalName := f.normalizeFlagName(name)
+	flag, ok := f.formal[normalName]
+	if !ok {
+		panic(&NotExistError{name: name, messageType: flagNoSuchFlagMessage})
+	}
+	if flag.Annotations == nil {
+		flag.Annotations = map[string][]string{}
+	}
+	if _, ok := flag.Annotations[key]; ok {
+		panic(fmt.Errorf("annotation %q is already set for flag %q", key, name))
+	}
+
+	flag.Annotations[key] = values
+}
+
 // SetAnnotation allows one to set arbitrary annotations on a flag in the FlagSet.
 // This is sometimes used by spf13/cobra programs which want to generate additional
 // bash completion information.
