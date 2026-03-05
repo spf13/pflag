@@ -270,7 +270,7 @@ func (f *FlagSet) GetNormalizeFunc() func(f *FlagSet, name string) NormalizedNam
 	if f.normalizeNameFunc != nil {
 		return f.normalizeNameFunc
 	}
-	return func(f *FlagSet, name string) NormalizedName { return NormalizedName(name) }
+	return func(_ *FlagSet, name string) NormalizedName { return NormalizedName(name) }
 }
 
 func (f *FlagSet) normalizeFlagName(name string) NormalizedName {
@@ -388,7 +388,7 @@ func (f *FlagSet) ShorthandLookup(name string) *Flag {
 	}
 	if len(name) > 1 {
 		msg := fmt.Sprintf("can not look up shorthand which is more than one ASCII character: %q", name)
-		fmt.Fprint(f.Output(), msg)
+		_, _ = fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	c := name[0]
@@ -519,7 +519,7 @@ func (f *FlagSet) Set(name, value string) error {
 	}
 
 	if flag.Deprecated != "" {
-		fmt.Fprintf(f.Output(), "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
+		_, _ = fmt.Fprintf(f.Output(), "Flag --%s has been deprecated, %s\n", flag.Name, flag.Deprecated)
 	}
 	return nil
 }
@@ -560,7 +560,7 @@ func Set(name, value string) error {
 // otherwise, the default values of all defined flags in the set.
 func (f *FlagSet) PrintDefaults() {
 	usages := f.FlagUsages()
-	fmt.Fprint(f.Output(), usages)
+	_, _ = fmt.Fprint(f.Output(), usages)
 }
 
 // defaultIsZeroValue returns true if the default value for this flag represents
@@ -666,7 +666,7 @@ func wrapN(i, slop int, s string) (string, string) {
 // caller). Pass `w` == 0 to do no wrapping
 func wrap(i, w int, s string) string {
 	if w == 0 {
-		return strings.Replace(s, "\n", "\n"+strings.Repeat(" ", i), -1)
+		return strings.ReplaceAll(s, "\n", "\n"+strings.Repeat(" ", i))
 	}
 
 	// space between indent i and end of line width w into which
@@ -684,7 +684,7 @@ func wrap(i, w int, s string) string {
 	}
 	// If still not enough space then don't even try to wrap.
 	if wrap < 24 {
-		return strings.Replace(s, "\n", r, -1)
+		return strings.ReplaceAll(s, "\n", r)
 	}
 
 	// Try to avoid short orphan words on the final line, by
@@ -696,18 +696,17 @@ func wrap(i, w int, s string) string {
 	// Handle first line, which is indented by the caller (or the
 	// special case above)
 	l, s = wrapN(wrap, slop, s)
-	r = r + strings.Replace(l, "\n", "\n"+strings.Repeat(" ", i), -1)
+	r = r + strings.ReplaceAll(l, "\n", "\n"+strings.Repeat(" ", i))
 
 	// Now wrap the rest
 	for s != "" {
 		var t string
 
 		t, s = wrapN(wrap, slop, s)
-		r = r + "\n" + strings.Repeat(" ", i) + strings.Replace(t, "\n", "\n"+strings.Repeat(" ", i), -1)
+		r = r + "\n" + strings.Repeat(" ", i) + strings.ReplaceAll(t, "\n", "\n"+strings.Repeat(" ", i))
 	}
 
 	return r
-
 }
 
 // FlagUsagesWrapped returns a string containing the usage information
@@ -781,7 +780,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		sidx := strings.Index(line, "\x00")
 		spacing := strings.Repeat(" ", maxlen-sidx)
 		// maxlen + 2 comes from + 1 for the \x00 and + 1 for the (deliberate) off-by-one in maxlen-sidx
-		fmt.Fprintln(buf, line[:sidx], spacing, wrap(maxlen+2, cols, line[sidx+1:]))
+		_, _ = fmt.Fprintln(buf, line[:sidx], spacing, wrap(maxlen+2, cols, line[sidx+1:]))
 	}
 
 	return buf.String()
@@ -800,7 +799,7 @@ func PrintDefaults() {
 
 // defaultUsage is the default function to print a usage message.
 func defaultUsage(f *FlagSet) {
-	fmt.Fprintf(f.Output(), "Usage of %s:\n", f.name)
+	_, _ = fmt.Fprintf(f.Output(), "Usage of %s:\n", f.name)
 	f.PrintDefaults()
 }
 
@@ -813,7 +812,7 @@ func defaultUsage(f *FlagSet) {
 // By default it prints a simple header and calls PrintDefaults; for details about the
 // format of the output and how to control it, see the documentation for PrintDefaults.
 var Usage = func() {
-	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
+	_, _ = fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 	PrintDefaults()
 }
 
@@ -886,7 +885,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	_, alreadyThere := f.formal[normalizedFlagName]
 	if alreadyThere {
 		msg := fmt.Sprintf("%s flag redefined: %s", f.name, flag.Name)
-		fmt.Fprintln(f.Output(), msg)
+		_, _ = fmt.Fprintln(f.Output(), msg)
 		panic(msg) // Happens only if flags are declared with identical names
 	}
 	if f.formal == nil {
@@ -902,7 +901,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	}
 	if len(flag.Shorthand) > 1 {
 		msg := fmt.Sprintf("%q shorthand is more than one ASCII character", flag.Shorthand)
-		fmt.Fprint(f.Output(), msg)
+		_, _ = fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	if f.shorthands == nil {
@@ -912,7 +911,7 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	used, alreadyThere := f.shorthands[c]
 	if alreadyThere {
 		msg := fmt.Sprintf("unable to redefine %q shorthand in %q flagset: it's already used for %q flag", c, f.name, used.Name)
-		fmt.Fprint(f.Output(), msg)
+		_, _ = fmt.Fprint(f.Output(), msg)
 		panic(msg)
 	}
 	f.shorthands[c] = flag
@@ -972,17 +971,17 @@ func (f *FlagSet) usage() {
 // --unknown arg ... (args will be arg ...)
 func stripUnknownFlagValue(args []string) []string {
 	if len(args) == 0 {
-		//--unknown
+		// --unknown
 		return args
 	}
 
 	first := args[0]
 	if len(first) > 0 && first[0] == '-' {
-		//--unknown --next-flag ...
+		// --unknown --next-flag ...
 		return args
 	}
 
-	//--unknown arg ... (args will be arg ...)
+	// --unknown arg ... (args will be arg ...)
 	if len(args) > 1 {
 		return args[1:]
 	}
@@ -1044,7 +1043,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 
 	err = fn(flag, value)
 	if err != nil {
-		f.fail(err)
+		err = f.fail(err)
 	}
 	return
 }
@@ -1115,12 +1114,12 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 	}
 
 	if flag.ShorthandDeprecated != "" {
-		fmt.Fprintf(f.Output(), "Flag shorthand -%s has been deprecated, %s\n", flag.Shorthand, flag.ShorthandDeprecated)
+		_, _ = fmt.Fprintf(f.Output(), "Flag shorthand -%s has been deprecated, %s\n", flag.Shorthand, flag.ShorthandDeprecated)
 	}
 
 	err = fn(flag, value)
 	if err != nil {
-		f.fail(err)
+		err = f.fail(err)
 	}
 	return
 }
@@ -1178,7 +1177,7 @@ func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 func (f *FlagSet) Parse(arguments []string) error {
 	if f.addedGoFlagSets != nil {
 		for _, goFlagSet := range f.addedGoFlagSets {
-			goFlagSet.Parse(nil)
+			_ = goFlagSet.Parse(nil)
 		}
 	}
 	f.parsed = true
@@ -1199,10 +1198,10 @@ func (f *FlagSet) Parse(arguments []string) error {
 		case ContinueOnError:
 			return err
 		case ExitOnError:
-			if err == ErrHelp {
+			if err == ErrHelp { //nolint:errorlint // not using errors.Is for compatibility with go1.12
 				os.Exit(0)
 			}
-			fmt.Fprintln(f.Output(), err)
+			_, _ = fmt.Fprintln(f.Output(), err)
 			os.Exit(2)
 		case PanicOnError:
 			panic(err)
@@ -1228,10 +1227,10 @@ func (f *FlagSet) ParseAll(arguments []string, fn func(flag *Flag, value string)
 		case ContinueOnError:
 			return err
 		case ExitOnError:
-			if err == ErrHelp {
+			if err == ErrHelp { //nolint:errorlint // not using errors.Is for compatibility with go1.12
 				os.Exit(0)
 			}
-			fmt.Fprintln(f.Output(), err)
+			_, _ = fmt.Fprintln(f.Output(), err)
 			os.Exit(2)
 		case PanicOnError:
 			panic(err)
@@ -1249,7 +1248,7 @@ func (f *FlagSet) Parsed() bool {
 // after all flags are defined and before flags are accessed by the program.
 func Parse() {
 	// Ignore errors; CommandLine is set for ExitOnError.
-	CommandLine.Parse(os.Args[1:])
+	_ = CommandLine.Parse(os.Args[1:])
 }
 
 // ParseAll parses the command-line flags from os.Args[1:] and called fn for each.
@@ -1257,7 +1256,7 @@ func Parse() {
 // defined and before flags are accessed by the program.
 func ParseAll(fn func(flag *Flag, value string) error) {
 	// Ignore errors; CommandLine is set for ExitOnError.
-	CommandLine.ParseAll(os.Args[1:], fn)
+	_ = CommandLine.ParseAll(os.Args[1:], fn)
 }
 
 // SetInterspersed sets whether to support interspersed option/non-option arguments.
