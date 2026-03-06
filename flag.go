@@ -162,19 +162,6 @@ type ParseErrorsAllowlist struct {
 	UnknownFlagsHandling UnknownFlagsHandling
 }
 
-// getUnknownFlagsHandling returns the UnknownFlagsHandling value, considering deprecated UnknownFlags field
-func (a *ParseErrorsAllowlist) getUnknownFlagsHandling() UnknownFlagsHandling {
-	// if UnknownFlagsHandling is set, use it
-	if a.UnknownFlagsHandling != UnknownFlagsHandlingErrorOnUnknown {
-		return a.UnknownFlagsHandling
-	}
-
-	if a.UnknownFlags {
-		return UnknownFlagsHandlingIgnoreUnknown
-	}
-	return UnknownFlagsHandlingErrorOnUnknown
-}
-
 // ParseErrorsWhitelist defines the parsing errors that can be ignored.
 //
 // Deprecated: use [ParseErrorsAllowlist] instead. This type will be removed in a future release.
@@ -367,6 +354,35 @@ func (f *FlagSet) HasAvailableFlags() bool {
 		}
 	}
 	return false
+}
+
+// getUnknownFlagsHandling returns the UnknownFlagsHandling value,
+// considering deprecated ParseErrorsWhitelist and UnknownFlags field
+// After removing ParseErrorsWhitelist, this function can be simplified
+// and moved to ParseErrorsAllowlist.getUnknownFlagsHandling()
+func (f *FlagSet) getUnknownFlagsHandling() UnknownFlagsHandling {
+	// first check ParseErrorsAllowlist:
+	// if UnknownFlagsHandling is set, use it
+	if f.ParseErrorsAllowlist.UnknownFlagsHandling != UnknownFlagsHandlingErrorOnUnknown {
+		return f.ParseErrorsAllowlist.UnknownFlagsHandling
+	}
+
+	if f.ParseErrorsAllowlist.UnknownFlags {
+		return UnknownFlagsHandlingIgnoreUnknown
+	}
+
+	// then, check deprecated ParseErrorsWhitelist:
+	// if UnknownFlagsHandling is set, use it
+	if f.ParseErrorsWhitelist.UnknownFlagsHandling != UnknownFlagsHandlingErrorOnUnknown {
+		return f.ParseErrorsAllowlist.UnknownFlagsHandling
+	}
+
+	if f.ParseErrorsWhitelist.UnknownFlags {
+		return UnknownFlagsHandlingIgnoreUnknown
+	}
+
+	// Otherwise, return the default value
+	return UnknownFlagsHandlingErrorOnUnknown
 }
 
 // VisitAll visits the command-line flags in lexicographical order or
@@ -1042,20 +1058,14 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 	split := strings.SplitN(name, "=", 2)
 	name = split[0]
 	flag, exists := f.formal[f.normalizeFlagName(name)]
-	unknownFlagsHandling := f.ParseErrorsAllowlist.getUnknownFlagsHandling()
+	unknownFlagsHandling := f.getUnknownFlagsHandling()
 
 	if !exists {
 		switch {
 		case name == "help":
 			f.usage()
 			return a, ErrHelp
-<<<<<<< HEAD
-		case f.ParseErrorsWhitelist.UnknownFlags:
-			fallthrough
-		case f.ParseErrorsAllowlist.UnknownFlags:
-=======
 		case unknownFlagsHandling == UnknownFlagsHandlingIgnoreUnknown:
->>>>>>> f16d4d7 (Extend `UnknownFlags` to `UnknownFlagsHandling` and introduce `UnknownFlagsHandlingPassUnknownToArgs` (#337))
 			// --unknown=unknownval arg ...
 			// we do not want to lose arg in this case
 			if len(split) >= 2 {
@@ -1112,20 +1122,14 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 
 	flag, exists := f.shorthands[c]
 	if !exists {
-		unknownFlagsHandling := f.ParseErrorsAllowlist.getUnknownFlagsHandling()
+		unknownFlagsHandling := f.getUnknownFlagsHandling()
 
 		switch {
 		case c == 'h':
 			f.usage()
 			err = ErrHelp
 			return
-<<<<<<< HEAD
-		case f.ParseErrorsWhitelist.UnknownFlags:
-			fallthrough
-		case f.ParseErrorsAllowlist.UnknownFlags:
-=======
 		case unknownFlagsHandling == UnknownFlagsHandlingIgnoreUnknown:
->>>>>>> f16d4d7 (Extend `UnknownFlags` to `UnknownFlagsHandling` and introduce `UnknownFlagsHandlingPassUnknownToArgs` (#337))
 			// '-f=arg arg ...'
 			// we do not want to lose arg in this case
 			if len(shorthands) > 2 && shorthands[1] == '=' {
