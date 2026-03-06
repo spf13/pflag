@@ -546,7 +546,7 @@ func testParseWithUnknownFlagsAndPassToArgs(f *FlagSet, t *testing.T) {
 	if f.Parsed() {
 		t.Fatal("f.Parse() = true before Parse")
 	}
-	f.ParseErrorsAllowlist.UnknownFlagsHandling = UnknownFlagsHandlingPassUnknownToArgs
+	f.ParseErrorsAllowlist.UnknownFlagsHandling = PassUnknownFlagToArgs
 	f.SetInterspersed(true)
 
 	f.BoolP("boola", "a", false, "bool value")

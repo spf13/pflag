@@ -141,15 +141,15 @@ const (
 type UnknownFlagsHandling int
 
 const (
-	// UnknownFlagsHandlingErrorOnUnknown will return an error if an unknown flag is found
-	UnknownFlagsHandlingErrorOnUnknown UnknownFlagsHandling = iota
-	// UnknownFlagsHandlingIgnoreUnknown will ignore unknown flags and continue parsing rest of the flags
-	UnknownFlagsHandlingIgnoreUnknown
-	// UnknownFlagsHandlingPassUnknownToArgs will treat unknown flags as non-flag arguments.
+	// ErrorOnUnknownFlag will return an error if an unknown flag is found
+	ErrorOnUnknownFlag UnknownFlagsHandling = iota
+	// IgnoreUnknownFlag will ignore unknown flags and continue parsing rest of the flags
+	IgnoreUnknownFlag
+	// PassUnknownFlagToArgs will treat unknown flags as non-flag arguments.
 	// Combined shorthand flags mixed with known ones and unknown ones results
 	// combined flags only with unknown ones.
 	// E.g. -fghi results -gh if only `f` and `i` are known.
-	UnknownFlagsHandlingPassUnknownToArgs
+	PassUnknownFlagToArgs
 )
 
 // ParseErrorsAllowlist defines the parsing errors that can be ignored
@@ -363,26 +363,26 @@ func (f *FlagSet) HasAvailableFlags() bool {
 func (f *FlagSet) getUnknownFlagsHandling() UnknownFlagsHandling {
 	// first check ParseErrorsAllowlist:
 	// if UnknownFlagsHandling is set, use it
-	if f.ParseErrorsAllowlist.UnknownFlagsHandling != UnknownFlagsHandlingErrorOnUnknown {
+	if f.ParseErrorsAllowlist.UnknownFlagsHandling != ErrorOnUnknownFlag {
 		return f.ParseErrorsAllowlist.UnknownFlagsHandling
 	}
 
 	if f.ParseErrorsAllowlist.UnknownFlags {
-		return UnknownFlagsHandlingIgnoreUnknown
+		return IgnoreUnknownFlag
 	}
 
 	// then, check deprecated ParseErrorsWhitelist:
 	// if UnknownFlagsHandling is set, use it
-	if f.ParseErrorsWhitelist.UnknownFlagsHandling != UnknownFlagsHandlingErrorOnUnknown {
+	if f.ParseErrorsWhitelist.UnknownFlagsHandling != ErrorOnUnknownFlag {
 		return f.ParseErrorsAllowlist.UnknownFlagsHandling
 	}
 
 	if f.ParseErrorsWhitelist.UnknownFlags {
-		return UnknownFlagsHandlingIgnoreUnknown
+		return IgnoreUnknownFlag
 	}
 
 	// Otherwise, return the default value
-	return UnknownFlagsHandlingErrorOnUnknown
+	return ErrorOnUnknownFlag
 }
 
 // VisitAll visits the command-line flags in lexicographical order or
@@ -1065,7 +1065,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 		case name == "help":
 			f.usage()
 			return a, ErrHelp
-		case unknownFlagsHandling == UnknownFlagsHandlingIgnoreUnknown:
+		case unknownFlagsHandling == IgnoreUnknownFlag:
 			// --unknown=unknownval arg ...
 			// we do not want to lose arg in this case
 			if len(split) >= 2 {
@@ -1073,7 +1073,7 @@ func (f *FlagSet) parseLongArg(s string, args []string, fn parseFunc) (a []strin
 			}
 
 			return stripUnknownFlagValue(a), nil
-		case unknownFlagsHandling == UnknownFlagsHandlingPassUnknownToArgs:
+		case unknownFlagsHandling == PassUnknownFlagToArgs:
 			return a, &unknownFlagError{
 				UnknownFlags: s,
 			}
@@ -1129,7 +1129,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 			f.usage()
 			err = ErrHelp
 			return
-		case unknownFlagsHandling == UnknownFlagsHandlingIgnoreUnknown:
+		case unknownFlagsHandling == IgnoreUnknownFlag:
 			// '-f=arg arg ...'
 			// we do not want to lose arg in this case
 			if len(shorthands) > 2 && shorthands[1] == '=' {
@@ -1139,7 +1139,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 
 			outArgs = stripUnknownFlagValue(outArgs)
 			return
-		case unknownFlagsHandling == UnknownFlagsHandlingPassUnknownToArgs:
+		case unknownFlagsHandling == PassUnknownFlagToArgs:
 			// '-f=arg': pass all the argument
 			if len(shorthands) > 2 && shorthands[1] == '=' {
 				outShorts = ""
