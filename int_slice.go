@@ -20,15 +20,17 @@ func newIntSliceValue(val []int, p *[]int) *intSliceValue {
 }
 
 func (s *intSliceValue) Set(val string) error {
-	ss := strings.Split(val, ",")
-	out := make([]int, len(ss))
-	for i, d := range ss {
-		var err error
-		out[i], err = strconv.Atoi(d)
-		if err != nil {
-			return err
+	out := make([]int, 0)
+	if val != "" {
+		ss := strings.Split(val, ",")
+		out = make([]int, len(ss))
+		for i, d := range ss {
+			var err error
+			out[i], err = strconv.Atoi(d)
+			if err != nil {
+				return err
+			}
 		}
-
 	}
 	if !s.changed {
 		*s.value = out

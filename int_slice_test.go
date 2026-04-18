@@ -23,6 +23,12 @@ func setUpISFlagSetWithDefault(isp *[]int) *FlagSet {
 	return f
 }
 
+func setUpISFlagSetWithNilDefault(isp *[]int) *FlagSet {
+	f := NewFlagSet("test", ContinueOnError)
+	f.IntSliceVar(isp, "is", nil, "Command separated list!")
+	return f
+}
+
 func TestEmptyIS(t *testing.T) {
 	var is []int
 	f := setUpISFlagSet(&is)
@@ -74,6 +80,26 @@ func TestIS(t *testing.T) {
 	}
 }
 
+func TestEmptyISValue(t *testing.T) {
+	var is []int
+	f := setUpISFlagSetWithDefault(&is)
+	err := f.Parse([]string{"--is="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	if is == nil {
+		t.Fatal("expected explicit empty value to produce a non-nil empty slice")
+	}
+
+	getIS, err := f.GetIntSlice("is")
+	if err != nil {
+		t.Fatal("got an error from GetIntSlice():", err)
+	}
+	if len(getIS) != 0 {
+		t.Fatalf("got is %v with len=%d but expected length=0", getIS, len(getIS))
+	}
+}
+
 func TestISDefault(t *testing.T) {
 	var is []int
 	f := setUpISFlagSetWithDefault(&is)
@@ -106,6 +132,19 @@ func TestISDefault(t *testing.T) {
 		if d != v {
 			t.Fatalf("expected is[%d] to be %d from GetIntSlice but got: %d", i, d, v)
 		}
+	}
+}
+
+func TestISNilDefault(t *testing.T) {
+	var is []int
+	f := setUpISFlagSetWithNilDefault(&is)
+
+	err := f.Parse([]string{})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	if is != nil {
+		t.Fatalf("expected nil default to remain nil but got: %v", is)
 	}
 }
 
