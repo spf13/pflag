@@ -323,10 +323,7 @@ func main() {
 ## More info
 
 You can see the full reference documentation of the pflag package
-[at godoc.org][3], or through go's standard documentation system by
-running `godoc -http=:6060` and browsing to
-[http://localhost:6060/pkg/github.com/spf13/pflag][2] after
-installation.
+at [pkg.go.dev][2], or through go's standard documentation system by
+cloning the repository and running `go doc -http` in it.
 
-[2]: http://localhost:6060/pkg/github.com/spf13/pflag
-[3]: http://godoc.org/github.com/spf13/pflag
+[2]: https://pkg.go.dev/github.com/spf13/pflag
