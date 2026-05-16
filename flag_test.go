@@ -395,7 +395,7 @@ func testParse(f *FlagSet, t *testing.T) {
 	}
 	// Test invalid
 	err = f.Parse([]string{"--bool=abcdefg"})
-	expectedErr = `invalid argument "abcdefg" for "--bool" flag: strconv.ParseBool: parsing "abcdefg": invalid syntax`
+	expectedErr = `invalid argument "abcdefg" for "--bool" flag: must be true or false`
 	if err == nil {
 		t.Error("parse did not fail for invalid argument")
 	}
@@ -659,6 +659,43 @@ func TestShorthandLookup(t *testing.T) {
 func TestParse(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
 	testParse(GetCommandLine(), t)
+}
+
+// TestInvalidArgumentMessages locks in the human-readable suffixes returned
+// when typed flags fail to parse their input, replacing the prior raw stdlib
+// errors (e.g. `strconv.ParseBool: parsing "x": invalid syntax`).
+func TestInvalidArgumentMessages(t *testing.T) {
+	cases := []struct {
+		flag     string
+		register func(*FlagSet)
+		raw      string
+		want     string
+	}{
+		{"bool", func(f *FlagSet) { f.Bool("bool", false, "") }, "x",
+			`invalid argument "x" for "--bool" flag: must be true or false`},
+		{"int", func(f *FlagSet) { f.Int("int", 0, "") }, "x",
+			`invalid argument "x" for "--int" flag: must be an integer`},
+		{"uint", func(f *FlagSet) { f.Uint("uint", 0, "") }, "-1",
+			`invalid argument "-1" for "--uint" flag: must be a non-negative integer`},
+		{"float64", func(f *FlagSet) { f.Float64("float64", 0, "") }, "x",
+			`invalid argument "x" for "--float64" flag: must be a number`},
+		{"duration", func(f *FlagSet) { f.Duration("duration", 0, "") }, "soon",
+			`invalid argument "soon" for "--duration" flag: must be a duration like "30s" or "5m"`},
+	}
+	for _, tc := range cases {
+		t.Run(tc.flag, func(t *testing.T) {
+			f := NewFlagSet("test", ContinueOnError)
+			f.SetOutput(ioutil.Discard)
+			tc.register(f)
+			err := f.Parse([]string{"--" + tc.flag + "=" + tc.raw})
+			if err == nil {
+				t.Fatalf("expected error parsing --%s=%q, got nil", tc.flag, tc.raw)
+			}
+			if err.Error() != tc.want {
+				t.Errorf("expected %q, got %q", tc.want, err.Error())
+			}
+		})
+	}
 }
 
 func TestParseAll(t *testing.T) {
