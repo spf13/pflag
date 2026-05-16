@@ -666,10 +666,10 @@ func TestParse(t *testing.T) {
 // errors (e.g. `strconv.ParseBool: parsing "x": invalid syntax`).
 func TestInvalidArgumentMessages(t *testing.T) {
 	cases := []struct {
-		flag    string
+		flag     string
 		register func(*FlagSet)
-		raw     string
-		want    string
+		raw      string
+		want     string
 	}{
 		{"bool", func(f *FlagSet) { f.Bool("bool", false, "") }, "x",
 			`invalid argument "x" for "--bool" flag: must be true or false`},
@@ -685,7 +685,7 @@ func TestInvalidArgumentMessages(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.flag, func(t *testing.T) {
 			f := NewFlagSet("test", ContinueOnError)
-			f.SetOutput(io.Discard)
+			f.SetOutput(ioutil.Discard)
 			tc.register(f)
 			err := f.Parse([]string{"--" + tc.flag + "=" + tc.raw})
 			if err == nil {
