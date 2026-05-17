@@ -193,6 +193,19 @@ func TestSAWithSpecialChar(t *testing.T) {
 	}
 }
 
+func TestSAEmptyStringFlagValue(t *testing.T) {
+	var sa []string
+	f := setUpSAFlagSet(&sa)
+
+	err := f.Parse([]string{"--sa", ""})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	if len(sa) != 0 {
+		t.Fatalf("expected empty array for --sa=\"\", got len=%d %v", len(sa), sa)
+	}
+}
+
 func TestSAAsSliceValue(t *testing.T) {
 	var sa []string
 	f := setUpSAFlagSet(&sa)
