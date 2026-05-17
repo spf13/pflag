@@ -1096,6 +1096,10 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		// '-f' (arg was optional)
 		value = flag.NoOptDefVal
 	} else if len(shorthands) > 1 {
+		if _, ok := f.formal[f.normalizeFlagName(shorthands)]; ok {
+			err = f.fail(&LongFlagSingleDashError{name: shorthands})
+			return
+		}
 		// '-farg'
 		value = shorthands[1:]
 		outShorts = ""

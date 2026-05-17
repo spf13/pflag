@@ -37,6 +37,30 @@ func TestValueRequiredError(t *testing.T) {
 	}
 }
 
+func TestLongFlagSingleDashError(t *testing.T) {
+	err := &LongFlagSingleDashError{name: "name"}
+	if err.GetName() != "name" {
+		t.Errorf("expected name %q, got %q", "name", err.GetName())
+	}
+	if err.Error() != `bad flag syntax: -name; did you mean --name?` {
+		t.Errorf("unexpected error: %q", err.Error())
+	}
+}
+
+func TestParseLongFlagWithSingleDash(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	var name string
+	f.StringVarP(&name, "name", "n", "", "name")
+	err := f.Parse([]string{"-name", "wrong"})
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+	var longDash *LongFlagSingleDashError
+	if !errors.As(err, &longDash) {
+		t.Fatalf("expected LongFlagSingleDashError, got %T: %v", err, err)
+	}
+}
+
 func TestInvalidValueError(t *testing.T) {
 	expectedCause := errors.New("error")
 	err := &InvalidValueError{
