@@ -127,6 +127,22 @@ func (e *InvalidValueError) GetValue() string {
 	return e.value
 }
 
+// LongFlagSingleDashError is returned when a registered long flag name is
+// passed with a single leading dash (e.g. -name instead of --name).
+type LongFlagSingleDashError struct {
+	name string
+}
+
+// Error implements error.
+func (e *LongFlagSingleDashError) Error() string {
+	return fmt.Sprintf("flag %q must be specified as --%s (not -%s)", e.name, e.name, e.name)
+}
+
+// GetName returns the long flag name that was mistyped.
+func (e *LongFlagSingleDashError) GetName() string {
+	return e.name
+}
+
 // InvalidSyntaxError is the error returned when a bad flag name is passed on
 // the command line.
 type InvalidSyntaxError struct {

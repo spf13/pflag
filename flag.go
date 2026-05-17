@@ -1128,6 +1128,18 @@ func (f *FlagSet) parseShortArg(s string, args []string, fn parseFunc) (a []stri
 	a = args
 	shorthands := s[1:]
 
+	if len(shorthands) > 1 {
+		flagName := shorthands
+		if eq := strings.IndexByte(flagName, '='); eq >= 0 {
+			flagName = flagName[:eq]
+		}
+		if !isGotestShorthandFlag(flagName) {
+			if _, exists := f.formal[f.normalizeFlagName(flagName)]; exists {
+				return a, f.fail(&LongFlagSingleDashError{name: flagName})
+			}
+		}
+	}
+
 	// "shorthands" can be a series of shorthand letters of flags (e.g. "-vvv").
 	for len(shorthands) > 0 {
 		shorthands, a, err = f.parseSingleShortArg(shorthands, args, fn)

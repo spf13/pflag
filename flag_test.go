@@ -6,6 +6,7 @@ package pflag
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -1460,4 +1461,39 @@ func TestVisitFlagOrder(t *testing.T) {
 		}
 		i++
 	})
+}
+
+func TestParseRejectsSingleDashLongFlag(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	var name string
+	f.StringVarP(&name, "name", "n", "", "name of configuration")
+
+	err := f.Parse([]string{"-name", "wrong"})
+	if err == nil {
+		t.Fatal("expected error for -name mistyped long flag")
+	}
+	var longDash *LongFlagSingleDashError
+	if !errors.As(err, &longDash) {
+		t.Fatalf("expected LongFlagSingleDashError, got %T: %v", err, err)
+	}
+	if name != "" {
+		t.Fatalf("expected name to stay empty, got %q", name)
+	}
+
+	err = f.Parse([]string{"-name=wrong"})
+	if err == nil {
+		t.Fatal("expected error for -name= mistyped long flag")
+	}
+	if !errors.As(err, &longDash) {
+		t.Fatalf("expected LongFlagSingleDashError, got %T: %v", err, err)
+	}
+
+	f = NewFlagSet("test", ContinueOnError)
+	f.StringVarP(&name, "name", "n", "", "name of configuration")
+	if err := f.Parse([]string{"-n", "value"}); err != nil {
+		t.Fatalf("expected -n value to parse: %v", err)
+	}
+	if name != "value" {
+		t.Fatalf("expected name=value, got %q", name)
+	}
 }
