@@ -252,11 +252,12 @@ flags.MarkHidden("secretFlag")
 
 **Example**:
 ```go
-flags.BoolP("verbose", "v", false, "verbose output")
-flags.String("coolflag", "yeaah", "it's really cool flag")
-flags.Int("usefulflag", 777, "sometimes it's very useful")
-flags.SortFlags = false
-flags.PrintDefaults()
+flagset := pflag.NewFlagSet("example", pflag.ContinueOnError)
+flagset.BoolP("verbose", "v", false, "verbose output")
+flagset.String("coolflag", "yeaah", "it's really cool flag")
+flagset.Int("usefulflag", 777, "sometimes it's very useful")
+flagset.SortFlags = false
+flagset.PrintDefaults()
 ```
 **Output**:
 ```
