@@ -32,6 +32,14 @@ func (i *ipValue) Type() string {
 }
 
 func ipConv(sval string) (interface{}, error) {
+	// An unset IP flag with a nil default round-trips through String() as
+	// "<nil>", because that's what net.IP.String returns for a nil
+	// receiver. Treat that (and the empty string, to match how Set treats
+	// empty input) as "no IP" so GetIP doesn't error on
+	// IP("ip", nil, ...). See #351.
+	if sval == "" || sval == "<nil>" {
+		return net.IP(nil), nil
+	}
 	ip := net.ParseIP(sval)
 	if ip != nil {
 		return ip, nil

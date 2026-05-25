@@ -61,3 +61,31 @@ func TestIP(t *testing.T) {
 		}
 	}
 }
+
+// TestIPNilDefault covers #351: declaring an IP flag with a nil default and
+// then reading it without setting it must return (nil, nil), not an error.
+// Before the ipConv guard, the unset flag's String() returned "<nil>" and
+// GetIP tried to parse it as an address.
+func TestIPNilDefault(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	f.IP("ip", nil, "")
+
+	ip, err := f.GetIP("ip")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if ip != nil {
+		t.Errorf("expected nil IP, got %v", ip)
+	}
+
+	var bound net.IP
+	f2 := NewFlagSet("test2", ContinueOnError)
+	f2.IPVar(&bound, "ip", nil, "")
+	ip, err = f2.GetIP("ip")
+	if err != nil {
+		t.Fatalf("unexpected error (IPVar variant): %v", err)
+	}
+	if ip != nil {
+		t.Errorf("expected nil IP (IPVar variant), got %v", ip)
+	}
+}
