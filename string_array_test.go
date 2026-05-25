@@ -53,6 +53,44 @@ func TestEmptySAValue(t *testing.T) {
 	if len(getSA) != 0 {
 		t.Fatalf("got sa %v with len=%d but expected length=0", getSA, len(getSA))
 	}
+	if len(sa) != 0 {
+		t.Fatalf("got sa variable %v with len=%d but expected length=0", sa, len(sa))
+	}
+}
+
+func TestEmptySAQuotedValue(t *testing.T) {
+	var sa []string
+	f := setUpSAFlagSet(&sa)
+	err := f.Parse([]string{"--sa", ""})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getSA, err := f.GetStringArray("sa")
+	if err != nil {
+		t.Fatal("got an error from GetStringArray():", err)
+	}
+	if len(getSA) != 0 {
+		t.Fatalf("got sa %v with len=%d but expected length=0", getSA, len(getSA))
+	}
+	if len(sa) != 0 {
+		t.Fatalf("got sa variable %v with len=%d but expected length=0", sa, len(sa))
+	}
+}
+
+func TestEmptySAAppendEmptyString(t *testing.T) {
+	var sa []string
+	f := setUpSAFlagSet(&sa)
+	err := f.Parse([]string{"--sa=one", "--sa="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	if len(sa) != 2 {
+		t.Fatalf("got sa %v with len=%d but expected length=2", sa, len(sa))
+	}
+	if sa[0] != "one" || sa[1] != "" {
+		t.Fatalf("got sa %v but expected [one \"\"]", sa)
+	}
 }
 
 func TestSADefault(t *testing.T) {

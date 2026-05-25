@@ -14,6 +14,11 @@ func newStringArrayValue(val []string, p *[]string) *stringArrayValue {
 }
 
 func (s *stringArrayValue) Set(val string) error {
+	if val == "" && !s.changed {
+		*s.value = []string{}
+		s.changed = true
+		return nil
+	}
 	if !s.changed {
 		*s.value = []string{val}
 		s.changed = true
