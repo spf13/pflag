@@ -1128,6 +1128,10 @@ func (f *FlagSet) parseShortArg(s string, args []string, fn parseFunc) (a []stri
 	a = args
 	shorthands := s[1:]
 
+	if err = f.rejectSingleDashLongFlag(s); err != nil {
+		return a, err
+	}
+
 	// "shorthands" can be a series of shorthand letters of flags (e.g. "-vvv").
 	for len(shorthands) > 0 {
 		shorthands, a, err = f.parseSingleShortArg(shorthands, args, fn)
@@ -1137,6 +1141,33 @@ func (f *FlagSet) parseShortArg(s string, args []string, fn parseFunc) (a []stri
 	}
 
 	return
+}
+
+// rejectSingleDashLongFlag reports an error when a registered long flag name is
+// passed with a single dash (e.g. "-name" instead of "--name").
+func (f *FlagSet) rejectSingleDashLongFlag(s string) error {
+	if isGotestFlag(s) {
+		return nil
+	}
+
+	name := s[1:]
+	if len(name) <= 1 {
+		return nil
+	}
+
+	if flagName, _, ok := strings.Cut(name, "="); ok {
+		name = flagName
+	}
+
+	if isGotestShorthandFlag(name) {
+		return nil
+	}
+
+	if _, exists := f.formal[f.normalizeFlagName(name)]; exists {
+		return f.fail(&InvalidSyntaxError{specifiedFlag: s})
+	}
+
+	return nil
 }
 
 func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {

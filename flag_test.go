@@ -656,6 +656,39 @@ func TestShorthandLookup(t *testing.T) {
 	t.Errorf("f.ShorthandLookup(\"ab\") did not panic")
 }
 
+func TestSingleDashLongFlagName(t *testing.T) {
+	f := NewFlagSet("singleDashLong", ContinueOnError)
+	f.SetOutput(ioutil.Discard)
+
+	var name string
+	f.StringVarP(&name, "name", "n", "", "name of configuration")
+
+	err := f.Parse([]string{"-name", "wrong"})
+	expectedErr := "bad flag syntax: -name"
+	if err == nil {
+		t.Fatal("expected error for single-dash long flag name")
+	}
+	if err.Error() != expectedErr {
+		t.Errorf("expected error %q, got %q", expectedErr, err.Error())
+	}
+	if name != "" {
+		t.Errorf("expected empty value, got %q", name)
+	}
+
+	err = f.Parse([]string{"-n", "right"})
+	if err != nil {
+		t.Errorf("expected no error for shorthand flag, got %v", err)
+	}
+	if name != "right" {
+		t.Errorf("expected value %q, got %q", "right", name)
+	}
+
+	err = f.Parse([]string{"-name=wrong"})
+	if err == nil || err.Error() != "bad flag syntax: -name=wrong" {
+		t.Errorf("expected error %q for -name=wrong, got %v", "bad flag syntax: -name=wrong", err)
+	}
+}
+
 func TestParse(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
 	testParse(GetCommandLine(), t)
