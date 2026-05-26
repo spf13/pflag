@@ -163,6 +163,10 @@ type FlagSet struct {
 	// help/usage messages.
 	SortFlags bool
 
+	// LegacyBoolHelp restores pre-v1.0.6 bool flag help formatting by omitting
+	// the [=true|false] syntax hint and default value from help output.
+	LegacyBoolHelp bool
+
 	// ParseErrorsAllowlist is used to configure an allowlist of errors
 	ParseErrorsAllowlist ParseErrorsAllowlist
 
@@ -731,7 +735,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		}
 
 		varname, usage := UnquoteUsage(flag)
-		if flag.Value.Type() == "bool" {
+		if flag.Value.Type() == "bool" && !f.LegacyBoolHelp {
 			line += "[=true|false]"
 		} else if varname != "" {
 			line += " " + varname
@@ -762,7 +766,13 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		}
 
 		line += usage
-		if !flag.defaultIsZeroValue() {
+		hideDefault := flag.defaultIsZeroValue()
+		if f.LegacyBoolHelp {
+			if _, ok := flag.Value.(boolFlag); ok {
+				hideDefault = true
+			}
+		}
+		if !hideDefault {
 			if flag.Value.Type() == "string" {
 				line += fmt.Sprintf(" (default %q)", flag.DefValue)
 			} else {
