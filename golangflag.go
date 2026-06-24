@@ -47,7 +47,7 @@ func wrapFlagValue(v goflag.Value) Value {
 	}
 
 	t := reflect.TypeOf(v)
-	if t.Kind() == reflect.Interface || t.Kind() == reflect.Ptr {
+	if t.Kind() == reflect.Interface || t.Kind() == reflect.Ptr { //nolint:govet
 		t = t.Elem()
 	}
 

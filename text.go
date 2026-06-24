@@ -11,11 +11,11 @@ type textValue struct{ p encoding.TextUnmarshaler }
 
 func newTextValue(val encoding.TextMarshaler, p encoding.TextUnmarshaler) textValue {
 	ptrVal := reflect.ValueOf(p)
-	if ptrVal.Kind() != reflect.Ptr {
+	if ptrVal.Kind() != reflect.Ptr { //nolint:govet
 		panic("variable value type must be a pointer")
 	}
 	defVal := reflect.ValueOf(val)
-	if defVal.Kind() == reflect.Ptr {
+	if defVal.Kind() == reflect.Ptr { //nolint:govet
 		defVal = defVal.Elem()
 	}
 	if defVal.Type() != ptrVal.Type().Elem() {
