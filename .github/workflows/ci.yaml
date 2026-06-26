@@ -68,3 +68,28 @@ jobs:
         # Cannot enable shuffle for now because some tests rely on global state and order
         # run: go test -race -v -shuffle=on ./...
         run: go test -race -v ./...
+  conformance-v2:
+    name: Conformance v2 (stdlib flag drop-in)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The conformance suite runs the standard library's own flag tests against
+    # pflag v2 (see v2/conformance/README.md). It is expected to be red until v2
+    # implements the flag API, so it must not gate merges yet. Remove
+    # continue-on-error once the suite passes to make it a required check.
+    continue-on-error: true
+    defaults:
+      run:
+        working-directory: ./v2
+    strategy:
+      fail-fast: false
+      matrix:
+        go: [oldstable, stable]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - name: Set up Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Conformance test
+        run: go test -tags conformance -race -v ./conformance/...
