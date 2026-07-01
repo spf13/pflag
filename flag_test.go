@@ -1481,6 +1481,20 @@ func (cv *customValue) Set(s string) error {
 
 func (cv *customValue) Type() string { return "custom" }
 
+type customBoolFlagValue bool
+
+func (cv *customBoolFlagValue) String() string { return strconv.FormatBool(bool(*cv)) }
+
+func (cv *customBoolFlagValue) Set(s string) error {
+	v, err := strconv.ParseBool(s)
+	*cv = customBoolFlagValue(v)
+	return err
+}
+
+func (cv *customBoolFlagValue) Type() string { return "custom-bool" }
+
+func (cv *customBoolFlagValue) IsBoolFlag() bool { return true }
+
 func TestPrintDefaults(t *testing.T) {
 	fs := NewFlagSet("print defaults test", ContinueOnError)
 	var buf bytes.Buffer
@@ -1526,6 +1540,36 @@ func TestPrintDefaults(t *testing.T) {
 	got := buf.String()
 	if got != defaultOutput {
 		t.Errorf("\n--- Got:\n%s--- Wanted:\n%s\n", got, defaultOutput)
+	}
+}
+
+func TestCustomIsBoolFlagDefaultIsZeroValue(t *testing.T) {
+	var v customBoolFlagValue
+	flag := &Flag{
+		Name:     "custom-bool",
+		Usage:    "custom bool",
+		Value:    &v,
+		DefValue: "",
+	}
+
+	if !flag.defaultIsZeroValue() {
+		t.Fatal("expected empty default for custom IsBoolFlag value to be treated as zero value")
+	}
+}
+
+func TestPrintDefaultsCustomIsBoolFlagOmitsDefault(t *testing.T) {
+	fs := NewFlagSet("print defaults custom bool", ContinueOnError)
+	var buf bytes.Buffer
+	fs.SetOutput(&buf)
+
+	var v customBoolFlagValue
+	fs.Var(&v, "custom-bool", "custom bool value implementation")
+
+	fs.PrintDefaults()
+	got := buf.String()
+	want := "      --custom-bool[=true]   custom bool value implementation\n"
+	if got != want {
+		t.Errorf("\n--- Got:\n%s--- Wanted:\n%s\n", got, want)
 	}
 }
 

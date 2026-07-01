@@ -614,9 +614,10 @@ func (f *FlagSet) PrintDefaults() {
 // defaultIsZeroValue returns true if the default value for this flag represents
 // a zero value.
 func (f *Flag) defaultIsZeroValue() bool {
-	switch f.Value.(type) {
-	case boolFlag:
+	if isNoOptBoolValue(f.Value) {
 		return f.DefValue == "false" || f.DefValue == ""
+	}
+	switch f.Value.(type) {
 	case *durationValue:
 		// Beginning in Go 1.7, duration zero values are "0s"
 		return f.DefValue == "0" || f.DefValue == "0s"
@@ -665,6 +666,9 @@ func UnquoteUsage(flag *Flag) (name string, usage string) {
 	}
 
 	name = flag.Value.Type()
+	if isNoOptBoolValue(flag.Value) {
+		name = ""
+	}
 	switch name {
 	case "bool", "boolfunc":
 		name = ""
@@ -779,7 +783,7 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		}
 
 		varname, usage := UnquoteUsage(flag)
-		if flag.Value.Type() == "bool" {
+		if isNoOptBoolValue(flag.Value) && flag.Value.Type() == "bool" {
 			line += "[=true|false]"
 		} else if varname != "" {
 			line += " " + varname
@@ -941,6 +945,9 @@ func (f *FlagSet) AddFlag(flag *Flag) {
 	}
 
 	flag.Name = string(normalizedFlagName)
+	if flag.NoOptDefVal == "" && isNoOptBoolValue(flag.Value) {
+		flag.NoOptDefVal = "true"
+	}
 	f.formal[normalizedFlagName] = flag
 	f.orderedFormal = append(f.orderedFormal, flag)
 
