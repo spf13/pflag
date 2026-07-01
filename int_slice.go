@@ -20,7 +20,7 @@ func newIntSliceValue(val []int, p *[]int) *intSliceValue {
 }
 
 func (s *intSliceValue) Set(val string) error {
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]int, len(ss))
 	for i, d := range ss {
 		var err error
@@ -87,7 +87,7 @@ func intSliceConv(val string) (interface{}, error) {
 	if len(val) == 0 {
 		return []int{}, nil
 	}
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]int, len(ss))
 	for i, d := range ss {
 		var err error

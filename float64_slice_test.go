@@ -40,6 +40,26 @@ func TestEmptyF64S(t *testing.T) {
 	}
 }
 
+func TestEmptyF64SValue(t *testing.T) {
+	var f64s []float64
+	f := setUpF64SFlagSet(&f64s)
+	err := f.Parse([]string{"--f64s="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getF64S, err := f.GetFloat64Slice("f64s")
+	if err != nil {
+		t.Fatal("got an error from GetFloat64Slice():", err)
+	}
+	if f64s == nil || len(f64s) != 0 {
+		t.Fatalf("got f64s %v with len=%d but expected non-nil length=0", f64s, len(f64s))
+	}
+	if len(getF64S) != 0 {
+		t.Fatalf("got f64s %v with len=%d but expected length=0", getF64S, len(getF64S))
+	}
+}
+
 func TestF64S(t *testing.T) {
 	var f64s []float64
 	f := setUpF64SFlagSet(&f64s)

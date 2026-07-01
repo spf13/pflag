@@ -36,6 +36,26 @@ func TestEmptyUIS(t *testing.T) {
 	}
 }
 
+func TestEmptyUISValue(t *testing.T) {
+	var uis []uint
+	f := setUpUISFlagSet(&uis)
+	err := f.Parse([]string{"--uis="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getUIS, err := f.GetUintSlice("uis")
+	if err != nil {
+		t.Fatal("got an error from GetUintSlice():", err)
+	}
+	if uis == nil || len(uis) != 0 {
+		t.Fatalf("got uis %v with len=%d but expected non-nil length=0", uis, len(uis))
+	}
+	if len(getUIS) != 0 {
+		t.Fatalf("got uis %v with len=%d but expected length=0", getUIS, len(getUIS))
+	}
+}
+
 func TestUIS(t *testing.T) {
 	var uis []uint
 	f := setUpUISFlagSet(&uis)

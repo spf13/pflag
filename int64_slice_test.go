@@ -40,6 +40,26 @@ func TestEmptyI64S(t *testing.T) {
 	}
 }
 
+func TestEmptyI64SValue(t *testing.T) {
+	var is []int64
+	f := setUpI64SFlagSet(&is)
+	err := f.Parse([]string{"--is="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getI64S, err := f.GetInt64Slice("is")
+	if err != nil {
+		t.Fatal("got an error from GetInt64Slice():", err)
+	}
+	if is == nil || len(is) != 0 {
+		t.Fatalf("got is %v with len=%d but expected non-nil length=0", is, len(is))
+	}
+	if len(getI64S) != 0 {
+		t.Fatalf("got is %v with len=%d but expected length=0", getI64S, len(getI64S))
+	}
+}
+
 func TestI64S(t *testing.T) {
 	var is []int64
 	f := setUpI64SFlagSet(&is)

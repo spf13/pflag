@@ -40,6 +40,26 @@ func TestEmptyI32S(t *testing.T) {
 	}
 }
 
+func TestEmptyI32SValue(t *testing.T) {
+	var is []int32
+	f := setUpI32SFlagSet(&is)
+	err := f.Parse([]string{"--is="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getI32S, err := f.GetInt32Slice("is")
+	if err != nil {
+		t.Fatal("got an error from GetInt32Slice():", err)
+	}
+	if is == nil || len(is) != 0 {
+		t.Fatalf("got is %v with len=%d but expected non-nil length=0", is, len(is))
+	}
+	if len(getI32S) != 0 {
+		t.Fatalf("got is %v with len=%d but expected length=0", getI32S, len(getI32S))
+	}
+}
+
 func TestI32S(t *testing.T) {
 	var is []int32
 	f := setUpI32SFlagSet(&is)

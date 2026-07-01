@@ -19,7 +19,7 @@ func newDurationSliceValue(val []time.Duration, p *[]time.Duration) *durationSli
 }
 
 func (s *durationSliceValue) Set(val string) error {
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]time.Duration, len(ss))
 	for i, d := range ss {
 		var err error
@@ -94,7 +94,7 @@ func durationSliceConv(val string) (interface{}, error) {
 	if len(val) == 0 {
 		return []time.Duration{}, nil
 	}
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]time.Duration, len(ss))
 	for i, d := range ss {
 		var err error

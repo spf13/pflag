@@ -20,10 +20,10 @@ func newUintSliceValue(val []uint, p *[]uint) *uintSliceValue {
 }
 
 func (s *uintSliceValue) Set(val string) error {
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]uint, len(ss))
 	for i, d := range ss {
-		u, err := strconv.ParseUint(d, 10, 0)
+		u, err := strconv.ParseUint(d, 0, 0)
 		if err != nil {
 			return err
 		}
@@ -51,7 +51,7 @@ func (s *uintSliceValue) String() string {
 }
 
 func (s *uintSliceValue) fromString(val string) (uint, error) {
-	t, err := strconv.ParseUint(val, 10, 0)
+	t, err := strconv.ParseUint(val, 0, 0)
 	if err != nil {
 		return 0, err
 	}
@@ -98,10 +98,10 @@ func uintSliceConv(val string) (interface{}, error) {
 	if len(val) == 0 {
 		return []uint{}, nil
 	}
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]uint, len(ss))
 	for i, d := range ss {
-		u, err := strconv.ParseUint(d, 10, 0)
+		u, err := strconv.ParseUint(d, 0, 0)
 		if err != nil {
 			return nil, err
 		}

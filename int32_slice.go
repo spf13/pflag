@@ -20,7 +20,7 @@ func newInt32SliceValue(val []int32, p *[]int32) *int32SliceValue {
 }
 
 func (s *int32SliceValue) Set(val string) error {
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]int32, len(ss))
 	for i, d := range ss {
 		var err error
@@ -101,7 +101,7 @@ func int32SliceConv(val string) (interface{}, error) {
 	if len(val) == 0 {
 		return []int32{}, nil
 	}
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]int32, len(ss))
 	for i, d := range ss {
 		var err error

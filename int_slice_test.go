@@ -40,6 +40,26 @@ func TestEmptyIS(t *testing.T) {
 	}
 }
 
+func TestEmptyISValue(t *testing.T) {
+	var is []int
+	f := setUpISFlagSet(&is)
+	err := f.Parse([]string{"--is="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getIS, err := f.GetIntSlice("is")
+	if err != nil {
+		t.Fatal("got an error from GetIntSlice():", err)
+	}
+	if is == nil || len(is) != 0 {
+		t.Fatalf("got is %v with len=%d but expected non-nil length=0", is, len(is))
+	}
+	if len(getIS) != 0 {
+		t.Fatalf("got is %v with len=%d but expected length=0", getIS, len(getIS))
+	}
+}
+
 func TestIS(t *testing.T) {
 	var is []int
 	f := setUpISFlagSet(&is)

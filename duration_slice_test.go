@@ -40,6 +40,26 @@ func TestEmptyDS(t *testing.T) {
 	}
 }
 
+func TestEmptyDSValue(t *testing.T) {
+	var ds []time.Duration
+	f := setUpDSFlagSet(&ds)
+	err := f.Parse([]string{"--ds="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getDS, err := f.GetDurationSlice("ds")
+	if err != nil {
+		t.Fatal("got an error from GetDurationSlice():", err)
+	}
+	if ds == nil || len(ds) != 0 {
+		t.Fatalf("got ds %v with len=%d but expected non-nil length=0", ds, len(ds))
+	}
+	if len(getDS) != 0 {
+		t.Fatalf("got ds %v with len=%d but expected length=0", getDS, len(getDS))
+	}
+}
+
 func TestDS(t *testing.T) {
 	var ds []time.Duration
 	f := setUpDSFlagSet(&ds)

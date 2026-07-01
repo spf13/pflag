@@ -40,6 +40,26 @@ func TestEmptyF32S(t *testing.T) {
 	}
 }
 
+func TestEmptyF32SValue(t *testing.T) {
+	var f32s []float32
+	f := setUpF32SFlagSet(&f32s)
+	err := f.Parse([]string{"--f32s="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getF32S, err := f.GetFloat32Slice("f32s")
+	if err != nil {
+		t.Fatal("got an error from GetFloat32Slice():", err)
+	}
+	if f32s == nil || len(f32s) != 0 {
+		t.Fatalf("got f32s %v with len=%d but expected non-nil length=0", f32s, len(f32s))
+	}
+	if len(getF32S) != 0 {
+		t.Fatalf("got f32s %v with len=%d but expected length=0", getF32S, len(getF32S))
+	}
+}
+
 func TestF32S(t *testing.T) {
 	var f32s []float32
 	f := setUpF32SFlagSet(&f32s)

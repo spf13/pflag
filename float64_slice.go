@@ -20,7 +20,7 @@ func newFloat64SliceValue(val []float64, p *[]float64) *float64SliceValue {
 }
 
 func (s *float64SliceValue) Set(val string) error {
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]float64, len(ss))
 	for i, d := range ss {
 		var err error
@@ -95,7 +95,7 @@ func float64SliceConv(val string) (interface{}, error) {
 	if len(val) == 0 {
 		return []float64{}, nil
 	}
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]float64, len(ss))
 	for i, d := range ss {
 		var err error

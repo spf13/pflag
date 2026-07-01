@@ -20,7 +20,7 @@ func newInt64SliceValue(val []int64, p *[]int64) *int64SliceValue {
 }
 
 func (s *int64SliceValue) Set(val string) error {
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]int64, len(ss))
 	for i, d := range ss {
 		var err error
@@ -95,7 +95,7 @@ func int64SliceConv(val string) (interface{}, error) {
 	if len(val) == 0 {
 		return []int64{}, nil
 	}
-	ss := strings.Split(val, ",")
+	ss := splitCommaSeparatedSliceValue(val)
 	out := make([]int64, len(ss))
 	for i, d := range ss {
 		var err error
