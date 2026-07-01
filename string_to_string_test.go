@@ -398,3 +398,58 @@ func TestS2SCalledTwice(t *testing.T) {
 		}
 	}
 }
+
+func TestS2SEmptyValueClearsDefaults(t *testing.T) {
+	var s2s map[string]string
+	f := setUpS2SFlagSetWithDefault(&s2s)
+
+	if err := f.Parse([]string{"--s2s="}); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+	if s2s == nil {
+		t.Fatal("expected empty map, got nil")
+	}
+	if len(s2s) != 0 {
+		t.Fatalf("expected empty map, got %v", s2s)
+	}
+
+	getS2S, err := f.GetStringToString("s2s")
+	if err != nil {
+		t.Fatalf("got an error from GetStringToString(): %v", err)
+	}
+	if getS2S == nil {
+		t.Fatal("expected empty map from GetStringToString, got nil")
+	}
+	if len(getS2S) != 0 {
+		t.Fatalf("expected empty map from GetStringToString, got %v", getS2S)
+	}
+}
+
+func TestS2SEmptyValueKeepsEmptyDefaultNonNil(t *testing.T) {
+	var s2s map[string]string
+	f := setUpS2SFlagSet(&s2s)
+
+	if err := f.Parse([]string{"--s2s="}); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+	if s2s == nil {
+		t.Fatal("expected empty map, got nil")
+	}
+	if len(s2s) != 0 {
+		t.Fatalf("expected empty map, got %v", s2s)
+	}
+}
+
+func TestS2SEmptyValueCanBeFollowedByEntries(t *testing.T) {
+	var s2s map[string]string
+	f := setUpS2SFlagSetWithDefault(&s2s)
+
+	if err := f.Parse([]string{"--s2s=", "--s2s=a=1"}); err != nil {
+		t.Fatalf("expected no error; got %v", err)
+	}
+
+	expected := map[string]string{"a": "1"}
+	if !reflect.DeepEqual(s2s, expected) {
+		t.Fatalf("expected %v, got %v", expected, s2s)
+	}
+}

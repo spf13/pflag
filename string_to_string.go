@@ -24,8 +24,9 @@ func newStringToStringValue(val map[string]string, p *map[string]string) *string
 // Set updates the flag value from the given string, adding additional mappings or updating existing ones.
 func (s *stringToStringValue) Set(val string) error {
 	var ss []string
-	n := strings.Count(val, "=")
-	switch n {
+	switch n := strings.Count(val, "="); {
+	case val == "":
+		ss = []string{}
 	case 0:
 		return fmt.Errorf("%s must be formatted as key=value", val)
 	case 1:
@@ -53,6 +54,9 @@ func (s *stringToStringValue) Set(val string) error {
 		for k := range *s.value {
 			delete(*s.value, k)
 		}
+	}
+	if *s.value == nil {
+		*s.value = map[string]string{}
 	}
 
 	for k, v := range out {
