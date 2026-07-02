@@ -70,6 +70,40 @@ func TestUIS(t *testing.T) {
 	}
 }
 
+func TestUISHex(t *testing.T) {
+	var uis []uint
+	f := setUpUISFlagSet(&uis)
+
+	vals := []string{"0x1", "0x2", "0x10"}
+	arg := fmt.Sprintf("--uis=%s", strings.Join(vals, ","))
+	err := f.Parse([]string{arg})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	for i, v := range uis {
+		u, err := strconv.ParseUint(vals[i], 0, 0)
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+		if uint(u) != v {
+			t.Fatalf("expected uis[%d] to be %s but got: %d", i, vals[i], v)
+		}
+	}
+	getUIS, err := f.GetUintSlice("uis")
+	if err != nil {
+		t.Fatalf("got error: %v", err)
+	}
+	for i, v := range getUIS {
+		u, err := strconv.ParseUint(vals[i], 0, 0)
+		if err != nil {
+			t.Fatalf("got error: %v", err)
+		}
+		if uint(u) != v {
+			t.Fatalf("expected uis[%d] to be %s but got: %d from GetUintSlice", i, vals[i], v)
+		}
+	}
+}
+
 func TestUISDefault(t *testing.T) {
 	var uis []uint
 	f := setUpUISFlagSetWithDefault(&uis)
