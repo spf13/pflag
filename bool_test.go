@@ -155,7 +155,7 @@ func TestImplicitFalse(t *testing.T) {
 func TestCustomIsBoolFlagGetsNoOptDefaultAutomatically(t *testing.T) {
 	var tristate triStateValue
 	f := NewFlagSet("test", ContinueOnError)
-	*(&tristate) = triStateFalse
+	tristate = triStateFalse
 	f.VarPF(&tristate, "tristate", "t", "tristate value (true, maybe or false)")
 
 	if err := f.Parse([]string{"--tristate"}); err != nil {
@@ -169,7 +169,7 @@ func TestCustomIsBoolFlagGetsNoOptDefaultAutomatically(t *testing.T) {
 func TestCustomIsBoolFlagShortFormGetsNoOptDefaultAutomatically(t *testing.T) {
 	var tristate triStateValue
 	f := NewFlagSet("test", ContinueOnError)
-	*(&tristate) = triStateFalse
+	tristate = triStateFalse
 	f.VarPF(&tristate, "tristate", "t", "tristate value (true, maybe or false)")
 
 	if err := f.Parse([]string{"-t"}); err != nil {
