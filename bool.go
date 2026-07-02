@@ -12,6 +12,13 @@ type boolFlag interface {
 	IsBoolFlag() bool
 }
 
+func isNoOptBoolValue(v Value) bool {
+	if bf, ok := v.(boolFlag); ok {
+		return bf.IsBoolFlag()
+	}
+	return false
+}
+
 // -- bool Value
 type boolValue bool
 

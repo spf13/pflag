@@ -152,6 +152,34 @@ func TestImplicitFalse(t *testing.T) {
 	}
 }
 
+func TestCustomIsBoolFlagGetsNoOptDefaultAutomatically(t *testing.T) {
+	var tristate triStateValue
+	f := NewFlagSet("test", ContinueOnError)
+	tristate = triStateFalse
+	f.VarPF(&tristate, "tristate", "t", "tristate value (true, maybe or false)")
+
+	if err := f.Parse([]string{"--tristate"}); err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	if tristate != triStateTrue {
+		t.Fatal("expected", triStateTrue, "(triStateTrue) but got", tristate, "instead")
+	}
+}
+
+func TestCustomIsBoolFlagShortFormGetsNoOptDefaultAutomatically(t *testing.T) {
+	var tristate triStateValue
+	f := NewFlagSet("test", ContinueOnError)
+	tristate = triStateFalse
+	f.VarPF(&tristate, "tristate", "t", "tristate value (true, maybe or false)")
+
+	if err := f.Parse([]string{"-t"}); err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	if tristate != triStateTrue {
+		t.Fatal("expected", triStateTrue, "(triStateTrue) but got", tristate, "instead")
+	}
+}
+
 func TestInvalidValue(t *testing.T) {
 	var tristate triStateValue
 	f := setUpFlagSet(&tristate)
