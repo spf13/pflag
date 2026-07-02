@@ -61,3 +61,20 @@ func TestIP(t *testing.T) {
 		}
 	}
 }
+
+func TestIPNilDefault(t *testing.T) {
+	var addr net.IP
+	f := NewFlagSet("test", ContinueOnError)
+	f.IPVar(&addr, "address", nil, "IP Address")
+
+	ip, err := f.GetIP("address")
+	if err != nil {
+		t.Fatalf("expected nil default IP to round-trip without error, got %v", err)
+	}
+	if ip != nil {
+		t.Fatalf("expected nil default IP, got %v", ip)
+	}
+	if addr != nil {
+		t.Fatalf("expected bound IP variable to stay nil, got %v", addr)
+	}
+}
