@@ -250,13 +250,35 @@ flags.MarkHidden("secretFlag")
 ## Disable sorting of flags
 `pflag` allows you to disable sorting of flags for help and usage message.
 
+`SortFlags` is a field on `FlagSet`, not a package-level variable. To disable
+sorting on the default `CommandLine` flag set, use `pflag.CommandLine.SortFlags`.
+
 **Example**:
 ```go
-flags.BoolP("verbose", "v", false, "verbose output")
-flags.String("coolflag", "yeaah", "it's really cool flag")
-flags.Int("usefulflag", 777, "sometimes it's very useful")
-flags.SortFlags = false
-flags.PrintDefaults()
+package main
+
+import (
+	"fmt"
+
+	"github.com/spf13/pflag"
+)
+
+func main() {
+	flags := pflag.NewFlagSet("example", pflag.ContinueOnError)
+	flags.BoolP("verbose", "v", false, "verbose output")
+	flags.String("coolflag", "yeaah", "it's really cool flag")
+	flags.Int("usefulflag", 777, "sometimes it's very useful")
+	flags.SortFlags = false
+	flags.PrintDefaults()
+	fmt.Println()
+}
+```
+
+For the default `CommandLine` flag set:
+
+```go
+pflag.CommandLine.SortFlags = false
+pflag.PrintDefaults()
 ```
 **Output**:
 ```
