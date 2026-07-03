@@ -1375,6 +1375,11 @@ func Parsed() bool {
 	return CommandLine.Parsed()
 }
 
+// SortFlags is the package-level indicator for whether CommandLine flags should be sorted.
+// Set SortFlags = false to print flags in the order they were added.
+// This is a convenience alias for CommandLine.SortFlags.
+var SortFlags = &CommandLine.SortFlags
+
 // CommandLine is the default set of command-line flags, parsed from os.Args.
 var CommandLine = NewFlagSet(os.Args[0], ExitOnError)
 
