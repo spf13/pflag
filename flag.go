@@ -781,6 +781,9 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		} else {
 			line = fmt.Sprintf("      --%s", flag.Name)
 		}
+		if val, ok := flag.Annotations["cobra_annotation_bash_completion_one_required_flag"]; ok && len(val) > 0 && val[0] == "true" {
+			line += " (*)"
+		}
 
 		varname, usage := UnquoteUsage(flag)
 		if isNoOptBoolValue(flag.Value) && flag.Value.Type() == "bool" {
