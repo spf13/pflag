@@ -98,7 +98,7 @@ func (f *FlagSet) GetStringToString(name string) (map[string]string, error) {
 
 	fv, ok := val.(*stringToStringValue)
 	if !ok {
-		panic(fmt.Errorf("illegal state: unspected internal type for stringToString flag '%s'", name))
+		panic(fmt.Errorf("illegal state: unexpected internal type for stringToString flag '%s'", name))
 	}
 	if fv.value == nil {
 		return nil, nil
