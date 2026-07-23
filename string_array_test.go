@@ -254,3 +254,15 @@ func TestSAWithSquareBrackets(t *testing.T) {
 		}
 	}
 }
+
+func TestStringArrayEmptyValue(t *testing.T) {
+	var ss []string
+	f := NewFlagSet("test", ContinueOnError)
+	f.StringArrayVar(&ss, "arr", nil, "usage")
+	if err := f.Parse([]string{"--arr="}); err != nil {
+		t.Fatal(err)
+	}
+	if len(ss) != 0 {
+		t.Fatalf("got %#v, want empty slice", ss)
+	}
+}
