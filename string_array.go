@@ -15,7 +15,12 @@ func newStringArrayValue(val []string, p *[]string) *stringArrayValue {
 
 func (s *stringArrayValue) Set(val string) error {
 	if !s.changed {
-		*s.value = []string{val}
+		if val == "" {
+			// Explicit empty value should mean an empty array, not [""] (#415).
+			*s.value = []string{}
+		} else {
+			*s.value = []string{val}
+		}
 		s.changed = true
 	} else {
 		*s.value = append(*s.value, val)
