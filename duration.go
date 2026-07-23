@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"errors"
+	"strings"
 	"time"
 )
 
@@ -14,7 +15,7 @@ func newDurationValue(val time.Duration, p *time.Duration) *durationValue {
 }
 
 func (d *durationValue) Set(s string) error {
-	v, err := time.ParseDuration(s)
+	v, err := time.ParseDuration(strings.TrimSpace(s))
 	if err != nil {
 		return errors.New(`must be a duration like "30s" or "5m"`)
 	}
@@ -29,7 +30,7 @@ func (d *durationValue) Type() string {
 func (d *durationValue) String() string { return (*time.Duration)(d).String() }
 
 func durationConv(sval string) (interface{}, error) {
-	return time.ParseDuration(sval)
+	return time.ParseDuration(strings.TrimSpace(sval))
 }
 
 // GetDuration return the duration value of a flag with the given name
