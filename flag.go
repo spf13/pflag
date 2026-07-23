@@ -424,6 +424,9 @@ func Visit(fn func(*Flag)) {
 
 // Lookup returns the Flag structure of the named flag, returning nil if none exists.
 func (f *FlagSet) Lookup(name string) *Flag {
+	if f == nil {
+		return nil
+	}
 	return f.lookup(f.normalizeFlagName(name))
 }
 
@@ -431,6 +434,9 @@ func (f *FlagSet) Lookup(name string) *Flag {
 // returning nil if none exists.
 // It panics, if len(name) > 1.
 func (f *FlagSet) ShorthandLookup(name string) *Flag {
+	if f == nil {
+		return nil
+	}
 	if name == "" {
 		return nil
 	}
@@ -445,6 +451,9 @@ func (f *FlagSet) ShorthandLookup(name string) *Flag {
 
 // lookup returns the Flag structure of the named flag, returning nil if none exists.
 func (f *FlagSet) lookup(name NormalizedName) *Flag {
+	if f == nil {
+		return nil
+	}
 	return f.formal[name]
 }
 
