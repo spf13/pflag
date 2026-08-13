@@ -72,3 +72,19 @@ func TestPrintUsage_2(t *testing.T) {
 		t.Errorf("Expected \n%s \nActual \n%s", expectedOutput2, res)
 	}
 }
+
+// A word wider than the description column must sit on its own line.
+// Wrapping has to resume for the words after it (#501).
+func TestFlagUsagesWrappedContinuesAfterUnbreakableWord(t *testing.T) {
+	f := NewFlagSet("example", ContinueOnError)
+	f.String("mount", "", "a mount specification e.g. 'type=bind,source=/opt,destination=/hostopt'. The rest of this description is never wrapped.")
+	got := f.FlagUsagesWrapped(60)
+	want := `      --mount string   a mount specification e.g.
+                       'type=bind,source=/opt,destination=/hostopt'.
+                       The rest of this description is
+                       never wrapped.
+`
+	if got != want {
+		t.Errorf("FlagUsagesWrapped(60)\nwant:\n%q\ngot:\n%q", want, got)
+	}
+}
