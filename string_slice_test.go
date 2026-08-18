@@ -274,3 +274,38 @@ func TestSSAsSliceValue(t *testing.T) {
 		t.Fatalf("Expected ss to be overwritten with 'three', but got: %s", ss)
 	}
 }
+
+func TestSSAsSliceValueAppend(t *testing.T) {
+	var ss []string
+	f := setUpSSFlagSet(&ss)
+	err := f.Parse([]string{"--ss=one,two"})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	val, ok := f.Lookup("ss").Value.(SliceValue)
+	if !ok {
+		t.Fatal("expected SliceValue")
+	}
+	err = val.Append("three")
+	if err != nil {
+		t.Fatal("unexpected error:", err)
+	}
+	expected := []string{"one", "two", "three"}
+	if len(ss) != len(expected) {
+		t.Fatalf(
+			"expected number of ss to be %d but got: %d",
+			len(expected),
+			len(ss),
+		)
+	}
+	for i, v := range ss {
+		if expected[i] != v {
+			t.Fatalf(
+				"expected ss[%d] to be %s but got: %s",
+				i,
+				expected[i],
+				v,
+			)
+		}
+	}
+}
