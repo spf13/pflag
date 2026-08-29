@@ -1,0 +1,74 @@
+{
+  "_comment": "Catalogue of intentional differences between pflag v2 and the standard library flag package. Single source of truth for both the human-readable docs and the conformance oracle (hack/oracle). Each entry lists the conformance tests it is expected to make fail. POSIX wins. This catalogue is a best-effort seed and MUST be calibrated against the real v2 implementation: the oracle reports any undocumented failure (a regression) and any permanent divergence that unexpectedly passes (to remove). Categories: posix-overrides-stdlib | pflag-design-differs | pflag-omits-gnu-feature | not-implemented-yet (temporary, burned down as v2 is built). The 'status' field gates build failures: 'bootstrapping' tolerates the suite not building yet (CI green during build-out); flip to 'enforcing' once v2 compiles.",
+  "status": "bootstrapping",
+  "divergences": [
+    {
+      "category": "posix-overrides-stdlib",
+      "topic": "single-dash tokens are short-option clusters; long names need the GNU \"--\" prefix",
+      "stdlib": "A single dash introduces a (possibly multi-character) flag name: \"-bool\", \"-int 22\", \"-help\".",
+      "pflag": "A single dash introduces one or more single-character options, so \"-int\" is the cluster -i -n -t; multi-character names require \"--\".",
+      "refs": "POSIX Guidelines 3, 4, 5, 14; GNU long-option extension",
+      "affectedTests": [
+        "TestParse",
+        "TestFlagSetParse",
+        "TestUserDefined",
+        "TestUserDefinedFunc",
+        "TestUserDefinedBool",
+        "TestHelp",
+        "TestExitCode"
+      ]
+    },
+    {
+      "category": "pflag-design-differs",
+      "topic": "usage / PrintDefaults output uses the \"-s, --long\" layout",
+      "stdlib": "PrintDefaults emits \"  -A\\tfor ...\" (single dash, tab-aligned) and the tests compare it byte-for-byte.",
+      "pflag": "Help reflects POSIX/GNU spelling (short and long forms together); the exact byte layout differs from the stdlib.",
+      "refs": "GNU usage convention",
+      "affectedTests": [
+        "TestPrintDefaults",
+        "TestUserDefinedBoolUsage"
+      ]
+    },
+    {
+      "category": "pflag-design-differs",
+      "topic": "parse-error and usage message text differs from the stdlib",
+      "stdlib": "Errors read e.g. \"flag provided but not defined: -i\" and \"invalid value ... parse error\".",
+      "pflag": "pflag has its own error wording, so byte/substring comparisons against the stdlib text do not hold.",
+      "refs": "implementation detail (not mandated by POSIX)",
+      "affectedTests": [
+        "TestUsageOutput",
+        "TestParseError"
+      ]
+    },
+    {
+      "category": "pflag-design-differs",
+      "topic": "no \"flag set before being defined\" panic",
+      "stdlib": "Defining a flag after Set was called for that name panics with \"flag X set at ... before being defined\".",
+      "pflag": "pflag does not track set-before-define; Set on an unknown flag returns an error and defining later does not panic.",
+      "refs": "implementation detail (not mandated by POSIX)",
+      "affectedTests": [
+        "TestDefineAfterSet"
+      ]
+    },
+    {
+      "category": "pflag-design-differs",
+      "topic": "flag-name validation panics with different messages",
+      "stdlib": "Var panics with \"flag \\\"-foo\\\" begins with -\" / \"flag \\\"foo=bar\\\" contains =\".",
+      "pflag": "pflag validates names differently and does not produce the same panic messages.",
+      "refs": "implementation detail (not mandated by POSIX)",
+      "affectedTests": [
+        "TestInvalidFlags"
+      ]
+    },
+    {
+      "category": "pflag-omits-gnu-feature",
+      "topic": "unambiguous long-option abbreviation",
+      "stdlib": "n/a",
+      "pflag": "GNU accepts \"--verb\" for \"--verbose\" when unambiguous; pflag requires the full long name.",
+      "refs": "GNU abbreviation rule",
+      "affectedTests": [
+        "TestLongOptionAbbreviation"
+      ]
+    }
+  ]
+}
