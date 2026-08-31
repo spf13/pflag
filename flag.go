@@ -374,7 +374,7 @@ func (f *FlagSet) getUnknownFlagsHandling() UnknownFlagsHandling {
 	// then, check deprecated ParseErrorsWhitelist:
 	// if UnknownFlagsHandling is set, use it
 	if f.ParseErrorsWhitelist.UnknownFlagsHandling != ErrorOnUnknownFlag {
-		return f.ParseErrorsAllowlist.UnknownFlagsHandling
+		return f.ParseErrorsWhitelist.UnknownFlagsHandling
 	}
 
 	if f.ParseErrorsWhitelist.UnknownFlags {
