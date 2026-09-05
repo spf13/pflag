@@ -55,6 +55,25 @@ func TestEmptyS2I(t *testing.T) {
 	}
 }
 
+func TestGetStringToIntPreservesBracketKeys(t *testing.T) {
+	for _, key := range []string{"[key]", "[[key", "]key", "[]", "key"} {
+		t.Run(key, func(t *testing.T) {
+			f := NewFlagSet("test", ContinueOnError)
+			value := f.StringToInt("map", nil, "")
+			if err := f.Parse([]string{"--map=" + key + "=42"}); err != nil {
+				t.Fatal(err)
+			}
+			got, err := f.GetStringToInt("map")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(got) != 1 || got[key] != 42 || (*value)[key] != 42 {
+				t.Fatalf("getter = %v, bound value = %v; want key %q with value 42", got, *value, key)
+			}
+		})
+	}
+}
+
 func TestS2I(t *testing.T) {
 	var s2i map[string]int
 	f := setUpS2IFlagSet(&s2i)
