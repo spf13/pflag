@@ -374,6 +374,20 @@ func TestS2SWithDefault(t *testing.T) {
 	}
 }
 
+func TestS2SNilDefault(t *testing.T) {
+	var s2s map[string]string
+	f := NewFlagSet("test", ContinueOnError)
+	f.StringToStringVar(&s2s, "s2s", nil, "Command separated ls!")
+
+	arg := fmt.Sprintf("--s2s=%s", createS2SFlag(map[string]string{"a": "1", "b": "2"}))
+	if err := f.Parse([]string{arg}); err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	if s2s["a"] != "1" || s2s["b"] != "2" {
+		t.Fatalf("expected a=1,b=2 but got: %v", s2s)
+	}
+}
+
 func TestS2SCalledTwice(t *testing.T) {
 	var s2s map[string]string
 	f := setUpS2SFlagSet(&s2s)

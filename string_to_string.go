@@ -55,6 +55,9 @@ func (s *stringToStringValue) Set(val string) error {
 		}
 	}
 
+	if *s.value == nil {
+		*s.value = make(map[string]string, len(out))
+	}
 	for k, v := range out {
 		(*s.value)[k] = v
 	}
