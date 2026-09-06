@@ -542,11 +542,16 @@ func testParseWithUnknownFlags(f *FlagSet, t *testing.T, setUnknownFlags func(f 
 	}
 }
 
-func testParseWithUnknownFlagsAndPassToArgs(f *FlagSet, t *testing.T) {
+func testParseWithUnknownFlagsAndPassToArgs(f *FlagSet, t *testing.T, setUp ...func(*FlagSet)) {
 	if f.Parsed() {
 		t.Fatal("f.Parse() = true before Parse")
 	}
-	f.ParseErrorsAllowlist.UnknownFlagsHandling = PassUnknownFlagToArgs
+	if len(setUp) == 0 {
+		f.ParseErrorsAllowlist.UnknownFlagsHandling = PassUnknownFlagToArgs
+	}
+	for _, s := range setUp {
+		s(f)
+	}
 	f.SetInterspersed(true)
 
 	f.BoolP("boola", "a", false, "bool value")
@@ -821,6 +826,13 @@ func TestIgnoreUnknownFlagsBackwardsCompat(t *testing.T) {
 func TestIgnoreUnknownFlagsAndPassToArgs(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
 	testParseWithUnknownFlagsAndPassToArgs(GetCommandLine(), t)
+}
+
+func TestIgnoreUnknownFlagsAndPassToArgsBackwardsCompat(t *testing.T) {
+	ResetForTesting(func() { t.Error("bad parse") })
+	testParseWithUnknownFlagsAndPassToArgs(GetCommandLine(), t, func(f *FlagSet) {
+		f.ParseErrorsWhitelist.UnknownFlagsHandling = PassUnknownFlagToArgs
+	})
 }
 func TestFlagSetParse(t *testing.T) {
 	testParse(NewFlagSet("test", ContinueOnError), t)
