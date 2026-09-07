@@ -11,6 +11,25 @@ import (
 	"testing"
 )
 
+func TestGetStringToInt64PreservesBracketKeys(t *testing.T) {
+	for _, key := range []string{"[key]", "[[key", "]key", "[]", "key"} {
+		t.Run(key, func(t *testing.T) {
+			f := NewFlagSet("test", ContinueOnError)
+			value := f.StringToInt64("map", nil, "")
+			if err := f.Parse([]string{"--map=" + key + "=42"}); err != nil {
+				t.Fatal(err)
+			}
+			got, err := f.GetStringToInt64("map")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(got) != 1 || got[key] != 42 || (*value)[key] != 42 {
+				t.Fatalf("getter = %v, bound value = %v; want key %q with value 42", got, *value, key)
+			}
+		})
+	}
+}
+
 func setUpS2I64FlagSet(s2ip *map[string]int64) *FlagSet {
 	f := NewFlagSet("test", ContinueOnError)
 	f.StringToInt64Var(s2ip, "s2i", map[string]int64{}, "Command separated ls2it!")

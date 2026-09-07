@@ -66,7 +66,7 @@ func (s *stringToInt64Value) String() string {
 }
 
 func stringToInt64Conv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
+	val = strings.TrimSuffix(strings.TrimPrefix(val, "["), "]")
 	// An empty string would cause an empty map
 	if len(val) == 0 {
 		return map[string]int64{}, nil
