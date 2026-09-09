@@ -24,6 +24,10 @@ func newStringToStringValue(val map[string]string, p *map[string]string) *string
 // Set updates the flag value from the given string, adding additional mappings or updating existing ones.
 func (s *stringToStringValue) Set(val string) error {
 	var ss []string
+	// Support round-trip from String() output like [k=v] or [k=[]]
+	if strings.HasPrefix(val, "[") && strings.HasSuffix(val, "]") {
+		val = val[1 : len(val)-1]
+	}
 	n := strings.Count(val, "=")
 	switch n {
 	case 0:
