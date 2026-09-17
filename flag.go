@@ -1184,17 +1184,17 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		// '-f=arg'
 		value = shorthands[2:]
 		outShorts = ""
-	} else if flag.NoOptDefVal != "" {
-		// '-f' (arg was optional)
-		value = flag.NoOptDefVal
-	} else if len(shorthands) > 1 {
+	} else if len(shorthands) > 1 && flag.NoOptDefVal == "" {
 		// '-farg'
 		value = shorthands[1:]
 		outShorts = ""
-	} else if len(args) > 0 {
-		// '-f arg'
+	} else if len(shorthands) == 1 && len(args) > 0 && !strings.HasPrefix(args[0], "-") && !isNoOptBoolValue(flag.Value) {
+		// '-f arg' for non-boolean optional-value flags
 		value = args[0]
 		outArgs = args[1:]
+	} else if flag.NoOptDefVal != "" {
+		// '-f' (arg was optional), including '-fb' shorthand clusters
+		value = flag.NoOptDefVal
 	} else {
 		// '-f' (arg was required)
 		err = f.fail(&ValueRequiredError{
