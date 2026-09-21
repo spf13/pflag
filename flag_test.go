@@ -1413,6 +1413,33 @@ func TestDeprecatedFlagUsageNormalized(t *testing.T) {
 	}
 }
 
+func TestDeprecatedFlagUsageAlias(t *testing.T) {
+	// When a NormalizeFunc aliases one flag name to another, using the alias
+	// to set a deprecated flag should report the name the user actually typed,
+	// not the canonical name. See https://github.com/spf13/pflag/issues/279.
+	f := NewFlagSet("bob", ContinueOnError)
+	f.String("src", "", "src directory or file")
+	f.SetNormalizeFunc(func(_ *FlagSet, name string) NormalizedName {
+		if name == "dir" {
+			name = "src"
+		}
+		return NormalizedName(name)
+	})
+	_ = f.MarkDeprecated("src", "use --src")
+
+	out, err := parseReturnStderr(t, f, []string{"--dir=x"})
+	if err != nil {
+		t.Fatal("expected no error; got ", err)
+	}
+
+	if !strings.Contains(out, "Flag --dir has been deprecated") {
+		t.Errorf("expected the deprecation message to name the flag the user typed (--dir); got: %q", out)
+	}
+	if strings.Contains(out, "Flag --src has been deprecated") {
+		t.Errorf("deprecation message should not name the canonical flag (--src); got: %q", out)
+	}
+}
+
 // Name normalization function should be called only once on flag addition
 func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	normalizeFlagNameInvocations = 0
