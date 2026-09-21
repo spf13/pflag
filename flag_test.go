@@ -1626,3 +1626,33 @@ func TestVisitFlagOrder(t *testing.T) {
 		i++
 	})
 }
+
+func TestShortFlagNoOptDefValWithExplicitValue(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	value := f.StringP("value", "v", "initial", "value")
+	f.Lookup("value").NoOptDefVal = "default"
+
+	if err := f.Parse([]string{"-v", "explicit"}); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *value, "explicit"; got != want {
+		t.Fatalf("-v explicit = %q, want %q", got, want)
+	}
+}
+
+func TestShortFlagNoOptDefValInClusterKeepsCurrentSemantics(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	value := f.StringP("value", "v", "initial", "value")
+	f.Lookup("value").NoOptDefVal = "default"
+	b := f.BoolP("bool", "b", false, "bool")
+
+	if err := f.Parse([]string{"-vb"}); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *value, "default"; got != want {
+		t.Fatalf("-vb value = %q, want %q", got, want)
+	}
+	if !*b {
+		t.Fatal("-vb did not parse -b after -v used its NoOptDefVal")
+	}
+}
