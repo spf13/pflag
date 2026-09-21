@@ -24,6 +24,14 @@ func newStringToStringValue(val map[string]string, p *map[string]string) *string
 // Set updates the flag value from the given string, adding additional mappings or updating existing ones.
 func (s *stringToStringValue) Set(val string) error {
 	var ss []string
+	// Allow empty string to reset the map to empty
+	if val == "" {
+		for k := range *s.value {
+			delete(*s.value, k)
+		}
+		s.changed = true
+		return nil
+	}
 	n := strings.Count(val, "=")
 	switch n {
 	case 0:
