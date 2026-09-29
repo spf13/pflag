@@ -793,7 +793,9 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 		varname, usage := UnquoteUsage(flag)
 		if isNoOptBoolValue(flag.Value) && flag.Value.Type() == "bool" {
 			line += "[=true|false]"
-		} else if varname != "" {
+		} else if varname != "" && !(flag.Value.Type() == "count" && flag.NoOptDefVal != "") {
+			// Count flags with NoOptDefVal treat a following token as a
+			// positional argument, so don't print a required-looking type name.
 			line += " " + varname
 		}
 
@@ -806,7 +808,9 @@ func (f *FlagSet) FlagUsagesWrapped(cols int) string {
 					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
 				}
 			case "count":
-				if flag.NoOptDefVal != "+1" {
+				if flag.NoOptDefVal == "+1" {
+					line += "[=count]"
+				} else {
 					line += fmt.Sprintf("[=%s]", flag.NoOptDefVal)
 				}
 			default:

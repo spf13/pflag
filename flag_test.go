@@ -1477,7 +1477,7 @@ const defaultOutput = `      --A[=true|false]               for bootstrapping, a
       --custom-with-val custom       custom value which has been set from command line while help is shown
       --customP custom               a VarP with default (default 10)
       --maxT timeout                 set timeout for dial
-  -v, --verbose count                verbosity
+  -v, --verbose[=count]              verbosity
 `
 
 // Custom value that satisfies the Value interface.
