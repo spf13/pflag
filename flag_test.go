@@ -1585,6 +1585,39 @@ func TestPrintDefaultsCustomIsBoolFlagOmitsDefault(t *testing.T) {
 	}
 }
 
+func TestZeroedDefValueIsZeroValue(t *testing.T) {
+	fs := NewFlagSet("test", ContinueOnError)
+	fs.StringSlice("standard-slice", []string{}, "multiline description")
+	fs.IntSlice("int-slice", []int{1, 2}, "int slice")
+	fs.StringArray("string-array", []string{"a"}, "string array")
+	fs.Int("int-flag", 42, "int flag")
+
+	for _, name := range []string{"standard-slice", "int-slice", "string-array", "int-flag"} {
+		flag := fs.Lookup(name)
+		flag.DefValue = ""
+		if !flag.defaultIsZeroValue() {
+			t.Errorf("expected empty DefValue for %s to be treated as zero value", name)
+		}
+	}
+}
+
+func TestPrintDefaultsZeroedDefValue(t *testing.T) {
+	fs := NewFlagSet("print defaults zeroed DefValue", ContinueOnError)
+	var buf bytes.Buffer
+	fs.SetOutput(&buf)
+
+	fs.StringSlice("standard-slice", []string{}, "A multiline description for the standard string slice flag.")
+	fs.Lookup("standard-slice").DefValue = ""
+
+	fs.PrintDefaults()
+	got := buf.String()
+	want := "      --standard-slice strings   A multiline description for the standard string slice flag.\n"
+	if got != want {
+		t.Errorf("\n--- Got:\n%s--- Wanted:\n%s\n", got, want)
+	}
+}
+
+
 func TestVisitAllFlagOrder(t *testing.T) {
 	fs := NewFlagSet("TestVisitAllFlagOrder", ContinueOnError)
 	fs.SortFlags = false
