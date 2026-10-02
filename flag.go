@@ -1411,6 +1411,7 @@ func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 		interspersed:  true,
 		SortFlags:     true,
 	}
+	f.Usage = func() { defaultUsage(f) }
 	return f
 }
 
@@ -1426,4 +1427,5 @@ func (f *FlagSet) Init(name string, errorHandling ErrorHandling) {
 	f.name = name
 	f.errorHandling = errorHandling
 	f.argsLenAtDash = -1
+	f.Usage = func() { defaultUsage(f) }
 }
