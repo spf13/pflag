@@ -1617,7 +1617,6 @@ func TestPrintDefaultsZeroedDefValue(t *testing.T) {
 	}
 }
 
-
 func TestVisitAllFlagOrder(t *testing.T) {
 	fs := NewFlagSet("TestVisitAllFlagOrder", ContinueOnError)
 	fs.SortFlags = false
