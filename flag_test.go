@@ -1626,3 +1626,40 @@ func TestVisitFlagOrder(t *testing.T) {
 		i++
 	})
 }
+
+func TestNewFlagSetDefaultUsage(t *testing.T) {
+	var buf bytes.Buffer
+	flags := NewFlagSet("test", ContinueOnError)
+	flags.SetOutput(&buf)
+	if flags.Usage == nil {
+		t.Fatal("expected flags.Usage to be defined, got nil")
+	}
+	flags.Bool("testflag", false, "a test flag")
+	flags.Usage()
+	got := buf.String()
+	if !strings.Contains(got, "Usage of test:\n") {
+		t.Errorf("expected usage output to contain 'Usage of test:\n', got %q", got)
+	}
+	if !strings.Contains(got, "--testflag") {
+		t.Errorf("expected usage output to contain '--testflag', got %q", got)
+	}
+}
+
+func TestFlagSetInitDefaultUsage(t *testing.T) {
+	var buf bytes.Buffer
+	var flags FlagSet
+	flags.Init("test-init", ContinueOnError)
+	flags.SetOutput(&buf)
+	if flags.Usage == nil {
+		t.Fatal("expected flags.Usage to be defined after Init, got nil")
+	}
+	flags.Bool("testflag", false, "a test flag")
+	flags.Usage()
+	got := buf.String()
+	if !strings.Contains(got, "Usage of test-init:\n") {
+		t.Errorf("expected usage output to contain 'Usage of test-init:\n', got %q", got)
+	}
+	if !strings.Contains(got, "--testflag") {
+		t.Errorf("expected usage output to contain '--testflag', got %q", got)
+	}
+}

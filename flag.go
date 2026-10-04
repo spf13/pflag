@@ -175,7 +175,7 @@ type NormalizedName string
 type FlagSet struct {
 	// Usage is the function called when an error occurs while parsing flags.
 	// The field is a function (not a method) that may be changed to point to
-	// a custom error handler.
+	// a custom error handler. By default, it prints the default usage message.
 	Usage func()
 
 	// SortFlags is used to indicate, if user wants to have sorted flags in
@@ -1388,7 +1388,8 @@ func Parsed() bool {
 var CommandLine = NewFlagSet(os.Args[0], ExitOnError)
 
 // NewFlagSet returns a new, empty flag set with the specified name,
-// error handling property and SortFlags set to true.
+// error handling property, SortFlags set to true, and Usage set to
+// print the default usage message.
 func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 	f := &FlagSet{
 		name:          name,
@@ -1397,6 +1398,7 @@ func NewFlagSet(name string, errorHandling ErrorHandling) *FlagSet {
 		interspersed:  true,
 		SortFlags:     true,
 	}
+	f.Usage = func() { defaultUsage(f) }
 	return f
 }
 
@@ -1407,9 +1409,11 @@ func (f *FlagSet) SetInterspersed(interspersed bool) {
 
 // Init sets the name and error handling property for a flag set.
 // By default, the zero FlagSet uses an empty name and the
-// ContinueOnError error handling policy.
+// ContinueOnError error handling policy. It also sets Usage to
+// print the default usage message.
 func (f *FlagSet) Init(name string, errorHandling ErrorHandling) {
 	f.name = name
 	f.errorHandling = errorHandling
 	f.argsLenAtDash = -1
+	f.Usage = func() { defaultUsage(f) }
 }
