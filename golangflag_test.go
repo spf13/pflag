@@ -133,3 +133,49 @@ func TestToGoflags(t *testing.T) {
 		}
 	}
 }
+
+func TestCopyToGoFlagSetPreservesCurrentStringValue(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		args []string
+		want string
+	}{
+		{name: "default", want: "default"},
+		{name: "parsed", args: []string{"--name=parsed"}, want: "parsed"},
+		{name: "empty", args: []string{"--name="}, want: ""},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			pfs := NewFlagSet("source", ContinueOnError)
+			value := pfs.String("name", "default", "a string flag")
+			if err := pfs.Parse(tc.args); err != nil {
+				t.Fatal(err)
+			}
+			gfs := goflag.NewFlagSet("destination", goflag.ContinueOnError)
+			pfs.CopyToGoFlagSet(gfs)
+			if *value != tc.want {
+				t.Fatalf("copy changed source value: got %q, want %q", *value, tc.want)
+			}
+			if got := gfs.Lookup("name").Value.String(); got != tc.want {
+				t.Errorf("copied value = %q, want %q", got, tc.want)
+			}
+			if got := pfs.Lookup("name").DefValue; got != "default" {
+				t.Errorf("source default = %q, want %q", got, "default")
+			}
+			if got := gfs.Lookup("name").DefValue; got != tc.want {
+				t.Errorf("copied default = %q, want current value %q", got, tc.want)
+			}
+			if err := gfs.Set("name", "from-go"); err != nil {
+				t.Fatal(err)
+			}
+			if *value != "from-go" {
+				t.Errorf("Go flag update not shared with source: got %q", *value)
+			}
+			if err := pfs.Set("name", "from-pflag"); err != nil {
+				t.Fatal(err)
+			}
+			if got := gfs.Lookup("name").Value.String(); got != "from-pflag" {
+				t.Errorf("pflag update not shared with copy: got %q", got)
+			}
+		})
+	}
+}
