@@ -159,6 +159,31 @@ func TestStringToString(t *testing.T) {
 	}
 }
 
+func TestStringToStringRejectsExtraCSVRecords(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	values := f.StringToString("arg", map[string]string{"default": "retained"}, "")
+	if err := f.Parse([]string{"--arg", "a=first\nb=second"}); err == nil {
+		t.Fatal("expected an error instead of silently dropping the second record")
+	}
+	if !reflect.DeepEqual(*values, map[string]string{"default": "retained"}) {
+		t.Fatalf("failed parsing changed the default map: %v", *values)
+	}
+	if f.Lookup("arg").Changed {
+		t.Fatal("failed parsing marked the flag as changed")
+	}
+}
+
+func TestStringToStringQuotedNewline(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	values := f.StringToString("arg", nil, "")
+	if err := f.Parse([]string{"--arg", "\"a=first\nsecond=value\""}); err != nil {
+		t.Fatalf("quoted newline should be preserved: %v", err)
+	}
+	if !reflect.DeepEqual(*values, map[string]string{"a": "first\nsecond=value"}) {
+		t.Fatalf("quoted value was not preserved: %v", *values)
+	}
+}
+
 // This test ensures that [FlagSet.GetStringToString] always return the pointers which were given during flag
 // initialization.
 //
