@@ -116,7 +116,7 @@ func TestToGoflags(t *testing.T) {
 
 	// Check for unexpected additional flags.
 	gfs.VisitAll(func(gf *goflag.Flag) {
-		pf := gfs.Lookup(gf.Name)
+		pf := pfs.Lookup(gf.Name)
 		if pf == nil {
 			t.Errorf("%s: not found in pflag flag set", gf.Name)
 			return
