@@ -88,7 +88,7 @@ func (s *stringToStringValue) String() string {
 		panic(err)
 	}
 	w.Flush()
-	return "[" + strings.TrimSpace(buf.String()) + "]"
+	return "[" + strings.TrimSuffix(buf.String(), "\n") + "]"
 }
 
 // GetStringToString return the map value of a flag with the given name from f. The returned map shares memory with the

@@ -388,6 +388,40 @@ func TestS2SNilDefault(t *testing.T) {
 	}
 }
 
+func TestS2SStringPreservesTrailingWhitespace(t *testing.T) {
+	for _, tc := range []struct {
+		name, value, expected string
+	}{
+		{"space", "value ", "[key=value ]"},
+		{"tab", "value\t", "[key=value\t]"},
+		{"unicode_space", "value\u00a0", "[key=value\u00a0]"},
+		{"whitespace_only", " \t\u00a0", "[key= \t\u00a0]"},
+		{"plain", "value", "[key=value]"},
+		{"empty", "", "[key=]"},
+		{"quoted_comma", "a,b ", "[\"key=a,b \"]"},
+		{"quoted_newline", "line\nend ", "[\"key=line\nend \"]"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, useDefault := range []bool{true, false} {
+				f := NewFlagSet("test", ContinueOnError)
+				defaults := map[string]string{}
+				if useDefault {
+					defaults["key"] = tc.value
+				}
+				f.StringToString("map", defaults, "")
+				if !useDefault {
+					if err := f.Set("map", "key="+tc.value); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if got := f.Lookup("map").Value.String(); got != tc.expected {
+					t.Errorf("default=%t: expected %q, got %q", useDefault, tc.expected, got)
+				}
+			}
+		})
+	}
+}
+
 func TestS2SCalledTwice(t *testing.T) {
 	var s2s map[string]string
 	f := setUpS2SFlagSet(&s2s)
