@@ -180,6 +180,25 @@ Flag parsing stops after the terminator "--". Unlike the flag package,
 flags can be interspersed with arguments anywhere on the command line
 before this terminator.
 
+To stop parsing at the first non-flag argument, call
+`flag.SetInterspersed(false)` before `flag.Parse()`, or use
+`flags.SetInterspersed(false)` on a `FlagSet`. This is useful for wrappers
+that pass a command and its remaining arguments through unchanged:
+
+```go
+flags := flag.NewFlagSet("wrapper", flag.ContinueOnError)
+verbose := flags.Bool("verbose", false, "verbose output")
+flags.SetInterspersed(false)
+if err := flags.Parse([]string{"--verbose", "echo", "--verbose", "hello"}); err != nil {
+	panic(err)
+}
+fmt.Println(*verbose)     // true
+fmt.Println(flags.Args()) // [echo --verbose hello]
+```
+
+The second `--verbose` belongs to `echo`, so it is left in `flags.Args()`
+along with every argument after the command, even if it names a known flag.
+
 Integer flags accept 1234, 0664, 0x1234 and may be negative.
 Boolean flags (in their long form) accept 1, 0, t, f, true, false,
 TRUE, FALSE, True, False.
