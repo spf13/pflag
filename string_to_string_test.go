@@ -159,6 +159,31 @@ func TestStringToString(t *testing.T) {
 	}
 }
 
+func TestStringToStringRejectsExtraCSVRecords(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	values := f.StringToString("arg", map[string]string{"default": "retained"}, "")
+	if err := f.Parse([]string{"--arg", "a=first\nb=second"}); err == nil {
+		t.Fatal("expected an error instead of silently dropping the second record")
+	}
+	if !reflect.DeepEqual(*values, map[string]string{"default": "retained"}) {
+		t.Fatalf("failed parsing changed the default map: %v", *values)
+	}
+	if f.Lookup("arg").Changed {
+		t.Fatal("failed parsing marked the flag as changed")
+	}
+}
+
+func TestStringToStringQuotedNewline(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	values := f.StringToString("arg", nil, "")
+	if err := f.Parse([]string{"--arg", "\"a=first\nsecond=value\""}); err != nil {
+		t.Fatalf("quoted newline should be preserved: %v", err)
+	}
+	if !reflect.DeepEqual(*values, map[string]string{"a": "first\nsecond=value"}) {
+		t.Fatalf("quoted value was not preserved: %v", *values)
+	}
+}
+
 // This test ensures that [FlagSet.GetStringToString] always return the pointers which were given during flag
 // initialization.
 //
@@ -385,6 +410,40 @@ func TestS2SNilDefault(t *testing.T) {
 	}
 	if s2s["a"] != "1" || s2s["b"] != "2" {
 		t.Fatalf("expected a=1,b=2 but got: %v", s2s)
+	}
+}
+
+func TestS2SStringPreservesTrailingWhitespace(t *testing.T) {
+	for _, tc := range []struct {
+		name, value, expected string
+	}{
+		{"space", "value ", "[key=value ]"},
+		{"tab", "value\t", "[key=value\t]"},
+		{"unicode_space", "value\u00a0", "[key=value\u00a0]"},
+		{"whitespace_only", " \t\u00a0", "[key= \t\u00a0]"},
+		{"plain", "value", "[key=value]"},
+		{"empty", "", "[key=]"},
+		{"quoted_comma", "a,b ", "[\"key=a,b \"]"},
+		{"quoted_newline", "line\nend ", "[\"key=line\nend \"]"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, useDefault := range []bool{true, false} {
+				f := NewFlagSet("test", ContinueOnError)
+				defaults := map[string]string{}
+				if useDefault {
+					defaults["key"] = tc.value
+				}
+				f.StringToString("map", defaults, "")
+				if !useDefault {
+					if err := f.Set("map", "key="+tc.value); err != nil {
+						t.Fatal(err)
+					}
+				}
+				if got := f.Lookup("map").Value.String(); got != tc.expected {
+					t.Errorf("default=%t: expected %q, got %q", useDefault, tc.expected, got)
+				}
+			}
+		})
 	}
 }
 

@@ -57,3 +57,17 @@ func ExampleFlagSet_StringToString() {
 	fmt.Println(value)
 	// Output: map[a:2 b:2 d:4]
 }
+
+func ExampleFlagSet_SetInterspersed() {
+	flags := pflag.NewFlagSet("wrapper", pflag.ContinueOnError)
+	verbose := flags.Bool("verbose", false, "verbose output")
+	flags.SetInterspersed(false)
+	if err := flags.Parse([]string{"--verbose", "echo", "--verbose", "hello"}); err != nil {
+		panic(err)
+	}
+	fmt.Println(*verbose)
+	fmt.Println(flags.Args())
+	// Output:
+	// true
+	// [echo --verbose hello]
+}
