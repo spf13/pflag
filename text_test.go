@@ -3,9 +3,40 @@ package pflag
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
+
+type textString string
+
+func (s *textString) UnmarshalText(text []byte) error {
+	*s = textString(text)
+	return nil
+}
+
+func TestTextType(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	var value time.Time
+	f.TextVar(&value, "time", time.Time{}, "time stamp")
+	if got := f.Lookup("time").Value.Type(); got != "*time.Time" {
+		t.Errorf("expected type *time.Time, got %q", got)
+	}
+}
+
+func TestGetTextRejectsDifferentType(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	var value time.Time
+	f.TextVar(&value, "time", time.Date(2026, 1, 2, 3, 4, 5, 0, time.UTC), "time stamp")
+	output := textString("unchanged")
+	err := f.GetText("time", &output)
+	if err == nil || !strings.Contains(err.Error(), "trying to get *pflag.textString value of flag of type *time.Time") {
+		t.Errorf("expected type mismatch error, got %v", err)
+	}
+	if output != "unchanged" {
+		t.Errorf("output was modified after type mismatch: %q", output)
+	}
+}
 
 func setUpTime(t *time.Time) *FlagSet {
 	f := NewFlagSet("test", ContinueOnError)
