@@ -31,7 +31,7 @@ func readAsCSV(val string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	if _, err := csvReader.Read(); err != io.EOF { //nolint:errorlint // not using errors.Is for compatibility with go1.12
+	if _, err := csvReader.Read(); err != io.EOF {
 		return nil, fmt.Errorf("must be a single CSV record; quote fields containing newlines")
 	}
 	return record, nil
