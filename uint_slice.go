@@ -20,6 +20,13 @@ func newUintSliceValue(val []uint, p *[]uint) *uintSliceValue {
 }
 
 func (s *uintSliceValue) Set(val string) error {
+	if val == "" {
+		if !s.changed {
+			*s.value = []uint{}
+		}
+		s.changed = true
+		return nil
+	}
 	ss := strings.Split(val, ",")
 	out := make([]uint, len(ss))
 	for i, d := range ss {

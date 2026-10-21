@@ -20,6 +20,13 @@ func newInt32SliceValue(val []int32, p *[]int32) *int32SliceValue {
 }
 
 func (s *int32SliceValue) Set(val string) error {
+	if val == "" {
+		if !s.changed {
+			*s.value = []int32{}
+		}
+		s.changed = true
+		return nil
+	}
 	ss := strings.Split(val, ",")
 	out := make([]int32, len(ss))
 	for i, d := range ss {

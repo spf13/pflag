@@ -20,6 +20,13 @@ func newFloat32SliceValue(val []float32, p *[]float32) *float32SliceValue {
 }
 
 func (s *float32SliceValue) Set(val string) error {
+	if val == "" {
+		if !s.changed {
+			*s.value = []float32{}
+		}
+		s.changed = true
+		return nil
+	}
 	ss := strings.Split(val, ",")
 	out := make([]float32, len(ss))
 	for i, d := range ss {

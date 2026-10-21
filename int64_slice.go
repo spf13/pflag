@@ -20,6 +20,13 @@ func newInt64SliceValue(val []int64, p *[]int64) *int64SliceValue {
 }
 
 func (s *int64SliceValue) Set(val string) error {
+	if val == "" {
+		if !s.changed {
+			*s.value = []int64{}
+		}
+		s.changed = true
+		return nil
+	}
 	ss := strings.Split(val, ",")
 	out := make([]int64, len(ss))
 	for i, d := range ss {
