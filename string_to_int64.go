@@ -3,6 +3,7 @@ package pflag
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -51,16 +52,21 @@ func (s *stringToInt64Value) Type() string {
 }
 
 func (s *stringToInt64Value) String() string {
+	keys := make([]string, 0, len(*s.value))
+	for k := range *s.value {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	var buf bytes.Buffer
-	i := 0
-	for k, v := range *s.value {
+	for i, k := range keys {
 		if i > 0 {
 			buf.WriteRune(',')
 		}
+		v := (*s.value)[k]
 		buf.WriteString(k)
 		buf.WriteRune('=')
 		buf.WriteString(strconv.FormatInt(v, 10))
-		i++
 	}
 	return "[" + buf.String() + "]"
 }
