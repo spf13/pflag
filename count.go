@@ -57,7 +57,9 @@ func (f *FlagSet) CountVarP(p *int, name, shorthand string, usage string) {
 	flag.NoOptDefVal = "+1"
 }
 
-// CountVar like CountVar only the flag is placed on the CommandLine instead of a given flag set
+// CountVar defines a count flag with specified name, default value, and usage string.
+// The argument p points to an int variable in which to store the value of the flag.
+// A count flag will add 1 to its value every time it is found on the command line
 func CountVar(p *int, name string, usage string) {
 	CommandLine.CountVar(p, name, usage)
 }
