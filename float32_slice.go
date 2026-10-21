@@ -1,7 +1,6 @@
 package pflag
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
@@ -48,7 +47,7 @@ func (s *float32SliceValue) Type() string {
 func (s *float32SliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
-		out[i] = fmt.Sprintf("%f", d)
+		out[i] = s.toString(d)
 	}
 	return "[" + strings.Join(out, ",") + "]"
 }
@@ -62,7 +61,7 @@ func (s *float32SliceValue) fromString(val string) (float32, error) {
 }
 
 func (s *float32SliceValue) toString(val float32) string {
-	return fmt.Sprintf("%f", val)
+	return strconv.FormatFloat(float64(val), 'g', -1, 32)
 }
 
 func (s *float32SliceValue) Append(val string) error {
