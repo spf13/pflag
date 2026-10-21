@@ -45,8 +45,61 @@ func TestEmptySAValue(t *testing.T) {
 	if err != nil {
 		t.Fatal("expected no error; got", err)
 	}
+	if len(sa) != 0 {
+		t.Fatalf("got sa %v with len=%d but expected length=0", sa, len(sa))
+	}
+	if sa == nil {
+		t.Fatal("expected sa to be a non-nil empty slice")
+	}
 
 	getSA, err := f.GetStringArray("sa")
+	if err != nil {
+		t.Fatal("got an error from GetStringArray():", err)
+	}
+	if len(getSA) != 0 {
+		t.Fatalf("got sa %v with len=%d but expected length=0", getSA, len(getSA))
+	}
+}
+
+func TestEmptySASeparateValue(t *testing.T) {
+	var sa []string
+	f := setUpSAFlagSet(&sa)
+	err := f.Parse([]string{"--sa", ""})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	if len(sa) != 0 {
+		t.Fatalf("got sa %v with len=%d but expected length=0", sa, len(sa))
+	}
+	if sa == nil {
+		t.Fatal("expected sa to be a non-nil empty slice")
+	}
+
+	getSA, err := f.GetStringArray("sa")
+	if err != nil {
+		t.Fatal("got an error from GetStringArray():", err)
+	}
+	if len(getSA) != 0 {
+		t.Fatalf("got sa %v with len=%d but expected length=0", getSA, len(getSA))
+	}
+}
+
+func TestEmptySASeparateValueCommandLine(t *testing.T) {
+	ResetForTesting(func() {})
+
+	var sa []string
+	StringArrayVar(&sa, "sa", []string{}, "Command separated list!")
+	if err := CommandLine.Parse([]string{"--sa", ""}); err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	if len(sa) != 0 {
+		t.Fatalf("got sa %v with len=%d but expected length=0", sa, len(sa))
+	}
+	if sa == nil {
+		t.Fatal("expected sa to be a non-nil empty slice")
+	}
+
+	getSA, err := GetCommandLine().GetStringArray("sa")
 	if err != nil {
 		t.Fatal("got an error from GetStringArray():", err)
 	}
