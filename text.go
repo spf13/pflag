@@ -53,8 +53,14 @@ func (f *FlagSet) GetText(name string, out encoding.TextUnmarshaler) error {
 	if flag == nil {
 		return fmt.Errorf("flag accessed but not defined: %s", name)
 	}
-	if flag.Value.Type() != reflect.TypeOf(out).String() {
-		return fmt.Errorf("trying to get %s value of flag of type %s", reflect.TypeOf(out).String(), flag.Value.Type())
+	outType := reflect.TypeOf(out)
+	matchesType := flag.Value.Type() == outType.String()
+	if value, ok := flag.Value.(textValue); ok {
+		// Display names can collide; compare native text value types directly.
+		matchesType = reflect.TypeOf(value.p) == outType
+	}
+	if !matchesType {
+		return fmt.Errorf("trying to get %s value of flag of type %s", outType.String(), flag.Value.Type())
 	}
 	return out.UnmarshalText([]byte(flag.Value.String()))
 }
