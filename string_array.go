@@ -61,11 +61,24 @@ func stringArrayConv(sval string) (interface{}, error) {
 
 // GetStringArray return the []string value of a flag with the given name
 func (f *FlagSet) GetStringArray(name string) ([]string, error) {
-	val, err := f.getFlagType(name, "stringArray", stringArrayConv)
+	val, err := f.getFlagType(name, "stringArray", nil)
 	if err != nil {
 		return []string{}, err
 	}
-	return val.([]string), nil
+	if value, ok := val.(*stringArrayValue); ok {
+		values := *value.value
+		// Preserve the existing empty-value convention without a CSV round trip,
+		// which would normalize CRLF sequences within the stored strings.
+		if len(values) == 1 && values[0] == "" {
+			return []string{}, nil
+		}
+		return append([]string{}, values...), nil
+	}
+	converted, err := stringArrayConv(val.(Value).String())
+	if err != nil {
+		return []string{}, err
+	}
+	return converted.([]string), nil
 }
 
 // StringArrayVar defines a string flag with specified name, default value, and usage string.
