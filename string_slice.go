@@ -87,11 +87,24 @@ func stringSliceConv(sval string) (interface{}, error) {
 
 // GetStringSlice return the []string value of a flag with the given name
 func (f *FlagSet) GetStringSlice(name string) ([]string, error) {
-	val, err := f.getFlagType(name, "stringSlice", stringSliceConv)
+	val, err := f.getFlagType(name, "stringSlice", nil)
 	if err != nil {
 		return []string{}, err
 	}
-	return val.([]string), nil
+	if value, ok := val.(*stringSliceValue); ok {
+		values := *value.value
+		// Preserve the existing empty-value convention without a CSV round trip,
+		// which would normalize CRLF sequences within the stored strings.
+		if len(values) == 1 && values[0] == "" {
+			return []string{}, nil
+		}
+		return append([]string{}, values...), nil
+	}
+	converted, err := stringSliceConv(val.(Value).String())
+	if err != nil {
+		return []string{}, err
+	}
+	return converted.([]string), nil
 }
 
 // StringSliceVar defines a string flag with specified name, default value, and usage string.
