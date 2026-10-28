@@ -14,7 +14,7 @@ func newUintValue(val uint, p *uint) *uintValue {
 }
 
 func (i *uintValue) Set(s string) error {
-	v, err := strconv.ParseUint(s, 0, 64)
+	v, err := strconv.ParseUint(s, 0, 0)
 	if err != nil {
 		return errors.New("must be a non-negative integer")
 	}
