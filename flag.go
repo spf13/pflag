@@ -1188,8 +1188,8 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		// '-farg'
 		value = shorthands[1:]
 		outShorts = ""
-	} else if len(shorthands) == 1 && len(args) > 0 && !strings.HasPrefix(args[0], "-") && !isNoOptBoolValue(flag.Value) {
-		// '-f arg' for non-boolean optional-value flags
+	} else if len(shorthands) == 1 && len(args) > 0 && (flag.NoOptDefVal == "" || (!strings.HasPrefix(args[0], "-") && !isNoOptBoolValue(flag.Value))) {
+		// '-f arg' for required-value flags and eligible optional-value flags
 		value = args[0]
 		outArgs = args[1:]
 	} else if flag.NoOptDefVal != "" {

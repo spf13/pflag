@@ -1656,3 +1656,28 @@ func TestShortFlagNoOptDefValInClusterKeepsCurrentSemantics(t *testing.T) {
 		t.Fatal("-vb did not parse -b after -v used its NoOptDefVal")
 	}
 }
+
+// Required short flags must keep accepting dash-prefixed values. Only flags
+// with NoOptDefVal should treat the next dash-prefixed token as another flag.
+func TestShortRequiredFlagAcceptsDashPrefixedValue(t *testing.T) {
+	t.Run("negative integer", func(t *testing.T) {
+		f := NewFlagSet("test", ContinueOnError)
+		value := f.IntP("number", "n", 0, "number")
+		if err := f.Parse([]string{"-n", "-1"}); err != nil {
+			t.Fatal(err)
+		}
+		if got, want := *value, -1; got != want {
+			t.Fatalf("-n -1 = %d, want %d", got, want)
+		}
+	})
+	t.Run("dash-prefixed string", func(t *testing.T) {
+		f := NewFlagSet("test", ContinueOnError)
+		value := f.StringP("string", "s", "", "string")
+		if err := f.Parse([]string{"-s", "-pattern"}); err != nil {
+			t.Fatal(err)
+		}
+		if got, want := *value, "-pattern"; got != want {
+			t.Fatalf("-s -pattern = %q, want %q", got, want)
+		}
+	})
+}
