@@ -3,6 +3,8 @@ package pflag
 import (
 	"bytes"
 	"encoding/csv"
+	"fmt"
+	"io"
 	"strings"
 )
 
@@ -25,7 +27,14 @@ func readAsCSV(val string) ([]string, error) {
 	}
 	stringReader := strings.NewReader(val)
 	csvReader := csv.NewReader(stringReader)
-	return csvReader.Read()
+	record, err := csvReader.Read()
+	if err != nil {
+		return nil, err
+	}
+	if _, err := csvReader.Read(); err != io.EOF {
+		return nil, fmt.Errorf("must be a single CSV record; quote fields containing newlines")
+	}
+	return record, nil
 }
 
 func writeAsCSV(vals []string) (string, error) {
@@ -97,6 +106,7 @@ func (f *FlagSet) GetStringSlice(name string) ([]string, error) {
 // StringSliceVar defines a string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the value of the flag.
 // Compared to StringArray flags, StringSlice flags take comma-separated value as arguments and split them accordingly.
+// Each argument must be a single CSV record; quote fields containing newlines to preserve them.
 // For example:
 //
 //	--ss="v1,v2" --ss="v3"
