@@ -203,6 +203,15 @@ Integer flags accept 1234, 0664, 0x1234 and may be negative.
 Boolean flags (in their long form) accept 1, 0, t, f, true, false,
 TRUE, FALSE, True, False.
 Duration flags accept any input valid for time.ParseDuration.
+URL flags accept any input valid for url.Parse, including relative URLs.
+
+```go
+endpoint := pflag.URL("endpoint", url.URL{Scheme: "https", Host: "example.com"}, "server URL")
+```
+
+Import `net/url` for the URL type. Use `URLP`, `URLVar`, or `URLVarP` for a
+shorthand or an existing variable, and `flags.GetURL("endpoint")` to retrieve
+the parsed value from a `FlagSet`.
 
 ## Mutating or "Normalizing" Flag names
 
