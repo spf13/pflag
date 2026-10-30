@@ -7,6 +7,7 @@ package pflag
 import (
 	"bytes"
 	"fmt"
+	"reflect"
 	"strconv"
 	"testing"
 )
@@ -152,5 +153,60 @@ func TestS2ICalledTwice(t *testing.T) {
 		if expected[i] != v {
 			t.Fatalf("expected s2i[%s] to be %d but got: %d", i, expected[i], v)
 		}
+	}
+}
+
+func TestS2IPreservesKeys(t *testing.T) {
+	maxInt := int(^uint(0) >> 1)
+	tests := []struct {
+		name     string
+		defaults map[string]int
+		sets     []string
+		want     map[string]int
+	}{
+		{name: "opening bracket", want: map[string]int{"[name": -1}},
+		{name: "closing bracket", want: map[string]int{"]name": 0}},
+		{name: "bracketed", want: map[string]int{"[name]": 1}},
+		{name: "repeated brackets", want: map[string]int{"[[name]]": maxInt}},
+		{name: "only brackets", want: map[string]int{"[]][": -maxInt - 1}},
+		{name: "empty key", want: map[string]int{"": 0}},
+		{name: "normal key", want: map[string]int{"name": -1}},
+		{name: "multiple entries", want: map[string]int{"[min]": -maxInt - 1, "]max[": maxInt, "[[zero]]": 0}},
+		{
+			name:     "repeated set",
+			defaults: map[string]int{"default": 42},
+			sets:     []string{"[name]=-1,]=2", "[name]=3,[[new]]=0"},
+			want:     map[string]int{"[name]": 3, "]": 2, "[[new]]": 0},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			for _, mode := range []string{"default", "set"} {
+				t.Run(mode, func(t *testing.T) {
+					defaults := tt.want
+					sets := tt.sets
+					if sets != nil {
+						defaults = tt.defaults
+					} else if mode == "set" {
+						defaults = map[string]int{"default": 42}
+						sets = []string{createS2IFlag(tt.want)}
+					}
+					f := NewFlagSet("test", ContinueOnError)
+					f.StringToInt("s2i", defaults, "")
+					for _, value := range sets {
+						if err := f.Set("s2i", value); err != nil {
+							t.Fatal(err)
+						}
+					}
+					got, err := f.GetStringToInt("s2i")
+					if err != nil {
+						t.Fatal(err)
+					}
+					if !reflect.DeepEqual(got, tt.want) {
+						t.Fatalf("expected %v, got %v", tt.want, got)
+					}
+				})
+			}
+		})
 	}
 }
