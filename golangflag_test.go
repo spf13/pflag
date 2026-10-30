@@ -179,3 +179,131 @@ func TestCopyToGoFlagSetPreservesCurrentStringValue(t *testing.T) {
 		})
 	}
 }
+
+func TestParseSkippedFlagsSeparateValues(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		args  []string
+		run   string
+		count int
+		v     bool
+	}{
+		{
+			name: "separate string value",
+			args: []string{"-test.run", "TestExample"},
+			run:  "TestExample",
+		},
+		{
+			name:  "separate integer value",
+			args:  []string{"-test.count", "2"},
+			count: 2,
+		},
+		{
+			name:  "negative integer value",
+			args:  []string{"-test.count", "-2"},
+			count: -2,
+		},
+		{
+			name: "repeated separate values",
+			args: []string{"-test.run", "first", "-test.run", "second"},
+			run:  "second",
+		},
+		{
+			name: "value is argument terminator",
+			args: []string{"-test.run", "--", "-test.v"},
+			run:  "--",
+			v:    true,
+		},
+		{
+			name: "empty value",
+			args: []string{"-test.run", ""},
+		},
+		{
+			name: "value looks like a test flag",
+			args: []string{"-test.run", "-test.v"},
+			run:  "-test.v",
+		},
+		{
+			name: "value looks like another flag",
+			args: []string{"-test.run", "--custom"},
+			run:  "--custom",
+		},
+		{
+			name:  "mixed flag forms",
+			args:  []string{"--custom=value", "-test.run", "TestExample", "-test.v", "-test.count=2"},
+			run:   "TestExample",
+			count: 2,
+			v:     true,
+		},
+		{
+			name: "boolean does not consume next flag",
+			args: []string{"-test.v", "-test.run", "TestExample"},
+			run:  "TestExample",
+			v:    true,
+		},
+		{
+			name: "equals value does not consume next flag",
+			args: []string{"-test.run=TestExample", "-test.v"},
+			run:  "TestExample",
+			v:    true,
+		},
+		{
+			name: "explicit boolean value",
+			args: []string{"-test.v=false", "-test.run", "TestExample"},
+			run:  "TestExample",
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			fs := goflag.NewFlagSet("test", goflag.ContinueOnError)
+			run := fs.String("test.run", "", "")
+			count := fs.Int("test.count", 0, "")
+			verbose := fs.Bool("test.v", false, "")
+			if err := ParseSkippedFlags(tc.args, fs); err != nil {
+				t.Fatal(err)
+			}
+			if *run != tc.run || *count != tc.count || *verbose != tc.v {
+				t.Errorf("got run=%q, count=%d, verbose=%v; want %q, %d, %v", *run, *count, *verbose, tc.run, tc.count, tc.v)
+			}
+		})
+	}
+}
+
+func TestParseSkippedFlagsMissingOrUnknownFlag(t *testing.T) {
+	for _, arg := range []string{"-test.run", "-test.unknown"} {
+		t.Run(arg, func(t *testing.T) {
+			fs := goflag.NewFlagSet("test", goflag.ContinueOnError)
+			fs.String("test.run", "", "")
+			if err := ParseSkippedFlags([]string{arg}, fs); err == nil {
+				t.Fatal("expected an error")
+			}
+		})
+	}
+}
+
+type skippedFlagValue struct {
+	value   string
+	boolean bool
+}
+
+func (v *skippedFlagValue) String() string         { return v.value }
+func (v *skippedFlagValue) Set(value string) error { v.value = value; return nil }
+func (v *skippedFlagValue) IsBoolFlag() bool       { return v.boolean }
+
+func TestParseSkippedFlagsCustomBoolFlag(t *testing.T) {
+	for _, boolean := range []bool{false, true} {
+		fs := goflag.NewFlagSet("test", goflag.ContinueOnError)
+		value := &skippedFlagValue{boolean: boolean}
+		fs.Var(value, "test.custom", "")
+		args := []string{"-test.custom", "separate"}
+		want := "separate"
+		if boolean {
+			want = "true"
+		}
+		if err := ParseSkippedFlags(args, fs); err != nil {
+			t.Fatal(err)
+		}
+		if value.value != want {
+			t.Errorf("IsBoolFlag=%v: got %q, want %q", boolean, value.value, want)
+		}
+	}
+}
