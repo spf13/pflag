@@ -1653,3 +1653,58 @@ func TestVisitFlagOrder(t *testing.T) {
 		i++
 	})
 }
+
+func TestShortFlagNoOptDefValWithExplicitValue(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	value := f.StringP("value", "v", "initial", "value")
+	f.Lookup("value").NoOptDefVal = "default"
+
+	if err := f.Parse([]string{"-v", "explicit"}); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *value, "explicit"; got != want {
+		t.Fatalf("-v explicit = %q, want %q", got, want)
+	}
+}
+
+func TestShortFlagNoOptDefValInClusterKeepsCurrentSemantics(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	value := f.StringP("value", "v", "initial", "value")
+	f.Lookup("value").NoOptDefVal = "default"
+	b := f.BoolP("bool", "b", false, "bool")
+
+	if err := f.Parse([]string{"-vb"}); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := *value, "default"; got != want {
+		t.Fatalf("-vb value = %q, want %q", got, want)
+	}
+	if !*b {
+		t.Fatal("-vb did not parse -b after -v used its NoOptDefVal")
+	}
+}
+
+// Required short flags must keep accepting dash-prefixed values. Only flags
+// with NoOptDefVal should treat the next dash-prefixed token as another flag.
+func TestShortRequiredFlagAcceptsDashPrefixedValue(t *testing.T) {
+	t.Run("negative integer", func(t *testing.T) {
+		f := NewFlagSet("test", ContinueOnError)
+		value := f.IntP("number", "n", 0, "number")
+		if err := f.Parse([]string{"-n", "-1"}); err != nil {
+			t.Fatal(err)
+		}
+		if got, want := *value, -1; got != want {
+			t.Fatalf("-n -1 = %d, want %d", got, want)
+		}
+	})
+	t.Run("dash-prefixed string", func(t *testing.T) {
+		f := NewFlagSet("test", ContinueOnError)
+		value := f.StringP("string", "s", "", "string")
+		if err := f.Parse([]string{"-s", "-pattern"}); err != nil {
+			t.Fatal(err)
+		}
+		if got, want := *value, "-pattern"; got != want {
+			t.Fatalf("-s -pattern = %q, want %q", got, want)
+		}
+	})
+}
