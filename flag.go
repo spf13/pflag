@@ -614,6 +614,9 @@ func (f *FlagSet) PrintDefaults() {
 // defaultIsZeroValue returns true if the default value for this flag represents
 // a zero value.
 func (f *Flag) defaultIsZeroValue() bool {
+	if f.DefValue == "" {
+		return true
+	}
 	if isNoOptBoolValue(f.Value) {
 		return f.DefValue == "false" || f.DefValue == ""
 	}
