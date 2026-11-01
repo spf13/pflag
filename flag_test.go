@@ -842,7 +842,7 @@ func TestParseRepeated(t *testing.T) {
 	fs := NewFlagSet("test repeated", ContinueOnError)
 
 	t.Run("first parse", func(t *testing.T) {
-		err := fs.Parse([]string{"foo", "bar"})
+		err := fs.Parse([]string{"foo", "--", "bar"})
 		if err != nil {
 			t.Fatal("expected no error, got ", err)
 		}
@@ -850,6 +850,9 @@ func TestParseRepeated(t *testing.T) {
 		argsAfterFirst := fs.Args()
 		if !reflect.DeepEqual(argsAfterFirst, []string{"foo", "bar"}) {
 			t.Fatalf("expected args [foo bar], got %v", argsAfterFirst)
+		}
+		if fs.ArgsLenAtDash() != 1 {
+			t.Fatalf("expected argsLenAtDash 1, got %d", fs.ArgsLenAtDash())
 		}
 	})
 
@@ -863,6 +866,9 @@ func TestParseRepeated(t *testing.T) {
 		if !reflect.DeepEqual(argsAfterSecond, []string{"baz"}) {
 			t.Fatalf("expected args [baz], got %v", argsAfterSecond)
 		}
+		if fs.ArgsLenAtDash() != -1 {
+			t.Fatalf("expected argsLenAtDash -1, got %d", fs.ArgsLenAtDash())
+		}
 	})
 
 	t.Run("re-parse with no args", func(t *testing.T) {
@@ -874,6 +880,23 @@ func TestParseRepeated(t *testing.T) {
 		argsAfterThird := fs.Args()
 		if !reflect.DeepEqual(argsAfterThird, []string{}) {
 			t.Fatalf("expected args [], got %v", argsAfterThird)
+		}
+		if fs.ArgsLenAtDash() != -1 {
+			t.Fatalf("expected argsLenAtDash -1, got %d", fs.ArgsLenAtDash())
+		}
+	})
+
+	t.Run("ParseAll", func(t *testing.T) {
+		fs := NewFlagSet("test ParseAll repeated", ContinueOnError)
+		set := func(*Flag, string) error { return nil }
+		if err := fs.ParseAll([]string{"--", "after"}, set); err != nil {
+			t.Fatal("expected no error, got ", err)
+		}
+		if err := fs.ParseAll([]string{"no-dash"}, set); err != nil {
+			t.Fatal("expected no error, got ", err)
+		}
+		if fs.ArgsLenAtDash() != -1 {
+			t.Fatalf("expected argsLenAtDash -1, got %d", fs.ArgsLenAtDash())
 		}
 	})
 }
