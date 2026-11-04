@@ -1237,6 +1237,10 @@ func (f *FlagSet) parseShortArg(s string, args []string, fn parseFunc) (a []stri
 
 				errUnknownFlagAll.UnknownFlags = errUnknownFlagAll.UnknownFlags +
 					errUnknownFlag.UnknownFlags
+				if !f.interspersed {
+					errUnknownFlagAll.UnknownFlags += shorthands
+					break
+				}
 				err = nil
 			} else {
 				return
@@ -1278,6 +1282,10 @@ func (f *FlagSet) parseArgs(args []string, fn parseFunc) (err error) {
 			if errUnknownFlag, ok := err.(*unknownFlagError); ok { //nolint:errorlint
 				// this means f.ParseErrorsAllowlist.UnknownFlagsHandling is set to UnknownFlagsHandlingPassUnknownToArgs
 				f.args = append(f.args, errUnknownFlag.UnknownFlags)
+				if !f.interspersed {
+					f.args = append(f.args, args...)
+					return nil
+				}
 				err = nil
 			} else {
 				return
