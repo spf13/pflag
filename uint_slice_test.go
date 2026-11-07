@@ -2,6 +2,7 @@ package pflag
 
 import (
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -194,6 +195,24 @@ func TestUISAsSliceValue(t *testing.T) {
 	})
 	if len(uis) != 1 || uis[0] != 3 {
 		t.Fatalf("Expected ss to be overwritten with '3.1', but got: %v", uis)
+	}
+}
+
+func TestUISAsSliceValueAppend(t *testing.T) {
+	var uis []uint
+	f := setUpUISFlagSetWithDefault(&uis)
+	value, ok := f.Lookup("uis").Value.(SliceValue)
+	if !ok {
+		t.Fatal("expected uint slice flag to implement SliceValue")
+	}
+	if err := value.Append("0x10"); err != nil {
+		t.Fatalf("Append returned an error: %v", err)
+	}
+	if got, want := uis, []uint{0, 1, 16}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("underlying slice after Append = %v, want %v", got, want)
+	}
+	if got, want := value.GetSlice(), []string{"0", "1", "16"}; !reflect.DeepEqual(got, want) {
+		t.Fatalf("GetSlice after Append = %v, want %v", got, want)
 	}
 }
 
