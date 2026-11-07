@@ -151,9 +151,26 @@ func (f *FlagSet) CopyToGoFlagSet(newSet *goflag.FlagSet) {
 // Typical usage example: `ParseGoTestFlags(os.Args[1:], goflag.CommandLine)`
 func ParseSkippedFlags(osArgs []string, goFlagSet *goflag.FlagSet) error {
 	var skippedFlags []string
-	for _, f := range osArgs {
-		if isGotestFlag(f) {
-			skippedFlags = append(skippedFlags, f)
+	for i := 0; i < len(osArgs); i++ {
+		f := osArgs[i]
+		if !isGotestFlag(f) {
+			continue
+		}
+		skippedFlags = append(skippedFlags, f)
+		// A value supplied with '=' is already part of this argument.
+		if strings.Contains(f, "=") {
+			continue
+		}
+		flag := goFlagSet.Lookup(strings.TrimPrefix(f, "-"))
+		if flag == nil {
+			continue // Let the Go flag parser report unknown flags.
+		}
+		if value, ok := flag.Value.(goBoolFlag); ok && value.IsBoolFlag() {
+			continue
+		}
+		if i+1 < len(osArgs) {
+			i++
+			skippedFlags = append(skippedFlags, osArgs[i])
 		}
 	}
 	return goFlagSet.Parse(skippedFlags)
