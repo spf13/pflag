@@ -730,6 +730,77 @@ func TestShorthand(t *testing.T) {
 	}
 }
 
+func TestShorthandEmptyValue(t *testing.T) {
+	for _, tc := range []struct {
+		name                 string
+		arg                  string
+		noOptDefVal          string
+		unknownFlagsHandling UnknownFlagsHandling
+		wantValue            string
+	}{
+		{name: "required", arg: "-s="},
+		{name: "cluster", arg: "-bs="},
+		{name: "optional", arg: "-s=", noOptDefVal: "fallback"},
+		{name: "optional cluster", arg: "-bs=", noOptDefVal: "fallback"},
+		{name: "long", arg: "--string="},
+		{name: "non-empty", arg: "-s=value", wantValue: "value"},
+		{name: "literal equals", arg: "-s==", wantValue: "="},
+		{name: "ignore unknown", arg: "-u=", unknownFlagsHandling: IgnoreUnknownFlag, wantValue: "initial"},
+		{name: "pass unknown", arg: "-u=", unknownFlagsHandling: PassUnknownFlagToArgs, wantValue: "initial"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, parseAll := range []bool{false, true} {
+				t.Run(fmt.Sprintf("ParseAll=%t", parseAll), func(t *testing.T) {
+					f := NewFlagSet("test", ContinueOnError)
+					value := f.StringP("string", "s", "initial", "string value")
+					boolean := f.BoolP("bool", "b", false, "bool value")
+					f.Lookup("string").NoOptDefVal = tc.noOptDefVal
+					f.ParseErrorsAllowlist.UnknownFlagsHandling = tc.unknownFlagsHandling
+					args := []string{tc.arg, "positional", "-b"}
+
+					var err error
+					if parseAll {
+						err = f.ParseAll(args, func(flag *Flag, value string) error {
+							return f.Set(flag.Name, value)
+						})
+					} else {
+						err = f.Parse(args)
+					}
+					if err != nil {
+						t.Fatal(err)
+					}
+					if *value != tc.wantValue {
+						t.Errorf("string value = %q, want %q", *value, tc.wantValue)
+					}
+					if !*boolean {
+						t.Error("bool flag was not parsed")
+					}
+					wantArgs := []string{"positional"}
+					if tc.unknownFlagsHandling == PassUnknownFlagToArgs {
+						wantArgs = append([]string{tc.arg}, wantArgs...)
+					}
+					if !reflect.DeepEqual(f.Args(), wantArgs) {
+						t.Errorf("Args() = %q, want %q", f.Args(), wantArgs)
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestShorthandEmptyBoolValue(t *testing.T) {
+	f := NewFlagSet("test", ContinueOnError)
+	value := f.BoolP("bool", "b", false, "bool value")
+	err := f.Parse([]string{"-b="})
+	wantErr := `invalid argument "" for "-b, --bool" flag: must be true or false`
+	if err == nil || err.Error() != wantErr {
+		t.Errorf("Parse() error = %v, want %q", err, wantErr)
+	}
+	if *value || f.Changed("bool") {
+		t.Error("invalid empty value changed the bool flag")
+	}
+}
+
 func TestShorthandLookup(t *testing.T) {
 	f := NewFlagSet("shorthand", ContinueOnError)
 	if f.Parsed() {
