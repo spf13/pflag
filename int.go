@@ -14,7 +14,7 @@ func newIntValue(val int, p *int) *intValue {
 }
 
 func (i *intValue) Set(s string) error {
-	v, err := strconv.ParseInt(s, 0, 64)
+	v, err := strconv.ParseInt(s, 0, 0)
 	if err != nil {
 		return errors.New("must be an integer")
 	}

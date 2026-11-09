@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
+	"io"
 	"sort"
 	"strings"
 )
@@ -36,6 +37,9 @@ func (s *stringToStringValue) Set(val string) error {
 		ss, err = r.Read()
 		if err != nil {
 			return err
+		}
+		if _, err := r.Read(); err != io.EOF {
+			return fmt.Errorf("must be a single CSV record; quote fields containing newlines")
 		}
 	}
 
@@ -88,7 +92,7 @@ func (s *stringToStringValue) String() string {
 		panic(err)
 	}
 	w.Flush()
-	return "[" + strings.TrimSpace(buf.String()) + "]"
+	return "[" + strings.TrimSuffix(buf.String(), "\n") + "]"
 }
 
 // GetStringToString return the map value of a flag with the given name from f. The returned map shares memory with the
@@ -124,6 +128,16 @@ func (f *FlagSet) GetStringToString(name string) (map[string]string, error) {
 // As a special case, a single key=value pair whose value contains a comma will be interpreted as shown below:
 //
 //	--arg a=1,2         -> map[string]string{ "a": "1,2" }
+//
+// Arguments containing multiple '=' characters are parsed as one CSV record.
+// Quote the entire key=value field to preserve commas, quotes, or newlines in
+// its value. When invoking a command from a shell, preserve the CSV quotes,
+// for example by enclosing the argument in single quotes:
+//
+//	--arg '"a=first,second=value"' -> map[string]string{ "a": "first,second=value" }
+//
+// Multiple unquoted CSV records in one argument are rejected rather than
+// silently discarding mappings after the first record.
 //
 // Returns a pointer to the map which will be updated upon invocation of [FlagSet.Parse], [Flag.Value.Set], and others.
 func (f *FlagSet) StringToString(name string, value map[string]string, usage string) *map[string]string {

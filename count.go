@@ -17,8 +17,11 @@ func (i *countValue) Set(s string) error {
 		return nil
 	}
 	v, err := strconv.ParseInt(s, 0, 0)
+	if err != nil {
+		return err
+	}
 	*i = countValue(v)
-	return err
+	return nil
 }
 
 func (i *countValue) Type() string {

@@ -243,3 +243,41 @@ func TestIPSBadQuoting(t *testing.T) {
 		}
 	}
 }
+
+func TestIPSliceValueRejectsInvalidIPs(t *testing.T) {
+	for _, operation := range []string{"Append", "Replace"} {
+		t.Run(operation, func(t *testing.T) {
+			var ips []net.IP
+			value := newIPSliceValue([]net.IP{net.ParseIP("192.0.2.1")}, &ips)
+			var err error
+			if operation == "Append" {
+				err = value.Append("not-an-ip")
+			} else {
+				err = value.Replace([]string{"2001:db8::1", "not-an-ip"})
+			}
+			if err == nil {
+				t.Error("expected an error for an invalid IP")
+			}
+			if len(ips) != 1 || !ips[0].Equal(net.ParseIP("192.0.2.1")) {
+				t.Errorf("invalid input changed the slice: %v", ips)
+			}
+		})
+	}
+}
+
+func TestIPSliceValueAppendAndReplace(t *testing.T) {
+	var ips []net.IP
+	value := newIPSliceValue(nil, &ips)
+	if err := value.Append(" 192.0.2.1 "); err != nil {
+		t.Fatal(err)
+	}
+	if len(ips) != 1 || !ips[0].Equal(net.ParseIP("192.0.2.1")) {
+		t.Fatalf("unexpected appended IPs: %v", ips)
+	}
+	if err := value.Replace([]string{" 2001:db8::1 "}); err != nil {
+		t.Fatal(err)
+	}
+	if len(ips) != 1 || !ips[0].Equal(net.ParseIP("2001:db8::1")) {
+		t.Fatalf("unexpected replacement IPs: %v", ips)
+	}
+}

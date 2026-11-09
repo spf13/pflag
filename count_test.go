@@ -54,3 +54,27 @@ func TestCount(t *testing.T) {
 		}
 	}
 }
+
+func TestCountPreservesValueOnError(t *testing.T) {
+	for _, input := range []string{"invalid", "999999999999999999999999999999999999"} {
+		t.Run(input, func(t *testing.T) {
+			var count int
+			f := setUpCount(&count)
+			if err := f.Parse([]string{"-vv"}); err != nil {
+				t.Fatal(err)
+			}
+			if err := f.Set("verbose", input); err == nil {
+				t.Fatal("expected invalid count to be rejected")
+			}
+			if count != 2 {
+				t.Errorf("invalid count changed the previous value: got %d, want 2", count)
+			}
+			if err := f.Set("verbose", "+1"); err != nil {
+				t.Fatal(err)
+			}
+			if count != 3 {
+				t.Errorf("increment after invalid count: got %d, want 3", count)
+			}
+		})
+	}
+}

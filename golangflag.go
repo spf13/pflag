@@ -127,7 +127,7 @@ func (f *FlagSet) CopyToGoFlagSet(newSet *goflag.FlagSet) {
 
 		switch value := flag.Value.(type) {
 		case *stringValue:
-			newSet.StringVar((*string)(value), flag.Name, flag.DefValue, usage)
+			newSet.StringVar((*string)(value), flag.Name, *(*string)(value), usage)
 		case *intValue:
 			newSet.IntVar((*int)(value), flag.Name, *(*int)(value), usage)
 		case *int64Value:

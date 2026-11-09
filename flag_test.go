@@ -1413,6 +1413,33 @@ func TestDeprecatedFlagUsageNormalized(t *testing.T) {
 	}
 }
 
+func TestDeprecatedFlagUsageAlias(t *testing.T) {
+	// When a NormalizeFunc aliases one flag name to another, using the alias
+	// to set a deprecated flag should report the name the user actually typed,
+	// not the canonical name. See https://github.com/spf13/pflag/issues/279.
+	f := NewFlagSet("bob", ContinueOnError)
+	f.String("src", "", "src directory or file")
+	f.SetNormalizeFunc(func(_ *FlagSet, name string) NormalizedName {
+		if name == "dir" {
+			name = "src"
+		}
+		return NormalizedName(name)
+	})
+	_ = f.MarkDeprecated("src", "use --dest")
+
+	out, err := parseReturnStderr(t, f, []string{"--dir=x"})
+	if err != nil {
+		t.Fatal("expected no error; got ", err)
+	}
+
+	if !strings.Contains(out, "Flag --dir has been deprecated") {
+		t.Errorf("expected the deprecation message to name the flag the user typed (--dir); got: %q", out)
+	}
+	if strings.Contains(out, "Flag --src has been deprecated") {
+		t.Errorf("deprecation message should not name the canonical flag (--src); got: %q", out)
+	}
+}
+
 // Name normalization function should be called only once on flag addition
 func TestMultipleNormalizeFlagNameInvocations(t *testing.T) {
 	normalizeFlagNameInvocations = 0
@@ -1680,4 +1707,91 @@ func TestShortRequiredFlagAcceptsDashPrefixedValue(t *testing.T) {
 			t.Fatalf("-s -pattern = %q, want %q", got, want)
 		}
 	})
+}
+func TestPassUnknownFlagToArgsWithNonInterspersed(t *testing.T) {
+	fs := NewFlagSet("wrapper", ContinueOnError)
+	fs.SetInterspersed(false)
+	fs.ParseErrorsAllowlist.UnknownFlagsHandling = PassUnknownFlagToArgs
+	known := fs.Bool("known", false, "")
+	err := fs.Parse([]string{"--unknown", "--known"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if *known {
+		t.Errorf("expected known=false, got true")
+	}
+	expectedArgs := []string{"--unknown", "--known"}
+	if len(fs.Args()) != len(expectedArgs) || fs.Args()[0] != expectedArgs[0] || fs.Args()[1] != expectedArgs[1] {
+		t.Errorf("expected args %v, got %v", expectedArgs, fs.Args())
+	}
+
+	// Test with shorthand unknown flag
+	fsShort := NewFlagSet("wrapper-short", ContinueOnError)
+	fsShort.SetInterspersed(false)
+	fsShort.ParseErrorsAllowlist.UnknownFlagsHandling = PassUnknownFlagToArgs
+	knownShort := fsShort.BoolP("known", "k", false, "")
+	err = fsShort.Parse([]string{"-u", "-k"})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if *knownShort {
+		t.Errorf("expected knownShort=false, got true")
+	}
+	expectedArgsShort := []string{"-u", "-k"}
+	if !reflect.DeepEqual(fsShort.Args(), expectedArgsShort) {
+		t.Errorf("expected args %v, got %v", expectedArgsShort, fsShort.Args())
+	}
+
+	// Shorthand cluster starting with unknown flag (-uk) must preserve rest of cluster
+	fsCluster := NewFlagSet("wrapper-cluster", ContinueOnError)
+	fsCluster.SetInterspersed(false)
+	fsCluster.ParseErrorsAllowlist.UnknownFlagsHandling = PassUnknownFlagToArgs
+	knownCluster := fsCluster.BoolP("known", "k", false, "")
+	if err = fsCluster.Parse([]string{"-uk", "--known"}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if *knownCluster {
+		t.Errorf("expected knownCluster=false, got true")
+	}
+	if want := []string{"-uk", "--known"}; !reflect.DeepEqual(fsCluster.Args(), want) {
+		t.Errorf("expected args %v, got %v", want, fsCluster.Args())
+	}
+
+	// Shorthand cluster with known flag before unknown flag (-ku)
+	fsKnownFirst := NewFlagSet("wrapper-known-first", ContinueOnError)
+	fsKnownFirst.SetInterspersed(false)
+	fsKnownFirst.ParseErrorsAllowlist.UnknownFlagsHandling = PassUnknownFlagToArgs
+	knownFirst := fsKnownFirst.BoolP("known", "k", false, "")
+	knownAfter := fsKnownFirst.Bool("after", false, "")
+	if err = fsKnownFirst.Parse([]string{"-ku", "--after"}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !*knownFirst {
+		t.Errorf("expected knownFirst=true, got false")
+	}
+	if *knownAfter {
+		t.Errorf("expected knownAfter=false, got true")
+	}
+	if want := []string{"-u", "--after"}; !reflect.DeepEqual(fsKnownFirst.Args(), want) {
+		t.Errorf("expected args %v, got %v", want, fsKnownFirst.Args())
+	}
+
+	// ParseAll must also stop at first unknown flag when non-interspersed
+	fsParseAll := NewFlagSet("wrapper-parseall", ContinueOnError)
+	fsParseAll.SetInterspersed(false)
+	fsParseAll.ParseErrorsAllowlist.UnknownFlagsHandling = PassUnknownFlagToArgs
+	fsParseAll.Bool("known", false, "")
+	called := 0
+	if err = fsParseAll.ParseAll([]string{"--unknown", "--known"}, func(_ *Flag, _ string) error {
+		called++
+		return nil
+	}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if called != 0 {
+		t.Errorf("expected ParseAll callback 0 calls, got %d", called)
+	}
+	if !reflect.DeepEqual(fsParseAll.Args(), expectedArgs) {
+		t.Errorf("expected args %v, got %v", expectedArgs, fsParseAll.Args())
+	}
 }
