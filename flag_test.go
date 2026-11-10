@@ -1105,6 +1105,44 @@ func TestNormalizationSetFlags(t *testing.T) {
 	}
 }
 
+func TestNormalizationVisitOrder(t *testing.T) {
+	for _, sorted := range []bool{true, false} {
+		t.Run(fmt.Sprintf("SortFlags=%t", sorted), func(t *testing.T) {
+			f := NewFlagSet("normalized", ContinueOnError)
+			f.Bool("middle", false, "")
+			f.Bool("zulu", false, "")
+			f.Bool("unset", false, "")
+			for _, name := range []string{"middle", "zulu"} {
+				if err := f.Set(name, "true"); err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			// Populate the sorted cache before changing the flag names.
+			f.Visit(func(*Flag) {})
+			f.SetNormalizeFunc(func(_ *FlagSet, name string) NormalizedName {
+				if name == "zulu" {
+					return "alpha"
+				}
+				return NormalizedName(name)
+			})
+			f.SortFlags = sorted
+
+			var names []string
+			f.Visit(func(flag *Flag) {
+				names = append(names, flag.Name)
+			})
+			want := []string{"alpha", "middle"}
+			if !sorted {
+				want = []string{"middle", "alpha"}
+			}
+			if !reflect.DeepEqual(names, want) {
+				t.Errorf("Visit() names = %v, want %v", names, want)
+			}
+		})
+	}
+}
+
 // Declare a user-defined flag type.
 type flagVar []string
 
