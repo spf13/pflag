@@ -808,6 +808,59 @@ func TestInvalidArgumentMessages(t *testing.T) {
 	}
 }
 
+func isRangeError(err error) bool {
+	for err != nil {
+		if ne, ok := err.(*strconv.NumError); ok {
+			return ne.Err == strconv.ErrRange
+		}
+		u, ok := err.(interface{ Unwrap() error })
+		if !ok {
+			return false
+		}
+		err = u.Unwrap()
+	}
+	return false
+}
+
+func TestOutOfRangeNumericFlags(t *testing.T) {
+	cases := []struct {
+		name     string
+		register func(*FlagSet)
+		raw      string
+		want     string
+		syntax   bool
+	}{
+		{"int8 range", func(f *FlagSet) { f.Int8("n", 0, "") }, "200", `invalid argument "200" for "--n" flag: value out of range`, false},
+		{"int8 syntax", func(f *FlagSet) { f.Int8("n", 0, "") }, "abc", `invalid argument "abc" for "--n" flag: must be an integer`, true},
+		{"uint8 range", func(f *FlagSet) { f.Uint8("n", 0, "") }, "256", `invalid argument "256" for "--n" flag: value out of range`, false},
+		{"uint8 syntax", func(f *FlagSet) { f.Uint8("n", 0, "") }, "-1", `invalid argument "-1" for "--n" flag: must be a non-negative integer`, true},
+		{"int range", func(f *FlagSet) { f.Int("n", 0, "") }, "99999999999999999999", `invalid argument "99999999999999999999" for "--n" flag: value out of range`, false},
+		{"float32 range", func(f *FlagSet) { f.Float32("n", 0, "") }, "1e39", `invalid argument "1e39" for "--n" flag: value out of range`, false},
+		{"float32 syntax", func(f *FlagSet) { f.Float32("n", 0, "") }, "x", `invalid argument "x" for "--n" flag: must be a number`, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			f := NewFlagSet("test", ContinueOnError)
+			f.SetOutput(ioutil.Discard)
+			tc.register(f)
+			err := f.Parse([]string{"--n=" + tc.raw})
+			if err == nil {
+				t.Fatalf("expected error parsing --n=%q, got nil", tc.raw)
+			}
+			if err.Error() != tc.want {
+				t.Errorf("message: got %q, want %q", err.Error(), tc.want)
+			}
+			if tc.syntax {
+				if isRangeError(err) {
+					t.Errorf("syntax error unexpectedly wrapped strconv.ErrRange: %v", err)
+				}
+			} else if !isRangeError(err) {
+				t.Errorf("range error did not unwrap to strconv.ErrRange: %v", err)
+			}
+		})
+	}
+}
+
 func TestParseAll(t *testing.T) {
 	ResetForTesting(func() { t.Error("bad parse") })
 	testParseAll(GetCommandLine(), t)
