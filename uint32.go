@@ -1,9 +1,6 @@
 package pflag
 
-import (
-	"errors"
-	"strconv"
-)
+import "strconv"
 
 // -- uint32 value
 type uint32Value uint32
@@ -16,7 +13,7 @@ func newUint32Value(val uint32, p *uint32) *uint32Value {
 func (i *uint32Value) Set(s string) error {
 	v, err := strconv.ParseUint(s, 0, 32)
 	if err != nil {
-		return errors.New("must be a non-negative integer")
+		return numError(err, "must be a non-negative integer")
 	}
 	*i = uint32Value(v)
 	return nil

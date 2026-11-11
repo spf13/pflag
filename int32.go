@@ -1,9 +1,6 @@
 package pflag
 
-import (
-	"errors"
-	"strconv"
-)
+import "strconv"
 
 // -- int32 Value
 type int32Value int32
@@ -16,7 +13,7 @@ func newInt32Value(val int32, p *int32) *int32Value {
 func (i *int32Value) Set(s string) error {
 	v, err := strconv.ParseInt(s, 0, 32)
 	if err != nil {
-		return errors.New("must be an integer")
+		return numError(err, "must be an integer")
 	}
 	*i = int32Value(v)
 	return nil
