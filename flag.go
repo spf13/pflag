@@ -1308,6 +1308,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 	f.parsed = true
 
 	f.args = make([]string, 0, len(arguments))
+	f.argsLenAtDash = -1
 
 	if len(arguments) == 0 {
 		return nil
@@ -1345,6 +1346,7 @@ type parseFunc func(flag *Flag, name, value string) error
 func (f *FlagSet) ParseAll(arguments []string, fn func(flag *Flag, value string) error) error {
 	f.parsed = true
 	f.args = make([]string, 0, len(arguments))
+	f.argsLenAtDash = -1
 
 	set := func(flag *Flag, _, value string) error {
 		return fn(flag, value)
