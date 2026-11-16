@@ -88,3 +88,15 @@ func TestFlagUsagesWrappedContinuesAfterUnbreakableWord(t *testing.T) {
 		t.Errorf("FlagUsagesWrapped(60)\nwant:\n%q\ngot:\n%q", want, got)
 	}
 }
+
+// When the width is too narrow to wrap at all, the usage is printed as is.
+// Continuation lines of a multi-line usage must still line up with the
+// first line, as they do with FlagUsagesWrapped(0).
+func TestFlagUsagesWrappedTooNarrowKeepsMultilineIndent(t *testing.T) {
+	f := NewFlagSet("example", ContinueOnError)
+	f.String("name", "", "first line\nsecond line")
+	want := f.FlagUsagesWrapped(0)
+	if got := f.FlagUsagesWrapped(20); got != want {
+		t.Errorf("FlagUsagesWrapped(20)\nwant:\n%q\ngot:\n%q", want, got)
+	}
+}

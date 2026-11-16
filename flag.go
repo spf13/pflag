@@ -732,6 +732,7 @@ func wrap(i, w int, s string) string {
 	// space between indent i and end of line width w into which
 	// we should wrap the text.
 	wrap := w - i
+	indent := i
 
 	var r, l string
 
@@ -742,9 +743,11 @@ func wrap(i, w int, s string) string {
 		wrap = w - i
 		r += "\n" + strings.Repeat(" ", i)
 	}
-	// If still not enough space then don't even try to wrap.
+	// If still not enough space then don't even try to wrap. The
+	// first line stays where the caller put it, so keep the
+	// original indent for the rest.
 	if wrap < 24 {
-		return strings.ReplaceAll(s, "\n", r)
+		return strings.ReplaceAll(s, "\n", "\n"+strings.Repeat(" ", indent))
 	}
 
 	// Try to avoid short orphan words on the final line, by
