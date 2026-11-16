@@ -1150,7 +1150,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 		case unknownFlagsHandling == IgnoreUnknownFlag:
 			// '-f=arg arg ...'
 			// we do not want to lose arg in this case
-			if len(shorthands) > 2 && shorthands[1] == '=' {
+			if len(shorthands) > 1 && shorthands[1] == '=' {
 				outShorts = ""
 				return
 			}
@@ -1159,7 +1159,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 			return
 		case unknownFlagsHandling == PassUnknownFlagToArgs:
 			// '-f=arg': pass all the argument
-			if len(shorthands) > 2 && shorthands[1] == '=' {
+			if len(shorthands) > 1 && shorthands[1] == '=' {
 				outShorts = ""
 				err = &unknownFlagError{
 					UnknownFlags: shorthands,
@@ -1182,7 +1182,7 @@ func (f *FlagSet) parseSingleShortArg(shorthands string, args []string, fn parse
 	}
 
 	var value string
-	if len(shorthands) > 2 && shorthands[1] == '=' {
+	if len(shorthands) > 1 && shorthands[1] == '=' {
 		// '-f=arg'
 		value = shorthands[2:]
 		outShorts = ""
