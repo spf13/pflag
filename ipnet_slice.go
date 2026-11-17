@@ -69,6 +69,48 @@ func (s *ipNetSliceValue) String() string {
 	return "[" + out + "]"
 }
 
+func (s *ipNetSliceValue) fromString(val string) (net.IPNet, error) {
+	_, n, err := net.ParseCIDR(strings.TrimSpace(val))
+	if err != nil {
+		return net.IPNet{}, fmt.Errorf("invalid string being converted to CIDR: %s", val)
+	}
+	return *n, nil
+}
+
+func (s *ipNetSliceValue) toString(val net.IPNet) string {
+	return val.String()
+}
+
+func (s *ipNetSliceValue) Append(val string) error {
+	n, err := s.fromString(val)
+	if err != nil {
+		return err
+	}
+	*s.value = append(*s.value, n)
+	return nil
+}
+
+func (s *ipNetSliceValue) Replace(val []string) error {
+	out := make([]net.IPNet, len(val))
+	for i, d := range val {
+		n, err := s.fromString(d)
+		if err != nil {
+			return err
+		}
+		out[i] = n
+	}
+	*s.value = out
+	return nil
+}
+
+func (s *ipNetSliceValue) GetSlice() []string {
+	out := make([]string, len(*s.value))
+	for i, d := range *s.value {
+		out[i] = s.toString(d)
+	}
+	return out
+}
+
 func ipNetSliceConv(val string) (interface{}, error) {
 	val = strings.Trim(val, "[]")
 	// Empty string would cause a slice with one (empty) entry
