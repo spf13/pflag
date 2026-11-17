@@ -115,7 +115,11 @@ flag.VarP(&flagVal, "varname", "v", "help message")
 ```
 
 Shorthand letters can be used with single dashes on the command line.
-Boolean shorthand flags can be combined with other shorthand flags.
+Boolean shorthand flags can be combined with other shorthand flags. A shorthand
+with `NoOptDefVal` behaves the same way inside a cluster: for example, if `-a`
+has a no-option default, `-abc` uses that default for `-a` and continues with
+`-b` and `-c`. To pass an explicit value to such a shorthand, use `-a=value`
+or `-a value`.
 
 The default set of command-line flags is controlled by
 top-level functions.  The FlagSet type allows one to define
