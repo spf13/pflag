@@ -172,7 +172,7 @@ func (f *FlagSet) StringToStringVarP(p *map[string]string, name, shorthand strin
 	f.VarP(newStringToStringValue(value, p), name, shorthand, usage)
 }
 
-// StringToString defines a string flag with specified name, default value, and usage string.
+// StringToString defines a map flag with specified name, default value, and usage string.
 //
 // See [FlagSet.StringToString].
 func StringToString(name string, value map[string]string, usage string) *map[string]string {
