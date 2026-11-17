@@ -94,7 +94,7 @@ func (f *FlagSet) GetStringSlice(name string) ([]string, error) {
 	return val.([]string), nil
 }
 
-// StringSliceVar defines a string flag with specified name, default value, and usage string.
+// StringSliceVar defines a []string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the value of the flag.
 // Compared to StringArray flags, StringSlice flags take comma-separated value as arguments and split them accordingly.
 // For example:
@@ -113,7 +113,7 @@ func (f *FlagSet) StringSliceVarP(p *[]string, name, shorthand string, value []s
 	f.VarP(newStringSliceValue(value, p), name, shorthand, usage)
 }
 
-// StringSliceVar defines a string flag with specified name, default value, and usage string.
+// StringSliceVar defines a []string flag with specified name, default value, and usage string.
 // The argument p points to a []string variable in which to store the value of the flag.
 // Compared to StringArray flags, StringSlice flags take comma-separated value as arguments and split them accordingly.
 // For example:
@@ -132,7 +132,7 @@ func StringSliceVarP(p *[]string, name, shorthand string, value []string, usage 
 	CommandLine.VarP(newStringSliceValue(value, p), name, shorthand, usage)
 }
 
-// StringSlice defines a string flag with specified name, default value, and usage string.
+// StringSlice defines a []string flag with specified name, default value, and usage string.
 // The return value is the address of a []string variable that stores the value of the flag.
 // Compared to StringArray flags, StringSlice flags take comma-separated value as arguments and split them accordingly.
 // For example:
@@ -155,7 +155,7 @@ func (f *FlagSet) StringSliceP(name, shorthand string, value []string, usage str
 	return &p
 }
 
-// StringSlice defines a string flag with specified name, default value, and usage string.
+// StringSlice defines a []string flag with specified name, default value, and usage string.
 // The return value is the address of a []string variable that stores the value of the flag.
 // Compared to StringArray flags, StringSlice flags take comma-separated value as arguments and split them accordingly.
 // For example:

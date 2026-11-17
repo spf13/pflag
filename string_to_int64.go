@@ -96,8 +96,8 @@ func (f *FlagSet) GetStringToInt64(name string) (map[string]int64, error) {
 	return val.(map[string]int64), nil
 }
 
-// StringToInt64Var defines a string flag with specified name, default value, and usage string.
-// The argument p point64s to a map[string]int64 variable in which to store the values of the multiple flags.
+// StringToInt64Var defines a map[string]int64 flag with specified name, default value, and usage string.
+// The argument p points to a map[string]int64 variable in which to store the values of the multiple flags.
 // The value of each argument will not try to be separated by comma
 func (f *FlagSet) StringToInt64Var(p *map[string]int64, name string, value map[string]int64, usage string) {
 	f.VarP(newStringToInt64Value(value, p), name, "", usage)
@@ -108,8 +108,8 @@ func (f *FlagSet) StringToInt64VarP(p *map[string]int64, name, shorthand string,
 	f.VarP(newStringToInt64Value(value, p), name, shorthand, usage)
 }
 
-// StringToInt64Var defines a string flag with specified name, default value, and usage string.
-// The argument p point64s to a map[string]int64 variable in which to store the value of the flag.
+// StringToInt64Var defines a map[string]int64 flag with specified name, default value, and usage string.
+// The argument p points to a map[string]int64 variable in which to store the value of the flag.
 // The value of each argument will not try to be separated by comma
 func StringToInt64Var(p *map[string]int64, name string, value map[string]int64, usage string) {
 	CommandLine.VarP(newStringToInt64Value(value, p), name, "", usage)
@@ -120,7 +120,7 @@ func StringToInt64VarP(p *map[string]int64, name, shorthand string, value map[st
 	CommandLine.VarP(newStringToInt64Value(value, p), name, shorthand, usage)
 }
 
-// StringToInt64 defines a string flag with specified name, default value, and usage string.
+// StringToInt64 defines a map[string]int64 flag with specified name, default value, and usage string.
 // The return value is the address of a map[string]int64 variable that stores the value of the flag.
 // The value of each argument will not try to be separated by comma
 func (f *FlagSet) StringToInt64(name string, value map[string]int64, usage string) *map[string]int64 {
@@ -136,7 +136,7 @@ func (f *FlagSet) StringToInt64P(name, shorthand string, value map[string]int64,
 	return &p
 }
 
-// StringToInt64 defines a string flag with specified name, default value, and usage string.
+// StringToInt64 defines a map[string]int64 flag with specified name, default value, and usage string.
 // The return value is the address of a map[string]int64 variable that stores the value of the flag.
 // The value of each argument will not try to be separated by comma
 func StringToInt64(name string, value map[string]int64, usage string) *map[string]int64 {
