@@ -234,3 +234,67 @@ func TestIPNetBadQuoting(t *testing.T) {
 		}
 	}
 }
+
+func TestIPNetAsSliceValue(t *testing.T) {
+	var cidrs []net.IPNet
+	f := setUpIPNetFlagSet(&cidrs)
+
+	in := []string{"192.168.1.1/24", "fd00::/64"}
+	argfmt := "--cidrs=%s"
+	arg1 := fmt.Sprintf(argfmt, in[0])
+	arg2 := fmt.Sprintf(argfmt, in[1])
+	err := f.Parse([]string{arg1, arg2})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	f.VisitAll(func(f *Flag) {
+		if val, ok := f.Value.(SliceValue); ok {
+			_ = val.Replace([]string{"10.0.0.0/8"})
+		}
+	})
+	if len(cidrs) != 1 || !equalCIDR(cidrs[0], getCIDR(net.ParseCIDR("10.0.0.0/8"))) {
+		t.Fatalf("Expected cidrs to be overwritten with '10.0.0.0/8', but got: %v", cidrs)
+	}
+}
+
+func TestIPNetSliceValueRejectsInvalidCIDRs(t *testing.T) {
+	for _, operation := range []string{"Append", "Replace"} {
+		t.Run(operation, func(t *testing.T) {
+			var cidrs []net.IPNet
+			value := newIPNetSliceValue([]net.IPNet{getCIDR(net.ParseCIDR("192.0.2.0/24"))}, &cidrs)
+			var err error
+			if operation == "Append" {
+				err = value.Append("not-a-cidr")
+			} else {
+				err = value.Replace([]string{"2001:db8::/32", "not-a-cidr"})
+			}
+			if err == nil {
+				t.Error("expected an error for an invalid CIDR")
+			}
+			if len(cidrs) != 1 || !equalCIDR(cidrs[0], getCIDR(net.ParseCIDR("192.0.2.0/24"))) {
+				t.Errorf("invalid input changed the slice: %v", cidrs)
+			}
+		})
+	}
+}
+
+func TestIPNetSliceValueAppendReplaceGetSlice(t *testing.T) {
+	var cidrs []net.IPNet
+	value := newIPNetSliceValue(nil, &cidrs)
+	if err := value.Append(" 192.0.2.0/24 "); err != nil {
+		t.Fatal(err)
+	}
+	if err := value.Append("10.0.0.0/8"); err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(value.GetSlice(), ","); got != "192.0.2.0/24,10.0.0.0/8" {
+		t.Fatalf("unexpected GetSlice after Append: %s", got)
+	}
+	if err := value.Replace([]string{" 2001:db8::/32 "}); err != nil {
+		t.Fatal(err)
+	}
+	if got := strings.Join(value.GetSlice(), ","); got != "2001:db8::/32" {
+		t.Fatalf("unexpected GetSlice after Replace: %s", got)
+	}
+}
