@@ -1,9 +1,6 @@
 package pflag
 
-import (
-	"errors"
-	"strconv"
-)
+import "strconv"
 
 // -- int Value
 type intValue int
@@ -16,7 +13,7 @@ func newIntValue(val int, p *int) *intValue {
 func (i *intValue) Set(s string) error {
 	v, err := strconv.ParseInt(s, 0, 0)
 	if err != nil {
-		return errors.New("must be an integer")
+		return numError(err, "must be an integer")
 	}
 	*i = intValue(v)
 	return nil

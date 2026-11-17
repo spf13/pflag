@@ -1,6 +1,9 @@
 package pflag
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // notExistErrorMessageType specifies which flavor of "flag does not exist"
 // is printed by NotExistError. This allows the related errors to be grouped
@@ -142,4 +145,23 @@ func (e *InvalidSyntaxError) Error() string {
 // appeared in the parsed arguments.
 func (e *InvalidSyntaxError) GetSpecifiedFlag() string {
 	return e.specifiedFlag
+}
+
+// parseError is a user-facing parse failure that unwraps to the
+// underlying error, so callers can still use errors.Is with
+// strconv.ErrRange / strconv.ErrSyntax.
+type parseError struct {
+	msg string
+	err error
+}
+
+func (e *parseError) Error() string { return e.msg }
+func (e *parseError) Unwrap() error { return e.err }
+
+func numError(err error, syntax string) error {
+	msg := syntax
+	if ne, ok := err.(*strconv.NumError); ok && ne.Err == strconv.ErrRange {
+		msg = "value out of range"
+	}
+	return &parseError{msg: msg, err: err}
 }

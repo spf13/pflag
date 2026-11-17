@@ -1,9 +1,6 @@
 package pflag
 
-import (
-	"errors"
-	"strconv"
-)
+import "strconv"
 
 // -- uint8 Value
 type uint8Value uint8
@@ -16,7 +13,7 @@ func newUint8Value(val uint8, p *uint8) *uint8Value {
 func (i *uint8Value) Set(s string) error {
 	v, err := strconv.ParseUint(s, 0, 8)
 	if err != nil {
-		return errors.New("must be a non-negative integer")
+		return numError(err, "must be a non-negative integer")
 	}
 	*i = uint8Value(v)
 	return nil
