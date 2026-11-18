@@ -42,7 +42,7 @@ func TestNumericParseErrors(t *testing.T) {
 				if !errors.As(err, &numErr) || numErr.Num != input.value || !errors.Is(err, input.cause) {
 					t.Errorf("Parse(%q) = %v, want a NumError wrapping %v", input.value, err, input.cause)
 				}
-				if input.cause == strconv.ErrRange && (err == nil || !strings.HasSuffix(err.Error(), ": value out of range")) {
+				if errors.Is(input.cause, strconv.ErrRange) && (err == nil || !strings.HasSuffix(err.Error(), ": value out of range")) {
 					t.Errorf("Parse(%q) = %v, want a range diagnostic", input.value, err)
 				}
 			}
