@@ -235,3 +235,44 @@ func TestBSBadQuoting(t *testing.T) {
 		}
 	}
 }
+
+// TestBSNoOptValue verifies that a bool slice flag can be used without
+// an explicit value, like a bool flag: "--bs", "-s" and the combined
+// shorthand form "-sb" all behave as if "true" was passed (see #265).
+func TestBSNoOptValue(t *testing.T) {
+	var bs []bool
+	var b bool
+
+	f := NewFlagSet("test", ContinueOnError)
+	f.BoolSliceVar(&bs, "bs", nil, "bool slice")
+	if err := f.Parse([]string{"--bs"}); err != nil {
+		t.Fatal("expected no error for --bs; got", err)
+	}
+	if len(bs) != 1 || !bs[0] {
+		t.Fatalf("expected [true] for --bs; got %v", bs)
+	}
+
+	bs = nil
+	f = NewFlagSet("test", ContinueOnError)
+	f.BoolSliceVarP(&bs, "bs", "s", nil, "bool slice")
+	f.BoolVarP(&b, "bb", "b", false, "bool")
+	if err := f.Parse([]string{"-sb"}); err != nil {
+		t.Fatal("expected no error for -sb; got", err)
+	}
+	if len(bs) != 1 || !bs[0] {
+		t.Fatalf("expected [true] for -sb; got %v", bs)
+	}
+	if !b {
+		t.Fatal("expected true for -sb; got false")
+	}
+
+	bs = nil
+	f = NewFlagSet("test", ContinueOnError)
+	f.BoolSliceVarP(&bs, "bs", "s", nil, "bool slice")
+	if err := f.Parse([]string{"-s"}); err != nil {
+		t.Fatal("expected no error for -s; got", err)
+	}
+	if len(bs) != 1 || !bs[0] {
+		t.Fatalf("expected [true] for -s; got %v", bs)
+	}
+}
