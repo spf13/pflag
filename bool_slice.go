@@ -57,6 +57,15 @@ func (s *boolSliceValue) Type() string {
 	return "boolSlice"
 }
 
+// IsBoolFlag reports that a boolSlice flag can be used without an
+// explicit value, like a bool flag: "--bs" and "-s" are equivalent to
+// "--bs=true" and "-s=true". This makes AddFlag assign the flag a
+// NoOptDefVal of "true", so bool slice flags parse consistently with
+// bool flags (see #265).
+func (s *boolSliceValue) IsBoolFlag() bool {
+	return true
+}
+
 // String defines a "native" format for this boolean slice flag value.
 func (s *boolSliceValue) String() string {
 	boolStrSlice := make([]string, len(*s.value))
