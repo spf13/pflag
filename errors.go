@@ -1,6 +1,26 @@
 package pflag
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
+
+// numericParseError keeps the original strconv error available to callers
+// while giving command-line users a short diagnostic.
+func numericParseError(err error, syntaxHint string) error {
+	if ne, ok := err.(*strconv.NumError); ok && ne.Err == strconv.ErrRange { //nolint:errorlint // strconv returns *NumError directly; Go 1.12 lacks errors.As and errors.Is.
+		return &numericValueError{message: strconv.ErrRange.Error(), cause: err}
+	}
+	return &numericValueError{message: syntaxHint, cause: err}
+}
+
+type numericValueError struct {
+	message string
+	cause   error
+}
+
+func (e *numericValueError) Error() string { return e.message }
+func (e *numericValueError) Unwrap() error { return e.cause }
 
 // notExistErrorMessageType specifies which flavor of "flag does not exist"
 // is printed by NotExistError. This allows the related errors to be grouped
