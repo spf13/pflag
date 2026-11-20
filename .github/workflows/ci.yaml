@@ -56,3 +56,24 @@ jobs:
         uses: golangci/golangci-lint-action@1e7e51e771db61008b38414a730f564565cf7c20 # v9.2.0
         with:
           version: latest
+
+  api-compatibility:
+    name: API compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Set up Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version: "stable"
+
+      - name: Install API compatibility checker
+        run: go install golang.org/x/exp/cmd/gorelease@v0.0.0-20261119141654-b15d094f3610
+
+      - name: Check API compatibility with the latest release
+        # Check the root v1 module only; additions are allowed, removals are not.
+        run: gorelease -base=latest
