@@ -66,7 +66,8 @@ func (s *stringToIntValue) String() string {
 }
 
 func stringToIntConv(val string) (interface{}, error) {
-	val = strings.Trim(val, "[]")
+	val = strings.TrimPrefix(val, "[")
+	val = strings.TrimSuffix(val, "]")
 	// An empty string would cause an empty map
 	if len(val) == 0 {
 		return map[string]int{}, nil
