@@ -1,0 +1,46 @@
+name: API Compatibility
+
+# Guard the exported API against accidental breaking changes: compare the
+# current code with the latest non-prerelease release using gorelease.
+# See https://github.com/spf13/pflag/issues/552.
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+# Default to 'contents: read', which grants actions to read commits. Any
+# permission not included is implicitly set to "none".
+#
+# see https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
+permissions:
+  contents: read
+
+jobs:
+  api-compat:
+    name: API Compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 20 # guardrails timeout
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          # gorelease compares against the latest release tag.
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version: "stable"
+
+      - name: Install gorelease
+        # Pinned so the check does not drift with x/exp HEAD.
+        run: |
+          go install golang.org/x/exp/cmd/gorelease@v0.0.0-20261120130654-b6de8d37927a
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: Check API compatibility with latest release
+        run: |
+          BASE_VERSION="$(git tag -l 'v[0-9]*' --sort=-v:refname | grep -v '-' | head -n 1)"
+          echo "Comparing current code against ${BASE_VERSION}"
+          gorelease -base "${BASE_VERSION}"
