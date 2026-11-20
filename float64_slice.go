@@ -46,7 +46,7 @@ func (s *float64SliceValue) Type() string {
 func (s *float64SliceValue) String() string {
 	out := make([]string, len(*s.value))
 	for i, d := range *s.value {
-		out[i] = fmt.Sprintf("%f", d)
+		out[i] = strconv.FormatFloat(d, 'g', -1, 64)
 	}
 	return "[" + strings.Join(out, ",") + "]"
 }

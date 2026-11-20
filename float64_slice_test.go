@@ -23,6 +23,28 @@ func setUpF64SFlagSetWithDefault(f64sp *[]float64) *FlagSet {
 	return f
 }
 
+func TestF64SKeepsEveryDigit(t *testing.T) {
+	var f64s []float64
+	f := setUpF64SFlagSet(&f64s)
+	err := f.Parse([]string{"--f64s=1e-7,0.1,123456789.123456789,5e-324"})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+
+	getF64S, err := f.GetFloat64Slice("f64s")
+	if err != nil {
+		t.Fatal("got an error from GetFloat64Slice():", err)
+	}
+	if len(getF64S) != len(f64s) {
+		t.Fatalf("got %d values from GetFloat64Slice() but %d were set", len(getF64S), len(f64s))
+	}
+	for i, v := range f64s {
+		if getF64S[i] != v {
+			t.Errorf("expected f64s[%d] to be %v but got: %v from GetFloat64Slice", i, v, getF64S[i])
+		}
+	}
+}
+
 func TestEmptyF64S(t *testing.T) {
 	var f64s []float64
 	f := setUpF64SFlagSet(&f64s)
