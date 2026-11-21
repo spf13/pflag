@@ -878,6 +878,56 @@ func TestParseRepeated(t *testing.T) {
 	})
 }
 
+func TestParseRepeatedArgsLenAtDash(t *testing.T) {
+	fs := NewFlagSet("test repeated dash", ContinueOnError)
+
+	// A first parse that contains -- records its position.
+	if err := fs.Parse([]string{"before", "--", "after"}); err != nil {
+		t.Fatal("expected no error, got ", err)
+	}
+	if got := fs.Args(); !reflect.DeepEqual(got, []string{"before", "after"}) {
+		t.Fatalf("expected args [before after], got %v", got)
+	}
+	if got := fs.ArgsLenAtDash(); got != 1 {
+		t.Fatalf("expected argsLenAtDash 1 after parse with --, got %d", got)
+	}
+
+	// A later parse without -- must not report the previous parse's position.
+	if err := fs.Parse([]string{"no-dash"}); err != nil {
+		t.Fatal("expected no error, got ", err)
+	}
+	if got := fs.Args(); !reflect.DeepEqual(got, []string{"no-dash"}) {
+		t.Fatalf("expected args [no-dash], got %v", got)
+	}
+	if got := fs.ArgsLenAtDash(); got != -1 {
+		t.Fatalf("expected argsLenAtDash -1 after re-parse without --, got %d", got)
+	}
+
+	// An empty re-parse likewise has no --.
+	if err := fs.Parse(nil); err != nil {
+		t.Fatal("expected no error, got ", err)
+	}
+	if got := fs.ArgsLenAtDash(); got != -1 {
+		t.Fatalf("expected argsLenAtDash -1 after empty re-parse, got %d", got)
+	}
+
+	// ParseAll owns the same state and must reset it on every call as well.
+	fs = NewFlagSet("test repeated dash all", ContinueOnError)
+	noop := func(*Flag, string) error { return nil }
+	if err := fs.ParseAll([]string{"--", "x"}, noop); err != nil {
+		t.Fatal("expected no error, got ", err)
+	}
+	if got := fs.ArgsLenAtDash(); got != 0 {
+		t.Fatalf("expected argsLenAtDash 0 after ParseAll with --, got %d", got)
+	}
+	if err := fs.ParseAll([]string{"y"}, noop); err != nil {
+		t.Fatal("expected no error, got ", err)
+	}
+	if got := fs.ArgsLenAtDash(); got != -1 {
+		t.Fatalf("expected argsLenAtDash -1 after re-parse without --, got %d", got)
+	}
+}
+
 func TestChangedHelper(t *testing.T) {
 	f := NewFlagSet("changedtest", ContinueOnError)
 	f.Bool("changed", false, "changed bool")
