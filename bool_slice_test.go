@@ -236,15 +236,68 @@ func TestBSBadQuoting(t *testing.T) {
 	}
 }
 
+// TestBSTwoTokenValue verifies that a bool slice flag consumes a separate
+// value token by default: "--active false" must set the flag to [false]
+// and leave no positional arguments. Giving boolSliceValue an IsBoolFlag
+// method made the parser take NoOptDefVal "true" instead and leave "false"
+// as a positional argument, so commands like
+// "kueuectl list clusterqueue --active false" selected the wrong queues.
+func TestBSTwoTokenValue(t *testing.T) {
+	var bs []bool
+
+	f := NewFlagSet("test", ContinueOnError)
+	f.BoolSliceVar(&bs, "active", nil, "bool slice")
+	if err := f.Parse([]string{"--active", "false"}); err != nil {
+		t.Fatal("expected no error for --active false; got", err)
+	}
+	if len(bs) != 1 || bs[0] {
+		t.Fatalf("expected [false] for --active false; got %v", bs)
+	}
+	if len(f.Args()) != 0 {
+		t.Fatalf("expected no positional args for --active false; got %v", f.Args())
+	}
+
+	// The short form "-a false" must behave the same.
+	bs = nil
+	f = NewFlagSet("test", ContinueOnError)
+	f.BoolSliceVarP(&bs, "active", "a", nil, "bool slice")
+	if err := f.Parse([]string{"-a", "false"}); err != nil {
+		t.Fatal("expected no error for -a false; got", err)
+	}
+	if len(bs) != 1 || bs[0] {
+		t.Fatalf("expected [false] for -a false; got %v", bs)
+	}
+	if len(f.Args()) != 0 {
+		t.Fatalf("expected no positional args for -a false; got %v", f.Args())
+	}
+
+	// The "--active=false" form is unaffected and keeps working.
+	bs = nil
+	f = NewFlagSet("test", ContinueOnError)
+	f.BoolSliceVar(&bs, "active", nil, "bool slice")
+	if err := f.Parse([]string{"--active=false"}); err != nil {
+		t.Fatal("expected no error for --active=false; got", err)
+	}
+	if len(bs) != 1 || bs[0] {
+		t.Fatalf("expected [false] for --active=false; got %v", bs)
+	}
+	if len(f.Args()) != 0 {
+		t.Fatalf("expected no positional args for --active=false; got %v", f.Args())
+	}
+}
+
 // TestBSNoOptValue verifies that a bool slice flag can be used without
-// an explicit value, like a bool flag: "--bs", "-s" and the combined
-// shorthand form "-sb" all behave as if "true" was passed (see #265).
+// an explicit value, like a bool flag, once the caller opts in by setting
+// NoOptDefVal (see #265). Bare usage is opt-in only: without it the flag
+// keeps consuming a separate value token, so existing commands such as
+// "--active false" are unaffected.
 func TestBSNoOptValue(t *testing.T) {
 	var bs []bool
 	var b bool
 
 	f := NewFlagSet("test", ContinueOnError)
 	f.BoolSliceVar(&bs, "bs", nil, "bool slice")
+	f.Lookup("bs").NoOptDefVal = "true"
 	if err := f.Parse([]string{"--bs"}); err != nil {
 		t.Fatal("expected no error for --bs; got", err)
 	}
@@ -255,6 +308,7 @@ func TestBSNoOptValue(t *testing.T) {
 	bs = nil
 	f = NewFlagSet("test", ContinueOnError)
 	f.BoolSliceVarP(&bs, "bs", "s", nil, "bool slice")
+	f.Lookup("bs").NoOptDefVal = "true"
 	f.BoolVarP(&b, "bb", "b", false, "bool")
 	if err := f.Parse([]string{"-sb"}); err != nil {
 		t.Fatal("expected no error for -sb; got", err)
@@ -269,6 +323,7 @@ func TestBSNoOptValue(t *testing.T) {
 	bs = nil
 	f = NewFlagSet("test", ContinueOnError)
 	f.BoolSliceVarP(&bs, "bs", "s", nil, "bool slice")
+	f.Lookup("bs").NoOptDefVal = "true"
 	if err := f.Parse([]string{"-s"}); err != nil {
 		t.Fatal("expected no error for -s; got", err)
 	}
