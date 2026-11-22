@@ -32,7 +32,7 @@ func (s *stringToIntValue) Set(val string) error {
 		var err error
 		out[kv[0]], err = strconv.Atoi(kv[1])
 		if err != nil {
-			return err
+			return &collectionValueError{value: kv[1], hint: "must be an integer", cause: err}
 		}
 	}
 	if !s.changed {

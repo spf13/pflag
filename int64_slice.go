@@ -26,7 +26,7 @@ func (s *int64SliceValue) Set(val string) error {
 		var err error
 		out[i], err = strconv.ParseInt(d, 0, 64)
 		if err != nil {
-			return err
+			return &collectionValueError{value: d, hint: "must be an integer", cause: err}
 		}
 
 	}

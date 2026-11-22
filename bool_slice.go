@@ -36,7 +36,7 @@ func (s *boolSliceValue) Set(val string) error {
 	for _, boolStr := range boolStrSlice {
 		b, err := strconv.ParseBool(strings.TrimSpace(boolStr))
 		if err != nil {
-			return err
+			return &collectionValueError{value: strings.TrimSpace(boolStr), hint: "must be true or false", cause: err}
 		}
 		out = append(out, b)
 	}

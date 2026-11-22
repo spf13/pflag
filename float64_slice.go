@@ -26,7 +26,7 @@ func (s *float64SliceValue) Set(val string) error {
 		var err error
 		out[i], err = strconv.ParseFloat(d, 64)
 		if err != nil {
-			return err
+			return &collectionValueError{value: d, hint: "must be a number", cause: err}
 		}
 
 	}
