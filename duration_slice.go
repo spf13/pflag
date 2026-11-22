@@ -25,7 +25,7 @@ func (s *durationSliceValue) Set(val string) error {
 		var err error
 		out[i], err = time.ParseDuration(d)
 		if err != nil {
-			return err
+			return &collectionValueError{value: d, hint: `must be a duration like "30s" or "5m"`, cause: err}
 		}
 
 	}

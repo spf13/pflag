@@ -25,7 +25,7 @@ func (s *uintSliceValue) Set(val string) error {
 	for i, d := range ss {
 		u, err := strconv.ParseUint(d, 0, 0)
 		if err != nil {
-			return err
+			return &collectionValueError{value: d, hint: "must be a non-negative integer", cause: err}
 		}
 		out[i] = uint(u)
 	}

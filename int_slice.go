@@ -26,7 +26,7 @@ func (s *intSliceValue) Set(val string) error {
 		var err error
 		out[i], err = strconv.Atoi(d)
 		if err != nil {
-			return err
+			return &collectionValueError{value: d, hint: "must be an integer", cause: err}
 		}
 
 	}

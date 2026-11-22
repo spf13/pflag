@@ -27,7 +27,7 @@ func (s *int32SliceValue) Set(val string) error {
 		var temp64 int64
 		temp64, err = strconv.ParseInt(d, 0, 32)
 		if err != nil {
-			return err
+			return &collectionValueError{value: d, hint: "must be an integer", cause: err}
 		}
 		out[i] = int32(temp64)
 

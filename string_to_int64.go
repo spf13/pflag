@@ -32,7 +32,7 @@ func (s *stringToInt64Value) Set(val string) error {
 		var err error
 		out[kv[0]], err = strconv.ParseInt(kv[1], 10, 64)
 		if err != nil {
-			return err
+			return &collectionValueError{value: kv[1], hint: "must be an integer", cause: err}
 		}
 	}
 	if !s.changed {
