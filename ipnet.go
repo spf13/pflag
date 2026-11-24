@@ -32,21 +32,22 @@ func newIPNetValue(val net.IPNet, p *net.IPNet) *ipNetValue {
 	return (*ipNetValue)(p)
 }
 
-func ipNetConv(sval string) (interface{}, error) {
-	_, n, err := net.ParseCIDR(strings.TrimSpace(sval))
-	if err == nil {
-		return *n, nil
-	}
-	return nil, fmt.Errorf("invalid string being converted to IPNet: %s", sval)
-}
-
-// GetIPNet return the net.IPNet value of a flag with the given name
+// GetIPNet returns the net.IPNet value of a flag with the given name.
 func (f *FlagSet) GetIPNet(name string) (net.IPNet, error) {
-	val, err := f.getFlagType(name, "ipNet", ipNetConv)
+	val, err := f.getFlagType(name, "ipNet", nil)
 	if err != nil {
 		return net.IPNet{}, err
 	}
-	return val.(net.IPNet), nil
+	if v, ok := val.(*ipNetValue); ok && v.IP == nil && v.Mask == nil {
+		return net.IPNet{}, nil
+	}
+
+	sval := val.(Value).String()
+	_, n, err := net.ParseCIDR(strings.TrimSpace(sval))
+	if err != nil {
+		return net.IPNet{}, fmt.Errorf("invalid string being converted to IPNet: %s", sval)
+	}
+	return *n, nil
 }
 
 // IPNetVar defines an net.IPNet flag with specified name, default value, and usage string.
