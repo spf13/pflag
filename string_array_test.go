@@ -55,6 +55,18 @@ func TestEmptySAValue(t *testing.T) {
 	}
 }
 
+func TestSAEmptyValueAfterValue(t *testing.T) {
+	var sa []string
+	f := setUpSAFlagSet(&sa)
+	err := f.Parse([]string{"--sa=one", "--sa="})
+	if err != nil {
+		t.Fatal("expected no error; got", err)
+	}
+	if len(sa) != 1 || sa[0] != "one" {
+		t.Fatalf("expected sa to be [one] but got: %v", sa)
+	}
+}
+
 func TestSADefault(t *testing.T) {
 	var sa []string
 	f := setUpSAFlagSetWithDefault(&sa)
