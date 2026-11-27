@@ -6,6 +6,7 @@ package pflag
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"testing"
@@ -184,5 +185,42 @@ func TestF64SCalledTwice(t *testing.T) {
 		if expected[i] != v {
 			t.Fatalf("expected f64s[%d] to be %f but got: %f", i, expected[i], v)
 		}
+	}
+}
+
+func TestFloat64SlicePrecision(t *testing.T) {
+	values := []float64{1.23456789, 1e-10, -1e-10, math.SmallestNonzeroFloat64, math.MaxFloat64, float64(math.Copysign(0, -1))}
+	for _, parsed := range []bool{false, true} {
+		t.Run(fmt.Sprintf("parsed=%t", parsed), func(t *testing.T) {
+			f := NewFlagSet("test", ContinueOnError)
+			defaults := values
+			if parsed {
+				defaults = nil
+			}
+			f.Float64Slice("values", defaults, "")
+			if parsed {
+				var input []string
+				for _, value := range values {
+					input = append(input, strconv.FormatFloat(float64(value), 'g', -1, 64))
+				}
+				if err := f.Parse([]string{"--values=" + strings.Join(input, ",")}); err != nil {
+					t.Fatal(err)
+				}
+			}
+			got, err := f.GetFloat64Slice("values")
+			if err != nil {
+				t.Fatal(err)
+			}
+			slice := f.Lookup("values").Value.(SliceValue).GetSlice()
+			for i, want := range values {
+				if math.Float64bits(got[i]) != math.Float64bits(want) {
+					t.Errorf("getter[%d] = %g; want %g", i, got[i], want)
+				}
+				roundtrip, err := strconv.ParseFloat(slice[i], 64)
+				if err != nil || math.Float64bits(float64(roundtrip)) != math.Float64bits(want) {
+					t.Errorf("GetSlice[%d] = %q; want %g (error %v)", i, slice[i], want, err)
+				}
+			}
+		})
 	}
 }
