@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -151,6 +152,23 @@ func TestS2ICalledTwice(t *testing.T) {
 	for i, v := range s2i {
 		if expected[i] != v {
 			t.Fatalf("expected s2i[%s] to be %d but got: %d", i, expected[i], v)
+		}
+	}
+}
+
+func TestS2IUsageSorted(t *testing.T) {
+	var s2i map[string]int
+	f := NewFlagSet("test", ContinueOnError)
+	f.StringToIntVar(&s2i, "s2i", map[string]int{"c": 3, "a": 1, "d": 4, "b": 2}, "usage")
+
+	want := "[a=1,b=2,c=3,d=4]"
+	// Map iteration order is randomized, so check repeatedly.
+	for i := 0; i < 100; i++ {
+		if got := f.Lookup("s2i").Value.String(); got != want {
+			t.Fatalf("expected String() to be %q but got: %q", want, got)
+		}
+		if usage := f.FlagUsages(); !strings.Contains(usage, "(default "+want+")") {
+			t.Fatalf("expected usage to contain default %s but got: %q", want, usage)
 		}
 	}
 }
