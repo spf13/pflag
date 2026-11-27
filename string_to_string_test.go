@@ -50,6 +50,14 @@ func TestStringToString(t *testing.T) {
 			expected: map[string]string{"a": "1,2"},
 		},
 		{
+			args:     []string{"--arg", `size=5"`},
+			expected: map[string]string{"size": `5"`},
+		},
+		{
+			args:     []string{"--arg", `"label=large, 5"""`},
+			expected: map[string]string{"label": `large, 5"`},
+		},
+		{
 			// should correctly parse values with equal symbols
 			args:     []string{"--arg", "a=1="},
 			def:      map[string]string{},

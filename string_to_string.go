@@ -26,11 +26,11 @@ func newStringToStringValue(val map[string]string, p *map[string]string) *string
 func (s *stringToStringValue) Set(val string) error {
 	var ss []string
 	n := strings.Count(val, "=")
-	switch n {
-	case 0:
+	switch {
+	case n == 0:
 		return fmt.Errorf("%s must be formatted as key=value", val)
-	case 1:
-		ss = append(ss, strings.Trim(val, `"`))
+	case n == 1 && !(strings.HasPrefix(val, `"`) && strings.HasSuffix(val, `"`)):
+		ss = []string{val}
 	default:
 		r := csv.NewReader(strings.NewReader(val))
 		var err error
@@ -129,7 +129,7 @@ func (f *FlagSet) GetStringToString(name string) (map[string]string, error) {
 //
 //	--arg a=1,2         -> map[string]string{ "a": "1,2" }
 //
-// Arguments containing multiple '=' characters are parsed as one CSV record.
+// A fully quoted field or an argument containing multiple '=' characters is parsed as one CSV record.
 // Quote the entire key=value field to preserve commas, quotes, or newlines in
 // its value. When invoking a command from a shell, preserve the CSV quotes,
 // for example by enclosing the argument in single quotes:
