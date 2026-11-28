@@ -54,6 +54,30 @@ func TestStringToString(t *testing.T) {
 			expected: map[string]string{"size": `5"`},
 		},
 		{
+			args:     []string{"--arg", `message=someone said "i think foo" but i disagree`},
+			expected: map[string]string{"message": `someone said "i think foo" but i disagree`},
+		},
+		{
+			args:     []string{`--arg=message="i think foo" but i disagree`},
+			expected: map[string]string{"message": `"i think foo" but i disagree`},
+		},
+		{
+			args:     []string{"--arg", `message=someone said "i think foo"`},
+			expected: map[string]string{"message": `someone said "i think foo"`},
+		},
+		{
+			args:     []string{"--arg", `someone "said"=i disagree`},
+			expected: map[string]string{`someone "said"`: "i disagree"},
+		},
+		{
+			args:     []string{"--arg", `"someone said ""i think foo"" but i disagree=value"`},
+			expected: map[string]string{`someone said "i think foo" but i disagree`: "value"},
+		},
+		{
+			args:     []string{"--arg", `"message=someone said ""i think foo"" but i disagree",other=value`},
+			expected: map[string]string{"message": `someone said "i think foo" but i disagree`, "other": "value"},
+		},
+		{
 			args:     []string{"--arg", `"label=large, 5"""`},
 			expected: map[string]string{"label": `large, 5"`},
 		},
