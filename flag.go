@@ -726,50 +726,77 @@ func wrapN(i, slop int, s string) (string, string) {
 // caller). Pass `w` == 0 to do no wrapping
 func wrap(i, w int, s string) string {
 	if w == 0 {
-		return strings.ReplaceAll(s, "\n", "\n"+strings.Repeat(" ", i))
+		return indentNewlines(s, i)
 	}
 
 	// space between indent i and end of line width w into which
 	// we should wrap the text.
-	wrap := w - i
+	wrapWidth := w - i
 	indent := i
-
-	var r, l string
 
 	// Not enough space for sensible wrapping. Wrap as a block on
 	// the next line instead.
-	if wrap < 24 {
+	prefix := ""
+	if wrapWidth < 24 {
 		i = 16
-		wrap = w - i
-		r += "\n" + strings.Repeat(" ", i)
+		wrapWidth = w - i
+		prefix = "\n" + strings.Repeat(" ", i)
 	}
 	// If still not enough space then don't even try to wrap. The
 	// first line stays where the caller put it, so keep the
 	// original indent for the rest.
-	if wrap < 24 {
-		return strings.ReplaceAll(s, "\n", "\n"+strings.Repeat(" ", indent))
+	if wrapWidth < 24 {
+		return indentNewlines(s, indent)
 	}
 
 	// Try to avoid short orphan words on the final line, by
 	// allowing wrapN to go a bit over if that would fit in the
 	// remainder of the line.
 	slop := 5
-	wrap = wrap - slop
+	wrapWidth -= slop
+	pad := strings.Repeat(" ", i)
+
+	var b strings.Builder
+	b.Grow(len(prefix) + len(s))
+	b.WriteString(prefix)
 
 	// Handle first line, which is indented by the caller (or the
 	// special case above)
-	l, s = wrapN(wrap, slop, s)
-	r = r + strings.ReplaceAll(l, "\n", "\n"+strings.Repeat(" ", i))
+	var l string
+	l, s = wrapN(wrapWidth, slop, s)
+	writeIndented(&b, l, pad)
 
 	// Now wrap the rest
 	for s != "" {
 		var t string
-
-		t, s = wrapN(wrap, slop, s)
-		r = r + "\n" + strings.Repeat(" ", i) + strings.ReplaceAll(t, "\n", "\n"+strings.Repeat(" ", i))
+		t, s = wrapN(wrapWidth, slop, s)
+		b.WriteByte('\n')
+		b.WriteString(pad)
+		writeIndented(&b, t, pad)
 	}
 
-	return r
+	return b.String()
+}
+
+func indentNewlines(s string, indent int) string {
+	if strings.IndexByte(s, '\n') < 0 {
+		return s
+	}
+	return strings.ReplaceAll(s, "\n", "\n"+strings.Repeat(" ", indent))
+}
+
+func writeIndented(b *strings.Builder, line, pad string) {
+	for {
+		nl := strings.IndexByte(line, '\n')
+		if nl < 0 {
+			b.WriteString(line)
+			return
+		}
+		b.WriteString(line[:nl])
+		b.WriteByte('\n')
+		b.WriteString(pad)
+		line = line[nl+1:]
+	}
 }
 
 // FlagUsagesWrapped returns a string containing the usage information
